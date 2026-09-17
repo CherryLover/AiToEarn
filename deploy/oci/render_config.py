@@ -13,7 +13,32 @@ import os
 import string
 import sys
 
+import re
+
 import yaml
+
+
+class Yaml12Loader(yaml.SafeLoader):
+    """按 YAML 1.2 解析，和后台读配置的库保持一致。
+
+    PyYAML 默认是 YAML 1.1：`16:9` 会被当成六十进制数字 969，`on`/`yes` 会变成 true，
+    日期会变成 datetime。后台按 1.2 读，这些都是字符串，不改就会校验失败。
+    """
+
+
+_REPLACED = {"tag:yaml.org,2002:bool", "tag:yaml.org,2002:int", "tag:yaml.org,2002:float", "tag:yaml.org,2002:timestamp"}
+Yaml12Loader.yaml_implicit_resolvers = {
+    first: [r for r in resolvers if r[0] not in _REPLACED]
+    for first, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
+}
+Yaml12Loader.add_implicit_resolver(
+    "tag:yaml.org,2002:bool", re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"), list("tTfF"))
+Yaml12Loader.add_implicit_resolver(
+    "tag:yaml.org,2002:int", re.compile(r"^(?:[-+]?[0-9]+|0x[0-9a-fA-F]+)$"), list("-+0123456789"))
+Yaml12Loader.add_implicit_resolver(
+    "tag:yaml.org,2002:float",
+    re.compile(r"^(?:[-+]?(?:\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[eE][-+]?[0-9]+)?|[-+]?\.(?:inf|Inf|INF)|\.(?:nan|NaN|NAN))$"),
+    list("-+0123456789."))
 
 
 def prune(value):
@@ -46,10 +71,10 @@ def replace_localhost(node, domain):
 def main():
     base_path, override_path, out_path = sys.argv[1:4]
     with open(base_path, encoding="utf-8") as f:
-        base = yaml.safe_load(f)
+        base = yaml.load(f, Loader=Yaml12Loader)
     with open(override_path, encoding="utf-8") as f:
         text = string.Template(f.read()).substitute(os.environ)
-    merge(base, yaml.safe_load(text) or {})
+    merge(base, yaml.load(text, Loader=Yaml12Loader) or {})
     base = replace_localhost(base, os.environ["DOMAIN"])
     oidc = base.get("oidcLogin")
     if isinstance(oidc, dict):
