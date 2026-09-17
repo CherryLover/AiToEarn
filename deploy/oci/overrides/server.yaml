@@ -1,0 +1,28 @@
+# 合并进 project/aitoearn-backend/apps/aitoearn-server/config/config.yaml
+# 形如 $${DOMAIN} 的变量来自服务器上的 .env；值为空的项保留官方默认
+appDomain: ${DOMAIN}
+auth:
+  secret: ${JWT_SECRET}
+  internalToken: ${INTERNAL_TOKEN}
+redis:
+  password: ${REDIS_PASSWORD}
+mongodb:
+  uri: mongodb://admin:${MONGO_PASSWORD}@mongodb:27017/?authSource=admin&directConnection=true
+redlock:
+  redis:
+    password: ${REDIS_PASSWORD}
+assets:
+  accessKeyId: ${RUSTFS_ACCESS_KEY}
+  secretAccessKey: ${RUSTFS_SECRET_KEY}
+  cdnEndpoint: https://${DOMAIN}/oss
+  publicEndpoint: https://${OSS_DOMAIN}
+aiClient:
+  token: ${INTERNAL_TOKEN}
+channel:
+  channelDb:
+    uri: mongodb://admin:${MONGO_PASSWORD}@mongodb:27017/?authSource=admin&directConnection=true
+  shortLink:
+    baseUrl: https://${DOMAIN}/api/shortLink/
+relay:
+  apiKey: ${RELAY_API_KEY}
+  callbackUrl: https://${DOMAIN}/api/v2/channels/relay/callback

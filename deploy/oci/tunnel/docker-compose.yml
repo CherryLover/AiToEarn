@@ -1,0 +1,12 @@
+# Cloudflare 隧道：把本机 nginx 发布成 pub.flyooo.uk / pub-oss.flyooo.uk
+# 服务器上放在 /opt/stack/aitoearn-tunnel/，credentials.json 不进仓库（属主必须是 65532）
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: aitoearn-tunnel
+    restart: unless-stopped
+    network_mode: host          # 要连 127.0.0.1 上的 nginx
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./config.yml:/etc/cloudflared/config.yml:ro
+      - ./credentials.json:/etc/cloudflared/credentials.json:ro

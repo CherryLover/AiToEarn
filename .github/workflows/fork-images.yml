@@ -1,0 +1,174 @@
+# fork 自己的镜像构建：推到 ghcr.io/cherrylover/aitoearn-*，只打 arm64（OCI 是 ARM 机器）
+# 官方的 backend-build / web-build 推官方 Docker Hub，在 fork 里已停用
+name: Fork Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'project/aitoearn-backend/**'
+      - 'project/aitoearn-web/**'
+      - '.github/workflows/fork-images.yml'
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: '要构建的应用，逗号分隔：aitoearn-server,aitoearn-ai,aitoearn-web；留空构建全部'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: fork-images-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_PREFIX: ghcr.io/cherrylover
+  BACKEND_DIR: project/aitoearn-backend
+  WEB_DIR: project/aitoearn-web
+  NX_NO_CLOUD: true
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      backend_apps: ${{ steps.plan.outputs.backend_apps }}
+      build_web: ${{ steps.plan.outputs.build_web }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            backend:
+              - 'project/aitoearn-backend/**'
+            web:
+              - 'project/aitoearn-web/**'
+            workflow:
+              - '.github/workflows/fork-images.yml'
+
+      - id: plan
+        run: |
+          VERSION="$(date -u +%Y%m%d)-$(git rev-parse --short=8 HEAD)"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            APPS="${{ inputs.apps }}"
+            [ -z "$APPS" ] && APPS="aitoearn-server,aitoearn-ai,aitoearn-web"
+          else
+            APPS=""
+            if [ "${{ steps.changes.outputs.backend }}" = "true" ] || [ "${{ steps.changes.outputs.workflow }}" = "true" ]; then
+              APPS="aitoearn-server,aitoearn-ai"
+            fi
+            if [ "${{ steps.changes.outputs.web }}" = "true" ] || [ "${{ steps.changes.outputs.workflow }}" = "true" ]; then
+              APPS="${APPS:+$APPS,}aitoearn-web"
+            fi
+          fi
+          BACKEND=$(echo "$APPS" | tr ',' '\n' | grep -E '^aitoearn-(server|ai)$' | jq -R . | jq -cs .)
+          WEB=false
+          echo "$APPS" | tr ',' '\n' | grep -qx aitoearn-web && WEB=true
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "backend_apps=$BACKEND" >> "$GITHUB_OUTPUT"
+          echo "build_web=$WEB" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION backend=$BACKEND web=$WEB"
+
+  backend:
+    needs: plan
+    if: needs.plan.outputs.backend_apps != '[]'
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.plan.outputs.backend_apps) }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: ${{ env.BACKEND_DIR }}/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Build app
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: pnpm nx run ${{ matrix.app }}:build
+
+      - name: Prepare Docker context
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: pnpm nx run ${{ matrix.app }}:docker-context
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.BACKEND_DIR }}/tmp/docker-context
+          file: ${{ env.BACKEND_DIR }}/tmp/docker-context/Dockerfile
+          platforms: linux/arm64
+          build-args: |
+            APP_NAME=${{ matrix.app }}
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:${{ needs.plan.outputs.version }}
+            ${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          push: true
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+          provenance: false
+          sbom: false
+
+      - name: Summary
+        run: echo "- \`${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:${{ needs.plan.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  web:
+    needs: plan
+    if: needs.plan.outputs.build_web == 'true'
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.WEB_DIR }}
+          file: ${{ env.WEB_DIR }}/Dockerfile
+          platforms: linux/arm64
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/aitoearn-web:${{ needs.plan.outputs.version }}
+            ${{ env.IMAGE_PREFIX }}/aitoearn-web:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          push: true
+          cache-from: type=gha,scope=aitoearn-web
+          cache-to: type=gha,mode=max,scope=aitoearn-web
+          provenance: false
+          sbom: false
+
+      - name: Summary
+        run: echo "- \`${{ env.IMAGE_PREFIX }}/aitoearn-web:${{ needs.plan.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
