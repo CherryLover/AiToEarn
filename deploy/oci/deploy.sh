@@ -48,6 +48,8 @@ python3 repo/deploy/oci/render_config.py "$BACKEND/aitoearn-ai/config/config.yam
 
 echo "==> 数据目录 $DATA_DIR"
 sudo mkdir -p "$DATA_DIR"/{mongodb/db,mongodb/configdb,redis,rustfs}
+# rustfs 镜像以 uid 10001 运行，数据目录要归它，否则启动报 Permission denied
+sudo chown 10001:10001 "$DATA_DIR/rustfs"
 
 echo "==> 拉镜像并启动（$AITOEARN_TAG）"
 "${COMPOSE[@]}" pull --quiet
