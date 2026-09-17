@@ -55,9 +55,11 @@ echo "==> 拉镜像并启动（$AITOEARN_TAG）"
 "${COMPOSE[@]}" pull --quiet
 # 基础服务：配置没变就不动
 "${COMPOSE[@]}" up -d --remove-orphans mongodb mongodb-rs-init redis rustfs rustfs-init
-# 应用服务每次都重建：配置和 nginx.conf 是单文件挂载，重新生成/切换 git 版本会换掉文件，
-# 不重建的话容器里看到的还是旧文件
-"${COMPOSE[@]}" up -d --force-recreate aitoearn-ai aitoearn-server aitoearn-web nginx
+# 应用服务每次都先删再建：配置和 nginx.conf 是单文件挂载，重新生成/切换 git 版本会换掉文件，
+# 不重建的话容器里看到的还是旧文件。不用 --force-recreate：旧容器不健康时 compose 会先卡在依赖检查上
+APPS=(aitoearn-ai aitoearn-server aitoearn-web nginx)
+"${COMPOSE[@]}" rm --stop --force "${APPS[@]}"
+"${COMPOSE[@]}" up -d "${APPS[@]}"
 
 echo "==> 等健康检查"
 for i in $(seq 1 60); do
