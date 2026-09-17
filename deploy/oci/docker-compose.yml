@@ -77,7 +77,7 @@ services:
       start_period: 30s
 
   rustfs-init:
-    image: minio/mc:latest
+    image: quay.io/minio/mc:latest  # Docker Hub 上的 minio/mc 已经拉不到
     container_name: aitoearn-rustfs-init
     depends_on:
       rustfs:
