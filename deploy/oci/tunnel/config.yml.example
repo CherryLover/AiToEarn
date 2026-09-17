@@ -1,8 +1,0 @@
-tunnel: <隧道 ID>
-credentials-file: /etc/cloudflared/credentials.json
-ingress:
-  - hostname: pub.flyooo.uk
-    service: http://127.0.0.1:18180
-  - hostname: pub-oss.flyooo.uk
-    service: http://127.0.0.1:19180
-  - service: http_status:404

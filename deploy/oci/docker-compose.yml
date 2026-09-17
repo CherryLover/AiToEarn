@@ -1,7 +1,8 @@
 # OCI 部署用的 compose。和仓库根目录的官方 docker-compose.yml 相比：
 # - 应用镜像用 fork 自己在 GitHub Actions 构建的 ghcr.io/cherrylover/aitoearn-*，钉死版本（AITOEARN_TAG）
 # - 所有密码从 .env 读，不用默认值
-# - 数据库、缓存、存储都不映射宿主机端口；只有 nginx 绑在 127.0.0.1 上，由 Cloudflare 隧道接进来
+# - 数据库、缓存、存储都不映射宿主机端口；nginx 由服务器上的 Traefik 接入（pub / pub-oss 两个域名），另绑 127.0.0.1 端口给本机检查
+# - 不再用官方的自动登录：网页不带任何凭证，登录走后台的 Pocket ID（OIDC）接口；因此也没有 aitoearn-init
 # - 数据放在数据盘（DATA_DIR）
 #
 # 用法见同目录 README.md。项目目录是服务器上的 /opt/stack/aitoearn，相对路径都相对它。
@@ -87,26 +88,6 @@ services:
     entrypoint: ["/bin/sh", "-c", "mc alias set rustfs http://rustfs.local:9000 \"$${RUSTFS_ACCESS_KEY}\" \"$${RUSTFS_SECRET_KEY}\" && mc mb rustfs/aitoearn --ignore-existing && mc anonymous set download rustfs/aitoearn"]
     restart: "no"
 
-  # 建默认管理员并生成网页自动登录用的 token
-  aitoearn-init:
-    image: node:24-alpine
-    container_name: aitoearn-init
-    restart: "no"
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    volumes:
-      - ./repo/scripts/init.mjs:/app/init.mjs:ro
-      - ./repo/scripts/init-package.json:/app/package.json:ro
-      - ${DATA_DIR:?}/init:/data/init
-    working_dir: /app
-    environment:
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:?}@mongodb:27017
-      JWT_SECRET: ${JWT_SECRET:?}
-      DB_NAME: aitoearn
-      AUTO_LOGIN_TOKEN_PATH: /data/init/token.txt
-    entrypoint: /bin/sh -c "npm install --omit=dev 2>/dev/null && node init.mjs"
-
   aitoearn-ai:
     image: ghcr.io/cherrylover/aitoearn-ai:${AITOEARN_TAG:?}
     container_name: aitoearn-ai
@@ -152,11 +133,6 @@ services:
     depends_on:
       aitoearn-server:
         condition: service_healthy
-      aitoearn-init:
-        condition: service_completed_successfully
-    volumes:
-      - ${DATA_DIR:?}/init:/data/init:ro
-    command: ["/bin/sh", "-c", "AUTO_LOGIN_TOKEN=$$(cat /data/init/token.txt 2>/dev/null || true); if [ -z \"$$AUTO_LOGIN_TOKEN\" ]; then echo 'AUTO_LOGIN_TOKEN is missing. Check the aitoearn-init container logs.' >&2; exit 1; fi; export AUTO_LOGIN_TOKEN; exec node server.js"]
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: 1
@@ -179,11 +155,39 @@ services:
       aitoearn-ai:
         condition: service_healthy
     ports:
-      # 只绑本机，外网进来只能走 Cloudflare 隧道
+      # 只给本机检查用；对外由 Traefik 接入
       - "127.0.0.1:${WEB_PORT:?}:80"
       - "127.0.0.1:${OSS_PORT:?}:9000"
     volumes:
       - ./repo/deploy/oci/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - default
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      # 主站：网页 + /api + /oss
+      - traefik.http.routers.aitoearn.rule=Host(`${DOMAIN:?}`)
+      - traefik.http.routers.aitoearn.entrypoints=websecure
+      - traefik.http.routers.aitoearn.tls=true
+      - traefik.http.routers.aitoearn.tls.certresolver=letsencrypt
+      - traefik.http.routers.aitoearn.service=aitoearn
+      - traefik.http.routers.aitoearn-http.rule=Host(`${DOMAIN:?}`)
+      - traefik.http.routers.aitoearn-http.entrypoints=web
+      - traefik.http.routers.aitoearn-http.middlewares=redirect-to-https@file
+      - traefik.http.routers.aitoearn-http.service=aitoearn
+      - traefik.http.services.aitoearn.loadbalancer.server.port=80
+      # 存储直传：浏览器拿预签名地址直接往这里 PUT
+      - traefik.http.routers.aitoearn-oss.rule=Host(`${OSS_DOMAIN:?}`)
+      - traefik.http.routers.aitoearn-oss.entrypoints=websecure
+      - traefik.http.routers.aitoearn-oss.tls=true
+      - traefik.http.routers.aitoearn-oss.tls.certresolver=letsencrypt
+      - traefik.http.routers.aitoearn-oss.service=aitoearn-oss
+      - traefik.http.routers.aitoearn-oss-http.rule=Host(`${OSS_DOMAIN:?}`)
+      - traefik.http.routers.aitoearn-oss-http.entrypoints=web
+      - traefik.http.routers.aitoearn-oss-http.middlewares=redirect-to-https@file
+      - traefik.http.routers.aitoearn-oss-http.service=aitoearn-oss
+      - traefik.http.services.aitoearn-oss.loadbalancer.server.port=9000
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/_nhealth"]
       interval: 10s
@@ -194,3 +198,5 @@ services:
 networks:
   default:
     name: aitoearn
+  proxy:
+    external: true

@@ -26,3 +26,10 @@ channel:
 relay:
   apiKey: ${RELAY_API_KEY}
   callbackUrl: https://${DOMAIN}/api/v2/channels/relay/callback
+oidcLogin:
+  issuer: ${OIDC_ISSUER}
+  clientId: ${OIDC_CLIENT_ID}
+  clientSecret: ${OIDC_CLIENT_SECRET}
+  redirectUri: https://${DOMAIN}/api/auth/oidc/callback
+  webBaseUrl: https://${DOMAIN}
+  allowedEmails: "${OIDC_ALLOWED_EMAILS}"

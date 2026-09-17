@@ -23,6 +23,10 @@ export class UserRepository extends BaseRepository<User> {
     return userInfo as LeanDoc<User> | null
   }
 
+  async getByMail(mail: string): Promise<LeanDoc<User> | null> {
+    return await this.model.findOne({ mail, isDelete: { $ne: true } }).lean({ virtuals: true }).exec() as LeanDoc<User> | null
+  }
+
   async updateAiConfigById(userId: string, aiConfig: Partial<UserAiInfo>): Promise<boolean> {
     const res = await this.model.updateOne(
       { _id: userId },

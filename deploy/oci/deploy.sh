@@ -47,7 +47,7 @@ python3 repo/deploy/oci/render_config.py "$BACKEND/aitoearn-server/config/config
 python3 repo/deploy/oci/render_config.py "$BACKEND/aitoearn-ai/config/config.yaml" repo/deploy/oci/overrides/ai.yaml config/ai.yaml
 
 echo "==> 数据目录 $DATA_DIR"
-sudo mkdir -p "$DATA_DIR"/{mongodb/db,mongodb/configdb,redis,rustfs,init}
+sudo mkdir -p "$DATA_DIR"/{mongodb/db,mongodb/configdb,redis,rustfs}
 
 echo "==> 拉镜像并启动（$AITOEARN_TAG）"
 "${COMPOSE[@]}" pull --quiet
@@ -68,4 +68,4 @@ fi
 
 code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${WEB_PORT}/_nhealth")
 [ "$code" = "200" ] || { echo "✗ nginx 本机检查返回 $code" >&2; exit 1; }
-echo "==> 好了：本机 http://127.0.0.1:${WEB_PORT}（对外经隧道 https://${DOMAIN}）"
+echo "==> 好了：本机 http://127.0.0.1:${WEB_PORT}，对外 https://${DOMAIN}"

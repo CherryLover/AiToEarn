@@ -18,6 +18,7 @@ import { ChannelsMcpModule } from './core/channels/mcp/channels.mcp.module'
 import { RelayModule } from './core/channels/relay/relay.module'
 import { ContentMcpModule } from './core/content/content-mcp.module'
 import { ContentModule } from './core/content/content.module'
+import { OidcLoginModule } from './core/oidc-login/oidc-login.module'
 import { PublishModule } from './core/publish-record/publish-record.module'
 import { ShortLinkModule } from './core/short-link/short-link.module'
 import { UnifiedMcpModule } from './core/unified-mcp/unified-mcp.module'
@@ -67,6 +68,7 @@ import { UserModule } from './core/user/user.module'
     AitoearnAiClientModule.forRoot(config.aiClient),
     AssetsModule,
     UserModule,
+    OidcLoginModule,
     ContentModule,
     ChannelsModule,
     PublishModule,

@@ -32,5 +32,19 @@
   "termsOfService": "Terms of Service",
   "and": "and",
   "privacyPolicy": "Privacy Policy",
-  "newUserPromotion": "New users get 14 days free membership!"
+  "newUserPromotion": "New users get 14 days free membership!",
+  "oidcLoginButton": "Sign in with Pocket ID",
+  "oidcLoggingIn": "Signing in…",
+  "oidcErrors": {
+    "default": "Sign-in failed. Please try again.",
+    "oidc_disabled": "Sign-in is not configured on the server.",
+    "email_not_allowed": "This account is not allowed.",
+    "user_disabled": "This account has been disabled.",
+    "state_expired": "Sign-in timed out. Please try again.",
+    "state_mismatch": "Sign-in check failed. Please try again.",
+    "idp_error": "Sign-in was cancelled or failed.",
+    "token_missing": "No sign-in token received. Please try again.",
+    "email_missing": "The identity provider did not return an email.",
+    "email_unverified": "Your email is not verified."
+  }
 }

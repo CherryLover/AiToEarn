@@ -32,5 +32,19 @@
   "termsOfService": "服务条款",
   "and": "和",
   "privacyPolicy": "隐私政策",
-  "newUserPromotion": "新用户登录就送14天会员，免费用！"
+  "newUserPromotion": "新用户登录就送14天会员，免费用！",
+  "oidcLoginButton": "使用 Pocket ID 登录",
+  "oidcLoggingIn": "正在登录…",
+  "oidcErrors": {
+    "default": "登录失败，请重试",
+    "oidc_disabled": "服务器还没配置登录",
+    "email_not_allowed": "这个账号不在允许名单里",
+    "user_disabled": "这个账号已被停用",
+    "state_expired": "登录超时，请重新登录",
+    "state_mismatch": "登录校验失败，请重新登录",
+    "idp_error": "身份验证被取消或失败",
+    "token_missing": "没有拿到登录凭证，请重新登录",
+    "email_missing": "身份提供方没有返回邮箱",
+    "email_unverified": "邮箱还没验证"
+  }
 }

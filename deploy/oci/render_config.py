@@ -4,6 +4,7 @@
 - overrides 里的 ${VAR} 从环境变量取（deploy.sh 会先加载 .env），缺变量直接报错
 - override 的值是空字符串时跳过，保留官方默认值（比如还没给 AI 的 Key）
 - server 配置里所有 https://localhost/ 开头的地址换成 https://$DOMAIN/（各平台授权回调等）
+- oidcLogin 没填 clientId 时整段去掉（否则后台配置校验不过、起不来；此时只是暂时不能登录）；allowedEmails 写成逗号分隔字符串，这里拆成列表
 - 输出文件权限 600，里面有密码
 
 用法：render_config.py <官方配置> <override 模板> <输出文件>
@@ -15,6 +16,13 @@ import sys
 import yaml
 
 
+def prune(value):
+    """去掉空字符串和空值（YAML 里 `key: ` 会解析成 None）"""
+    if isinstance(value, dict):
+        return {k: prune(v) for k, v in value.items() if v != "" and v is not None}
+    return value
+
+
 def merge(base, override):
     for key, value in override.items():
         if isinstance(value, dict) and isinstance(base.get(key), dict):
@@ -22,7 +30,7 @@ def merge(base, override):
         elif value == "" or value is None:
             continue
         else:
-            base[key] = value
+            base[key] = prune(value)
 
 
 def replace_localhost(node, domain):
@@ -43,6 +51,12 @@ def main():
         text = string.Template(f.read()).substitute(os.environ)
     merge(base, yaml.safe_load(text) or {})
     base = replace_localhost(base, os.environ["DOMAIN"])
+    oidc = base.get("oidcLogin")
+    if isinstance(oidc, dict):
+        if not oidc.get("clientId"):
+            del base["oidcLogin"]
+        elif isinstance(oidc.get("allowedEmails"), str):
+            oidc["allowedEmails"] = [m.strip() for m in oidc["allowedEmails"].split(",") if m.strip()]
 
     tmp = out_path + ".tmp"
     fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)

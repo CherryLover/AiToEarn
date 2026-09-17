@@ -3,10 +3,8 @@
 把 fork 版 AiToEarn 部署到 OCI 免费 ARM 机（Ubuntu 24.04 arm64）。
 
 - 对外地址：https://pub.flyooo.uk （网页 + `/api` + `/oss`），浏览器直传文件用 https://pub-oss.flyooo.uk
-- 入口：Cloudflare 隧道 → 本机 `127.0.0.1:18180`（nginx 网页）/ `127.0.0.1:19180`（nginx 存储直传）。服务器不开任何新端口
-- 登录：Cloudflare Access + Pocket ID 挡住网页；`/api`、`/oss` 和存储域名放行（插件和平台要直接访问）
-
-> ⚠️ 官方网页的自动登录会把一个 100 年有效的管理员 token 写进每个访客拿到的页面。**Access 没配好之前不要接通隧道。**
+- 入口：服务器上现有的 Traefik（`proxy` 网络，Let's Encrypt 证书）接到 nginx 容器；`pub` 走 Cloudflare 橙云，`pub-oss` 走灰云（避开 Cloudflare 单次 100MB 上传限制）
+- 登录：代码里接了 Pocket ID（OIDC），见 `project/aitoearn-backend/apps/aitoearn-server/src/core/oidc-login/`。官方开源版的自动登录（把 100 年有效的管理员凭证写进每个访客拿到的页面）已经不用，网页可以直接公开
 
 ## 镜像从哪来
 
@@ -25,8 +23,7 @@
   repo/        fork 的仓库副本（deploy.sh 切到指定引用）
   .env         密码、域名、镜像标签（600，照 .env.example 填）
   config/      deploy.sh 渲染出的 server.yaml / ai.yaml（600）
-/data/aitoearn/  mongodb / redis / rustfs / init 数据
-/opt/stack/aitoearn-tunnel/  cloudflared（隧道 oci-aitoearn）
+/data/aitoearn/  mongodb / redis / rustfs 数据
 ```
 
 ## 部署 / 更新
@@ -38,7 +35,7 @@
 
 脚本会：仓库切到 `origin/main` → 写入镜像标签 → 渲染配置 → 拉镜像 → `docker compose up -d` → 等健康检查。
 
-配置合并规则（`render_config.py`）：官方 `config.yaml` 为底，`overrides/*.yaml` 覆盖；override 值为空的项保留官方默认；server 配置里 `https://localhost/` 开头的地址统一换成 `https://$DOMAIN/`。
+配置合并规则（`render_config.py`）：官方 `config.yaml` 为底，`overrides/*.yaml` 覆盖；override 值为空的项保留官方默认；server 配置里 `https://localhost/` 开头的地址统一换成 `https://$DOMAIN/`；没填 `OIDC_CLIENT_ID` 时不写登录配置（服务能起，但登录不了）。
 
 ## 常用
 
@@ -52,3 +49,9 @@ $C logs -f aitoearn-server
 ## 插件
 
 插件「自定义配置」填：主页 `https://pub.flyooo.uk`、API `https://pub.flyooo.uk/api`、OSS `https://pub.flyooo.uk/oss`；「允许注入的域名」加 `https://pub.flyooo.uk/`。
+
+## 登录（Pocket ID）
+
+- Pocket ID 客户端回调地址：`https://pub.flyooo.uk/api/auth/oidc/callback`
+- `.env` 填 `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET`，`OIDC_ALLOWED_EMAILS` 是允许登录的邮箱（逗号分隔）
+- 名单里的邮箱第一次登录自动建号；签发的登录凭证默认 30 天有效，格式和官方一致，插件照常读取

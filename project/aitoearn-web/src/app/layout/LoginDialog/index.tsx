@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import { memo, useCallback } from 'react'
 import { useShallow } from 'zustand/shallow'
 
-import { EmailLoginForm } from '@/app/[lng]/auth/login/components/LoginContent/EmailLoginForm'
+import { OidcLoginButton } from '@/app/[lng]/auth/login/components/LoginContent/OidcLoginButton'
 import { useTransClient } from '@/app/i18n/client'
 import logo from '@/assets/images/logo.png'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
@@ -35,10 +35,8 @@ const LoginDialogContent = memo(() => {
   const router = useRouter()
   const { t } = useTransClient('login')
   const isMobile = useIsMobile()
-  const { redirectUrl, inviteCode, fromGuard, closeLoginDialog } = useLoginDialogStore(
+  const { fromGuard, closeLoginDialog } = useLoginDialogStore(
     useShallow(state => ({
-      redirectUrl: state.redirectUrl,
-      inviteCode: state.inviteCode,
       fromGuard: state.fromGuard,
       closeLoginDialog: state.closeLoginDialog,
     })),
@@ -52,16 +50,6 @@ const LoginDialogContent = memo(() => {
       }
     }
   }, [closeLoginDialog, fromGuard, router])
-
-  const handleLoginSuccess = useCallback(() => {
-    closeLoginDialog()
-    if (fromGuard) {
-      window.location.reload()
-    }
-    else if (redirectUrl) {
-      router.push(redirectUrl)
-    }
-  }, [closeLoginDialog, fromGuard, redirectUrl, router])
 
   return (
     <Dialog open onOpenChange={handleOpenChange}>
@@ -89,11 +77,7 @@ const LoginDialogContent = memo(() => {
 
         {/* 登录表单 */}
         <div className="px-2">
-          <EmailLoginForm
-            onLoginSuccess={handleLoginSuccess}
-            redirectUrl={redirectUrl}
-            inviteCode={inviteCode}
-          />
+          <OidcLoginButton />
         </div>
 
         {/* 底部条款 */}

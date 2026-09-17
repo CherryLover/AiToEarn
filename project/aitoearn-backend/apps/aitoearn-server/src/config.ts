@@ -30,6 +30,17 @@ export const relayConfigSchema = z.object({
   callbackUrl: httpUrlSchema.describe('OAuth 回调完整地址，如 http://localhost:3000/api/v2/channels/relay/callback'),
 })
 
+export const oidcLoginConfigSchema = z.object({
+  issuer: httpUrlSchema.describe('OIDC 签发方地址，如 https://id.flyooo.uk'),
+  clientId: z.string().min(1).describe('OIDC 客户端 ID'),
+  clientSecret: z.string().default('').describe('OIDC 客户端密钥，公共客户端留空'),
+  redirectUri: httpUrlSchema.describe('回调完整地址，如 https://pub.flyooo.uk/api/auth/oidc/callback'),
+  webBaseUrl: httpUrlSchema.describe('网页地址，登录后跳回这里，如 https://pub.flyooo.uk'),
+  allowedEmails: z.array(z.string()).default([]).describe('允许登录的邮箱，不在名单里的一律拒绝'),
+  scopes: z.string().default('openid email profile'),
+  tokenExpiresIn: z.string().default('30d').describe('签发的登录凭证有效期'),
+})
+
 export const apiKeyConfigSchema = z.object({
   prefix: z.string().min(1).default('ai_'),
 }).default({ prefix: 'ai_' })
@@ -67,6 +78,7 @@ export const appConfigSchema = z.object({
   aiClient: aitoearnAiClientConfigSchema,
   channel: channelConfigSchema,
   relay: relayConfigSchema.optional(),
+  oidcLogin: oidcLoginConfigSchema.optional(),
 })
 
 export class AppConfig extends createZodDto(appConfigSchema) { }

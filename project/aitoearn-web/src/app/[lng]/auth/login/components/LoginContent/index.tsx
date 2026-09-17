@@ -1,6 +1,6 @@
 /**
  * LoginContent - 登录页面内容组件
- * 邮箱验证码登录
+ * 自部署版：只保留 Pocket ID（OIDC）登录
  */
 
 'use client'
@@ -15,7 +15,7 @@ import { useTransClient } from '@/app/i18n/client'
 import logo from '@/assets/images/logo.png'
 import { useUserStore } from '@/store/user'
 
-import { EmailLoginForm } from './EmailLoginForm'
+import { OidcLoginButton } from './OidcLoginButton'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 10 },
@@ -90,7 +90,7 @@ export default function LoginContent() {
           </div>
 
           {/* 登录表单 */}
-          <EmailLoginForm />
+          <OidcLoginButton />
         </motion.div>
 
         {/* 底部条款 */}
