@@ -14,6 +14,7 @@ import { AiAvailabilityModule } from './core/ai-availability'
 import { AiModule } from './core/ai/ai.module'
 import { DraftGenerationModule } from './core/draft-generation'
 import { InternalModule } from './core/internal'
+import { NotifyModule } from './core/notify/notify.module'
 
 @Module({
   imports: [
@@ -56,6 +57,8 @@ import { InternalModule } from './core/internal'
       },
     }),
     AssetsModule.forRoot(config.assets),
+    // @Global：放在业务模块前面，谁要推一条直接注入 NotifyService
+    NotifyModule,
     AiModule,
     AgentModule,
     InternalModule,

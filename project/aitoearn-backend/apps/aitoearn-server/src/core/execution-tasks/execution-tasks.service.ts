@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, Optional } from '@nestjs/common'
 import { AppException, ResponseCode, UserType } from '@yikart/common'
 import {
   ExecutionTask,
@@ -12,6 +12,7 @@ import {
 import { customAlphabet } from 'nanoid'
 import { config } from '../../config'
 import { DeviceDoc } from '../devices/devices.service'
+import { NotifyService } from '../notify/notify.service'
 import { DeviceWsGateway } from './device-ws.gateway'
 import { CreateEchoTaskDto, ReportTaskDto } from './execution-tasks.dto'
 import { parseTaskPayload, parseTaskResult } from './task-payloads'
@@ -51,6 +52,7 @@ export class ExecutionTasksService {
   constructor(
     private readonly executionTaskRepository: ExecutionTaskRepository,
     private readonly gateway: DeviceWsGateway,
+    @Optional() private readonly notifyService?: NotifyService,
   ) {}
 
   // ========== 建单 ==========
@@ -77,6 +79,7 @@ export class ExecutionTasksService {
     })
 
     this.notifyTaskAvailable(task)
+    this.notifyManualTaskPending(task)
     return task
   }
 
@@ -293,6 +296,33 @@ export class ExecutionTasksService {
       throw new AppException(ResponseCode.ExecutionTaskLeaseExpired)
 
     throw new AppException(ResponseCode.ExecutionTaskStatusInvalid)
+  }
+
+  /**
+   * manual 工单不进设备领取流程，会一直停在 pending 等人去平台发。
+   * 建单时推一条提醒，免得建完就忘了（contract-stage4 第二节，第二个推送点）。
+   *
+   * 推送失败、没配推送，一律不影响建单。
+   *
+   * 同步抛出走 try/catch，异步失败走 `.catch`：两条路都得堵上。
+   * 只堵同步那条的话，推送实现哪天变成会 reject 的，这里就漏出一次未处理的 Promise 拒绝，
+   * Node 默认会让整个进程退出——建单本身明明已经成功了。
+   */
+  private notifyManualTaskPending(task: ExecutionTaskDoc) {
+    if (task.mode !== ExecutionTaskMode.MANUAL || task.type !== ExecutionTaskType.PUBLISH)
+      return
+
+    try {
+      const payload = task.payload as { platform?: string, snapshot?: { title?: string } } | undefined
+
+      void this.notifyService?.notifyManualPublishPending({
+        platform: payload?.platform,
+        title: payload?.snapshot?.title,
+      })?.catch((error: Error) => this.logger.warn(error, '待人工发布推送失败'))
+    }
+    catch (error) {
+      this.logger.warn(error, '待人工发布推送失败')
+    }
   }
 
   /** 催办：只有现在就能被领走的 auto 工单才值得推 */

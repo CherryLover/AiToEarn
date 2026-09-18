@@ -19,6 +19,7 @@ import { Project, ProjectSchema } from './project.schema'
 import { PublishDayInfo, PublishDayInfoSchema } from './publish-day-info.schema'
 import { PublishInfo, PublishInfoSchema } from './publish-info.schema'
 import { PublishRecord, PublishRecordSchema } from './publish-record.schema'
+import { PublishedPost, PublishedPostSchema } from './published-post.schema'
 import {
   User,
   UserSchema,
@@ -45,6 +46,7 @@ export * from './project.schema'
 export * from './publish-day-info.schema'
 export * from './publish-info.schema'
 export * from './publish-record.schema'
+export * from './published-post.schema'
 export * from './user.schema'
 
 export const schemas = [
@@ -70,4 +72,5 @@ export const schemas = [
   { name: Angle.name, schema: AngleSchema },
   { name: Device.name, schema: DeviceSchema },
   { name: ExecutionTask.name, schema: ExecutionTaskSchema },
+  { name: PublishedPost.name, schema: PublishedPostSchema },
 ] as const

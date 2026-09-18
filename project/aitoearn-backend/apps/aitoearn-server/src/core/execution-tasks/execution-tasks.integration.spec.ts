@@ -720,6 +720,30 @@ describe('执行端链路 · 谁能领到什么', () => {
     expect(completed.status).toBe(ExecutionTaskStatus.SUCCEEDED)
   })
 
+  it('取消过的 manual 工单还能回填成功：先标发失败、后来又真发出去了', async () => {
+    const created = await createEchoTask(harness, { mode: ExecutionTaskMode.MANUAL })
+    await harness.adminController.cancel({ id: USER_ID } as never, created.id)
+
+    const completed = await harness.adminController.completeManual(
+      { id: USER_ID } as never,
+      created.id,
+      { result: { message: '其实发出去了', deviceTime: new Date() } } as never,
+    )
+
+    // 卡在 cancelled 的话，这条帖子在阶段 5 的统计里就没有工单了（骨架第六节）
+    expect(completed.status).toBe(ExecutionTaskStatus.SUCCEEDED)
+  })
+
+  it('已经回填成功的 manual 工单不能再回填一次', async () => {
+    const created = await createEchoTask(harness, { mode: ExecutionTaskMode.MANUAL })
+    const result = { result: { message: '发完了', deviceTime: new Date() } } as never
+    await harness.adminController.completeManual({ id: USER_ID } as never, created.id, result)
+
+    await expect(harness.adminController.completeManual({ id: USER_ID } as never, created.id, result))
+      .rejects
+      .toMatchObject({ code: ResponseCode.ExecutionTaskStatusInvalid })
+  })
+
   it('auto 的工单不能走人工回填', async () => {
     const created = await createEchoTask(harness)
 

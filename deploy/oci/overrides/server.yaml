@@ -34,6 +34,15 @@ oidcLogin:
   webBaseUrl: https://${DOMAIN}
   allowedEmails: "${OIDC_ALLOWED_EMAILS}"
 
+# Bark 推送（阶段 4）。仓库里只有占位，真实地址和 key 只写在服务器的 .env。
+# 四个变量必须在 .env 里存在（可以留空），否则 render_config.py 渲染时直接 KeyError。
+# 留空 = 静默关掉推送，服务照常起。要真推，NOTIFY_ENABLED 得是 true，地址和 key 都要填。
+notify:
+  enabled: ${NOTIFY_ENABLED}
+  barkUrl: ${NOTIFY_BARK_URL}
+  barkKey: ${NOTIFY_BARK_KEY}
+  group: ${NOTIFY_GROUP}
+
 # 项目物料根目录（容器内路径），对应 docker-compose.yml 里 $${DATA_DIR}/projects 的挂载点
 projects:
   root: /data/projects

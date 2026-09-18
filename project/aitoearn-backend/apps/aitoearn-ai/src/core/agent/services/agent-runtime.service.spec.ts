@@ -1,15 +1,17 @@
-import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Options } from '@anthropic-ai/claude-agent-sdk'
 import { Test } from '@nestjs/testing'
 import { AppException, ResponseCode } from '@yikart/common'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { NotifyService } from '../../notify/notify.service'
 import { AgentRuntimeService } from './agent-runtime.service'
 import { ProjectWorkspaceService } from './project-workspace.service'
 
-const { projectsConfig, queryMock, autoStubModule } = vi.hoisted(() => ({
+const { projectsConfig, notifyConfig, queryMock, autoStubModule } = vi.hoisted(() => ({
   projectsConfig: { root: '' },
+  notifyConfig: { enabled: false, barkUrl: '', barkKey: '', group: 'AiToEarn' },
   queryMock: vi.fn(),
   /**
    * 这些包（mongodb / assets）在测试环境下没法真加载：schema 上的 @Prop 拿不到类型元数据。
@@ -46,6 +48,7 @@ vi.mock('../../../config', async () => {
   return {
     config: {
       projects: projectsConfig,
+      notify: notifyConfig,
       agent: {
         models: ['claude-opus-4-6'],
         defaultModel: 'claude-opus-4-6',
@@ -267,6 +270,108 @@ describe('agentRuntimeService · 项目工作区', () => {
 
       expect(await callCanUseTool(options, 'WebFetch', input)).toEqual({ behavior: 'allow', updatedInput: input })
     })
+  })
+})
+
+describe('agentRuntimeService · 草稿完成推送', () => {
+  let tmpRoot: string
+  let root: string
+  let sendMock: ReturnType<typeof vi.fn>
+
+  /** 造一份草稿，并把目录时间戳设成指定时刻 */
+  function writeDraft(name: string, at: Date) {
+    const dir = join(root, 'demo', 'drafts', name)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'content.md'), '---\ntitle: 导出藏得太深\nplatform: xhs\nangle: export-friction\n---\n\n正文')
+    writeFileSync(join(dir, 'meta.json'), JSON.stringify({ angleSlug: 'export-friction', platform: 'xhs' }))
+    const seconds = at.getTime() / 1000
+    utimesSync(dir, seconds, seconds)
+  }
+
+  async function runHook(context: { projectName?: string, startedAt: Date }) {
+    const notifyStub = {
+      get enabled() {
+        return notifyConfig.enabled
+      },
+      notifyDraftReady: sendMock,
+    }
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        AgentRuntimeService,
+        ProjectWorkspaceService,
+        { provide: NotifyService, useValue: notifyStub },
+      ],
+    })
+      .useMocker(() => ({}))
+      .compile()
+
+    const service = moduleRef.get(AgentRuntimeService) as unknown as {
+      notifyDraftReady: (context?: { projectName?: string, startedAt: Date }) => Promise<void>
+    }
+
+    await service.notifyDraftReady(context)
+  }
+
+  beforeEach(() => {
+    tmpRoot = mkdtempSync(join(tmpdir(), 'aitoearn-notify-'))
+    root = join(tmpRoot, 'projects')
+    mkdirSync(join(root, 'demo', 'drafts'), { recursive: true })
+    projectsConfig.root = root
+    notifyConfig.enabled = true
+    sendMock = vi.fn().mockResolvedValue(true)
+  })
+
+  afterEach(() => {
+    rmSync(tmpRoot, { recursive: true, force: true })
+    notifyConfig.enabled = false
+  })
+
+  it('这一轮写出了草稿就推一条，方向、平台、标题都带上', async () => {
+    const startedAt = new Date(Date.now() - 60_000)
+    writeDraft('2026-09-18-xhs-export-friction', new Date())
+
+    await runHook({ projectName: 'demo', startedAt })
+
+    expect(sendMock).toHaveBeenCalledWith({
+      projectName: 'demo',
+      draftTitle: '导出藏得太深',
+      angle: 'export-friction',
+      platform: 'xhs',
+      draftCount: 1,
+    })
+  })
+
+  it('这一轮没写草稿就不推：提炼方向、闲聊不会误报', async () => {
+    writeDraft('2026-09-01-xhs-old', new Date(Date.now() - 86_400_000))
+
+    await runHook({ projectName: 'demo', startedAt: new Date() })
+
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('不带 projectName 的任务（现有视频生成链路）一概不推', async () => {
+    writeDraft('2026-09-18-xhs-export-friction', new Date())
+
+    await runHook({ startedAt: new Date(Date.now() - 60_000) })
+
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('没配推送就静默跳过，连草稿目录都不去读', async () => {
+    notifyConfig.enabled = false
+    writeDraft('2026-09-18-xhs-export-friction', new Date())
+
+    await runHook({ projectName: 'demo', startedAt: new Date(Date.now() - 60_000) })
+
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('项目目录不存在也不抛错，主流程不受影响', async () => {
+    await expect(runHook({ projectName: 'nosuch', startedAt: new Date(Date.now() - 60_000) }))
+      .resolves
+      .toBeUndefined()
+    expect(sendMock).not.toHaveBeenCalled()
   })
 })
 

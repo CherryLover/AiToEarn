@@ -40,6 +40,8 @@ import { RedlockKey } from '../../../common/enums'
 import { config } from '../../../config'
 import { AiAvailabilityService } from '../../ai-availability'
 import { RelayMediaResolverService } from '../../ai/relay-media'
+import { findDraftWrittenSince } from '../../notify/draft-summary'
+import { NotifyService } from '../../notify/notify.service'
 import { ChannelsToolName, CLAUDE_CODE_ROUTER_PROVIDER_NAME, McpServerName, POLLING_TASK_AGENT_PROMPT, SKILL_ANALYZER_AGENT_PROMPT, SYSTEM_PROMPT } from '../agent.constants'
 import { ContentBlock, CreateContentGenerationTaskDto } from '../agent.dto'
 import { enhancePrompt, filterHeaders, normalizePrompt, sanitizeMessage, shouldFilterSyntheticMessage } from '../agent.utils'
@@ -92,6 +94,12 @@ export interface ClaudeQueryOptions {
 
 type TaskResult = z.infer<typeof ContentGenerationTaskResultUnionSchema>
 
+/** 草稿完成推送要的上下文：哪个项目、从什么时候开始算「新草稿」 */
+export interface DraftNotifyContext {
+  projectName?: string
+  startedAt: Date
+}
+
 export interface RuntimeRunningTaskInfo {
   taskId: string
   userId: string
@@ -123,6 +131,7 @@ export class AgentRuntimeService {
     private readonly subtitleMcp: SubtitleMcp,
     private readonly storageProvider: StorageProvider,
     private readonly projectWorkspace: ProjectWorkspaceService,
+    @Optional() private readonly notifyService?: NotifyService,
     @Optional() private readonly relayMediaResolver?: RelayMediaResolverService,
   ) {}
 
@@ -472,6 +481,8 @@ export class AgentRuntimeService {
     return from(this.initializeTask(userId, userType, dto, abortController, req)).pipe(
       mergeMap(({ taskId, sessionId: initialSessionId, abortController, mcpServers }) => {
         let sessionId = initialSessionId
+        // 任务开跑的时刻。收尾时靠它认出「这一轮新写出来的草稿」，避免把上一轮的旧草稿又推一遍
+        const taskStartedAt = new Date()
         let completionResolver: () => void
         const completionPromise = new Promise<void>((resolve) => {
           completionResolver = resolve
@@ -606,7 +617,10 @@ export class AgentRuntimeService {
               skip(1),
               filter(chunk => !shouldFilterSyntheticMessage(chunk)),
               concatMap(async (chunk) => {
-                return this.transformMessage(chunk, taskId, userId, userType, taskResult, sessionId)
+                return this.transformMessage(chunk, taskId, userId, userType, taskResult, sessionId, {
+                  projectName: dto.projectName,
+                  startedAt: taskStartedAt,
+                })
               }),
             )
 
@@ -836,6 +850,7 @@ export class AgentRuntimeService {
     userType: UserType,
     taskResult?: TaskResult,
     sessionId?: string,
+    notifyContext?: DraftNotifyContext,
   ): Promise<ContentGenerationTaskAgentChunkVo | ContentGenerationTaskErrorChunkVo> {
     if (chunk.type === 'result') {
       const { session_id, modelUsage, ...restChunk } = chunk
@@ -877,6 +892,9 @@ export class AgentRuntimeService {
           const finalStatus = hasRequiresAction ? ContentGenerationTaskStatus.RequiresAction : ContentGenerationTaskStatus.Completed
 
           void this.contentGenerateRepository.updateStatus(taskId, finalStatus)
+
+          // 任务跑完这一刻才知道有没有真写出草稿。推送不等它，也不让它影响这条消息的返回
+          void this.notifyDraftReady(notifyContext)
 
           return ContentGenerationTaskAgentChunkVo.create({
             type: this.getMessageType(chunk),
@@ -922,6 +940,42 @@ export class AgentRuntimeService {
       type: this.getMessageType(chunk),
       message: messageVo,
     })
+  }
+
+  /**
+   * 「AI 生成草稿完成」推送。
+   *
+   * 接在 Agent 任务跑完（result / success）这一刻：`transformMessage` 里把任务状态改成
+   * Completed / RequiresAction 的那个位置，是整条链路上唯一一次「这个任务干完了」的判定。
+   *
+   * 只有**这一轮真的往 `drafts/` 里写了东西**才推。提炼方向、闲聊这些同样带 projectName 的任务
+   * 不会误报；没配推送、读不到草稿目录、推送失败，一律安静退出，主流程一点感知都没有。
+   */
+  private async notifyDraftReady(context?: DraftNotifyContext): Promise<void> {
+    try {
+      const projectName = context?.projectName
+      if (!projectName || !this.notifyService?.enabled)
+        return
+
+      const projectDir = this.projectWorkspace.resolveProjectCwd(projectName)
+      // 扫草稿目录时把每个落点再过一遍项目隔离校验，跟 Agent 工具走的是同一把尺子
+      const draft = await findDraftWrittenSince(projectDir, context.startedAt, {
+        assertInside: candidate => this.projectWorkspace.assertPathInsideProject(projectDir, candidate),
+      })
+      if (!draft)
+        return
+
+      await this.notifyService.notifyDraftReady({
+        projectName,
+        draftTitle: draft.title ?? draft.dirName,
+        angle: draft.angle,
+        platform: draft.platform,
+        draftCount: draft.count,
+      })
+    }
+    catch (error) {
+      this.logger.warn(error, '草稿完成推送失败')
+    }
   }
 
   private buildSystemPromptContent(): ContentBlockParam[] {

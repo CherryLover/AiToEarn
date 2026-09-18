@@ -11,6 +11,7 @@ import { grokConfigSchema } from './core/ai/libs/grok'
 import { openaiConfigSchema } from './core/ai/libs/openai'
 import { relayConfigSchema } from './core/ai/libs/relay/relay.config'
 import { volcengineConfigSchema } from './core/ai/libs/volcengine'
+import { notifyConfigSchema } from './core/notify/notify.config'
 
 const videoModelInputConstraintSchema = z.object({
   maxCount: z.number().int().min(0).optional(),
@@ -218,6 +219,7 @@ export const appConfigSchema = z.object({
   ai: aiConfigSchema,
   agent: agentConfigSchema,
   projects: projectsConfigSchema,
+  notify: notifyConfigSchema,
 })
 
 export class AppConfig extends createZodDto(appConfigSchema) { }

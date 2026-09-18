@@ -266,14 +266,22 @@ export class ExecutionTaskRepository extends BaseRepository<ExecutionTask> {
     )
   }
 
-  /** 人工回填手动工单的结果，直接转成功 */
+  /**
+   * 人工回填手动工单的结果，直接转成功。
+   *
+   * 为什么连 `cancelled` 也认：手动发布允许「先标发失败（工单跟着取消），后来又真发出去了」
+   * 这个顺序——发布记录本来就能从 failed 转 published。工单要是卡在 cancelled 转不回来，
+   * 这条帖子在阶段 5 的统计里就是个黑洞，骨架第六节「手动发的也要有工单、能被统一统计」直接落空。
+   * 手动工单没有设备在跑，把它从 cancelled 拉回 succeeded 不会让任何人重复执行。
+   * 已经 succeeded / failed 的仍然不认，避免一条工单被登记两遍。
+   */
   async updateAsManuallySucceededById(id: string, userId: string, now: Date, result: Record<string, unknown>) {
     return await this.updateOne(
       {
         _id: id,
         userId,
         mode: ExecutionTaskMode.MANUAL,
-        status: ExecutionTaskStatus.PENDING,
+        status: { $in: [ExecutionTaskStatus.PENDING, ExecutionTaskStatus.CANCELLED] },
       },
       {
         $set: {

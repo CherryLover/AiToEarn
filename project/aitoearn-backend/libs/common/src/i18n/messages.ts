@@ -983,4 +983,54 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'en-US': 'Task does not belong to this project',
     'zh-CN': '工单不属于该项目',
   },
+
+  // 20500 (publishing)
+  [ResponseCode.PublishedPostNotFound]: {
+    'en-US': 'Published post record not found',
+    'zh-CN': '发布记录不存在',
+  },
+  [ResponseCode.PublishedPostProjectMismatch]: {
+    'en-US': 'Published post record does not belong to this project',
+    'zh-CN': '发布记录不属于该项目',
+  },
+  [ResponseCode.PublishedPostDraftPathInvalid]: {
+    'en-US': 'Draft path is invalid, it must be a directory under drafts/',
+    'zh-CN': '草稿路径不合法，必须是 drafts/ 下的目录',
+  },
+  [ResponseCode.PublishedPostDraftNotFound]: {
+    'en-US': 'Draft not found, content.md is missing',
+    'zh-CN': '草稿不存在，找不到 content.md',
+  },
+  [ResponseCode.PublishedPostDraftInvalid]: {
+    'en-US': 'Draft file cannot be parsed',
+    'zh-CN': '草稿文件解析不了',
+  },
+  [ResponseCode.PublishedPostDraftEmpty]: {
+    'en-US': 'Draft has neither title nor body, there is nothing to publish',
+    'zh-CN': '草稿的标题和正文都是空的，没东西可发',
+  },
+  [ResponseCode.PublishedPostAutoModeNotSupported]: {
+    'en-US': 'Automatic publishing is not available yet, only manual mode is supported',
+    'zh-CN': '暂时只支持手动发布，自动发布要等执行端插件',
+  },
+  [ResponseCode.PublishedPostDuplicate]: {
+    'en-US': 'This post has already been registered',
+    'zh-CN': '这条帖子已经登记过了',
+  },
+  [ResponseCode.PublishedPostAlreadyCompleted]: {
+    'en-US': 'This record is already marked as published',
+    'zh-CN': '这条记录已经登记为发布成功了',
+  },
+  [ResponseCode.PublishedPostUrlInvalid]: {
+    'en-US': 'Post URL must start with http:// or https://',
+    'zh-CN': '帖子链接必须是 http:// 或 https:// 开头',
+  },
+  [ResponseCode.PublishedPostCreateFailed]: {
+    'en-US': 'Failed to create the publish job',
+    'zh-CN': '发布工单创建失败',
+  },
+  [ResponseCode.PublishedPostStatusInvalid]: {
+    'en-US': 'Current record status does not allow this operation',
+    'zh-CN': '发布记录当前状态不允许这个操作',
+  },
 }

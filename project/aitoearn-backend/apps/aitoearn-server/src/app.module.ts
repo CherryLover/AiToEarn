@@ -21,9 +21,11 @@ import { ContentMcpModule } from './core/content/content-mcp.module'
 import { ContentModule } from './core/content/content.module'
 import { DevicesModule } from './core/devices/devices.module'
 import { ExecutionTasksModule } from './core/execution-tasks/execution-tasks.module'
+import { NotifyModule } from './core/notify/notify.module'
 import { OidcLoginModule } from './core/oidc-login/oidc-login.module'
 import { ProjectsModule } from './core/projects/projects.module'
 import { PublishModule } from './core/publish-record/publish-record.module'
+import { PublishingModule } from './core/publishing/publishing.module'
 import { ShortLinkModule } from './core/short-link/short-link.module'
 import { UnifiedMcpModule } from './core/unified-mcp/unified-mcp.module'
 import { UserModule } from './core/user/user.module'
@@ -71,6 +73,8 @@ import { UserModule } from './core/user/user.module'
     RedlockModule.forRoot(config.redlock),
     AitoearnAiClientModule.forRoot(config.aiClient),
     AssetsModule,
+    // @Global：放在业务模块前面，谁要推一条直接注入 NotifyService
+    NotifyModule,
     UserModule,
     OidcLoginModule,
     ContentModule,
@@ -82,6 +86,7 @@ import { UserModule } from './core/user/user.module'
     AnglesModule,
     DevicesModule,
     ExecutionTasksModule,
+    PublishingModule,
     RelayModule,
     // MCP modules (after business modules to ensure @Global services are available)
     ChannelsMcpModule,

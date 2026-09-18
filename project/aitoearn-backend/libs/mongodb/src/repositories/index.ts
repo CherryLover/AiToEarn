@@ -17,6 +17,7 @@ import { MediaRepository } from './media.repository'
 import { OAuth2CredentialRepository } from './oauth2-credential.repository'
 import { ProjectRepository } from './project.repository'
 import { PublishRecordRepository } from './publish-record.repository'
+import { PublishedPostRepository } from './published-post.repository'
 import { UserRepository } from './user.repository'
 
 export * from './account-group.repository'
@@ -39,6 +40,7 @@ export * from './media.repository'
 export * from './oauth2-credential.repository'
 export * from './project.repository'
 export * from './publish-record.repository'
+export * from './published-post.repository'
 export * from './user.repository'
 
 export const repositories = [
@@ -62,4 +64,5 @@ export const repositories = [
   AngleRepository,
   DeviceRepository,
   ExecutionTaskRepository,
+  PublishedPostRepository,
 ] as const

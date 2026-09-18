@@ -1,0 +1,106 @@
+import { createPaginationVo, createZodDto } from '@yikart/common'
+import { LeanDoc, PublishedPost, PublishedPostLinkStatus, PublishedPostPublishStatus } from '@yikart/mongodb'
+import { z } from 'zod'
+import { SkippedMedia } from './draft-snapshot.service'
+
+const PublishedPostBaseSchema = z.object({
+  id: z.string().describe('发布记录 ID'),
+  projectId: z.string().describe('属于哪个项目'),
+  angleId: z.string().nullable().describe('属于哪个发布方向，归因用'),
+  draftPath: z.string().describe('来源草稿目录，相对项目根'),
+  platform: z.string().describe('平台标识'),
+  accountId: z.string().nullable().describe('发到哪个号'),
+  executionTaskId: z.string().nullable().describe('对应的执行工单'),
+  // 两个状态分开：「发成功了但没抓到链接」是真实会发生的，合成一个就成了模糊地带
+  publishStatus: z.enum(PublishedPostPublishStatus).describe('发布状态：pending / publishing / published / failed'),
+  linkStatus: z.enum(PublishedPostLinkStatus).describe('链接状态：none / claimed / claim_failed'),
+  platformPostId: z.string().nullable().describe('平台侧帖子 id'),
+  postUrl: z.string().nullable().describe('帖子链接'),
+  publishedAt: z.coerce.date().nullable().describe('发布时间'),
+  failReason: z.string().nullable().describe('人工标记发失败时填的原因'),
+  title: z.string().describe('快照标题，列表里直接显示'),
+  mediaCount: z.number().int().describe('快照里有几张图'),
+  createdAt: z.coerce.date().describe('创建时间'),
+  updatedAt: z.coerce.date().describe('更新时间'),
+})
+
+const PublishedPostListItemVoSchema = PublishedPostBaseSchema
+export class PublishedPostListItemVo extends createZodDto(PublishedPostListItemVoSchema, 'PublishedPostListItemVo') {}
+export class PublishedPostListVo extends createPaginationVo(PublishedPostListItemVoSchema, 'PublishedPostListVo') {}
+
+const PublishedPostSnapshotVoSchema = z.object({
+  title: z.string().describe('标题'),
+  body: z.string().describe('正文'),
+  topics: z.array(z.string()).describe('话题，不带 #'),
+  mediaUrls: z.array(z.string()).describe('图片 OSS 地址，取自名片文件'),
+})
+
+const PublishedPostDetailVoSchema = PublishedPostBaseSchema.extend({
+  snapshot: PublishedPostSnapshotVoSchema.describe('点「准备发布」那一刻的内容快照'),
+})
+export class PublishedPostDetailVo extends createZodDto(PublishedPostDetailVoSchema, 'PublishedPostDetailVo') {}
+
+const SkippedMediaVoSchema = z.object({
+  path: z.string().describe('没进快照的图片，相对项目根'),
+  reason: z.enum(['card_missing', 'oss_missing']).describe('card_missing 名片读不到；oss_missing 名片在但没有 OSS 地址'),
+})
+
+/** 建完工单返回：记录本身 + 哪些图没能带进快照 */
+const PublishJobCreatedVoSchema = z.object({
+  post: PublishedPostDetailVoSchema.describe('建出来的发布记录'),
+  skippedMedia: z.array(SkippedMediaVoSchema).describe('名片里没有 OSS 地址、没进快照的图片'),
+})
+export class PublishJobCreatedVo extends createZodDto(PublishJobCreatedVoSchema, 'PublishJobCreatedVo') {}
+
+const PublishedPostDeletedVoSchema = z.object({
+  id: z.string().describe('已删除的发布记录 ID'),
+  executionTaskId: z.string().nullable().describe('一并删掉的执行工单 ID'),
+})
+export class PublishedPostDeletedVo extends createZodDto(PublishedPostDeletedVoSchema, 'PublishedPostDeletedVo') {}
+
+export type PublishedPostDoc = LeanDoc<PublishedPost>
+
+function toBase(post: PublishedPostDoc) {
+  return {
+    id: post.id,
+    projectId: post.projectId,
+    angleId: post.angleId ?? null,
+    draftPath: post.draftPath,
+    platform: post.platform,
+    accountId: post.accountId ?? null,
+    executionTaskId: post.executionTaskId ?? null,
+    publishStatus: post.publishStatus,
+    linkStatus: post.linkStatus,
+    platformPostId: post.platformPostId ?? null,
+    postUrl: post.postUrl ?? null,
+    publishedAt: post.publishedAt ?? null,
+    failReason: post.failReason ?? null,
+    title: post.snapshot?.title ?? '',
+    mediaCount: post.snapshot?.mediaUrls?.length ?? 0,
+    createdAt: post.createdAt,
+    updatedAt: post.updatedAt,
+  }
+}
+
+export function toPublishedPostListItemVo(post: PublishedPostDoc): PublishedPostListItemVo {
+  return PublishedPostListItemVo.create(toBase(post))
+}
+
+export function toPublishedPostDetailVo(post: PublishedPostDoc): PublishedPostDetailVo {
+  return PublishedPostDetailVo.create({
+    ...toBase(post),
+    snapshot: {
+      title: post.snapshot?.title ?? '',
+      body: post.snapshot?.body ?? '',
+      topics: post.snapshot?.topics ?? [],
+      mediaUrls: post.snapshot?.mediaUrls ?? [],
+    },
+  })
+}
+
+export function toPublishJobCreatedVo(post: PublishedPostDoc, skippedMedia: SkippedMedia[]): PublishJobCreatedVo {
+  return PublishJobCreatedVo.create({
+    post: toPublishedPostDetailVo(post),
+    skippedMedia,
+  })
+}

@@ -25,6 +25,8 @@
 | `contract-skeleton.md` | **跨阶段共用骨架**：执行工单、设备、WebSocket 协议、任务载荷、帖子身份、错误码分段 | **阶段 2/3/4 全部 Agent，以及插件线** |
 | `contract-stage2.md` | 阶段 2：发布方向与内容生成 | 阶段 2 的 Agent |
 | `contract-stage3.md` | 阶段 3：执行端通道（服务端与网页侧） | 阶段 3 的 Agent |
+| `contract-stage4.md` | 阶段 4 前半段：手动发布闭环 + Bark 推送（**不做真实发布**） | 阶段 4 的 Agent |
+| `contract-extension.md` | 给插件线的执行端对接文档 | 插件线 |
 
 ## 开工须知
 
