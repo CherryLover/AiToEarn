@@ -994,16 +994,16 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'zh-CN': '发布记录不属于该项目',
   },
   [ResponseCode.PublishedPostDraftPathInvalid]: {
-    'en-US': 'Draft path is invalid, it must be a directory under drafts/',
-    'zh-CN': '草稿路径不合法，必须是 drafts/ 下的目录',
+    'en-US': 'Draft path is invalid, it must be a draft folder or a draft file under drafts/',
+    'zh-CN': '草稿路径不合法，必须是 drafts/ 下的草稿目录或草稿文件',
   },
   [ResponseCode.PublishedPostDraftNotFound]: {
-    'en-US': 'Draft not found, content.md is missing',
-    'zh-CN': '草稿不存在，找不到 content.md',
+    'en-US': 'Draft not found',
+    'zh-CN': '草稿不存在',
   },
   [ResponseCode.PublishedPostDraftInvalid]: {
-    'en-US': 'Draft file cannot be parsed',
-    'zh-CN': '草稿文件解析不了',
+    'en-US': 'Draft format is invalid, it is neither a draft folder nor a readable draft file',
+    'zh-CN': '草稿格式不对，既不是草稿目录也不是能读的草稿文件',
   },
   [ResponseCode.PublishedPostDraftEmpty]: {
     'en-US': 'Draft has neither title nor body, there is nothing to publish',

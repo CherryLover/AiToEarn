@@ -313,9 +313,9 @@ export enum ResponseCode {
   // ========================================
   PublishedPostNotFound = 20500, // 发布记录不存在
   PublishedPostProjectMismatch = 20501, // 发布记录不属于该项目
-  PublishedPostDraftPathInvalid = 20502, // 草稿路径不合法，必须是 drafts/ 下的目录
-  PublishedPostDraftNotFound = 20503, // 草稿目录或 content.md 不存在
-  PublishedPostDraftInvalid = 20504, // 草稿文件解析不了
+  PublishedPostDraftPathInvalid = 20502, // 草稿路径不合法，必须是 drafts/ 下的草稿目录或草稿文件
+  PublishedPostDraftNotFound = 20503, // 草稿不存在：目录版缺 content.md，或路径整个不在
+  PublishedPostDraftInvalid = 20504, // 草稿格式不对：解析不了，或路径既不是文件也不是目录
   PublishedPostDraftEmpty = 20505, // 草稿标题和正文都是空的，没东西可发
   PublishedPostAutoModeNotSupported = 20506, // 这一轮只做手动发布，auto 要等插件
   PublishedPostDuplicate = 20507, // 同一条帖子已经登记过了

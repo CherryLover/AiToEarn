@@ -1,8 +1,9 @@
+import type { Stats } from 'node:fs'
 import { Injectable, Logger } from '@nestjs/common'
 import { AppException, ResponseCode } from '@yikart/common'
 import { ProjectDirService } from '../projects/project-dir.service'
 import { MAX_TEXT_FILE_BYTES } from '../projects/project-path.util'
-import { safeReadFile } from '../projects/safe-fs'
+import { safeLstat, safeReadFile } from '../projects/safe-fs'
 import {
   DRAFT_CONTENT_FILE,
   DRAFT_META_FILE,
@@ -48,6 +49,19 @@ export interface DraftSnapshotResult {
   skippedMedia: SkippedMedia[]
 }
 
+/**
+ * 一份草稿在磁盘上的摆法。
+ *
+ * - **目录版** `drafts/<slug>/`：正文在 `content.md`，血缘在同目录的 `meta.json`（AI 生成的走这种）
+ * - **单文件版** `drafts/<名字>.md`：正文就是这个文件本身，没有血缘文件（人手工放的走这种）
+ */
+interface DraftLayout {
+  /** 正文文件，相对项目目录 */
+  contentSegments: string[]
+  /** 血缘文件，单文件版没有 */
+  metaSegments?: string[]
+}
+
 /** 一张图在快照里的候选来源 */
 interface MediaCandidate {
   /** 去重用的键：能定位到本地文件就用本地路径，否则用地址本身 */
@@ -80,8 +94,9 @@ export class DraftSnapshotService {
 
   async read(dirName: string, draftPath: string): Promise<DraftSnapshotResult> {
     const segments = parseDraftPath(draftPath)
-    const content = await this.readContent(dirName, segments)
-    const meta = await this.readMeta(dirName, segments)
+    const layout = await this.resolveLayout(dirName, segments)
+    const content = await this.readContent(dirName, layout.contentSegments)
+    const meta = layout.metaSegments ? await this.readMeta(dirName, layout.metaSegments) : null
 
     const { meta: front, body } = parseFrontMatter(content)
 
@@ -103,11 +118,51 @@ export class DraftSnapshotService {
     }
   }
 
-  private async readContent(dirName: string, segments: string[]): Promise<string> {
+  /**
+   * 看磁盘上这个路径到底是文件还是目录，据此决定正文和血缘各在哪儿。
+   *
+   * **不能靠有没有 `.md` 后缀去猜**：线上用户手工放进来的三份单文件草稿就是这么被判成目录版的，
+   * 拼出 `drafts/xxx.md/content.md` 一读就报「草稿不存在」，发布页对他实际拥有的内容一份都用不了。
+   * 判定走 `safe-fs` 的 `safeLstat`，和读文件同一套路径隔离，不另开一条绕过校验的 `fs` 调用。
+   */
+  private async resolveLayout(dirName: string, segments: string[]): Promise<DraftLayout> {
+    const entry = await this.statDraft(dirName, segments)
+
+    if (entry.isDirectory()) {
+      return {
+        contentSegments: [...segments, DRAFT_CONTENT_FILE],
+        metaSegments: [...segments, DRAFT_META_FILE],
+      }
+    }
+
+    if (entry.isFile())
+      return { contentSegments: segments }
+
+    // 软链、设备文件之类：路径是在的，但它不是一份草稿，和「草稿不存在」要分开说
+    throw new AppException(ResponseCode.PublishedPostDraftInvalid)
+  }
+
+  private async statDraft(dirName: string, segments: string[]): Promise<Stats> {
+    try {
+      return await safeLstat(this.projectDirService.root, [dirName, ...segments])
+    }
+    catch (error) {
+      if (isAppExceptionWith(error, ResponseCode.ProjectFileNotFound))
+        throw new AppException(ResponseCode.PublishedPostDraftNotFound)
+
+      if (error instanceof AppException)
+        throw error
+
+      this.logger.error(error, `草稿路径看不了: ${dirName}/${segments.join('/')}`)
+      throw new AppException(ResponseCode.PublishedPostDraftNotFound)
+    }
+  }
+
+  private async readContent(dirName: string, contentSegments: string[]): Promise<string> {
     try {
       const { content } = await safeReadFile(
         this.projectDirService.root,
-        [dirName, ...segments, DRAFT_CONTENT_FILE],
+        [dirName, ...contentSegments],
         MAX_TEXT_FILE_BYTES,
       )
       return content.toString('utf8')
@@ -119,27 +174,28 @@ export class DraftSnapshotService {
       if (error instanceof AppException)
         throw error
 
-      this.logger.error(error, `读草稿正文失败: ${dirName}/${segments.join('/')}/${DRAFT_CONTENT_FILE}`)
+      this.logger.error(error, `读草稿正文失败: ${dirName}/${contentSegments.join('/')}`)
       throw new AppException(ResponseCode.PublishedPostDraftNotFound)
     }
   }
 
   /**
    * 血缘文件是锦上添花：缺了、坏了都只记日志。
-   * 发布靠的是 `content.md`，不该因为一份 JSON 写歪了就发不出去。
+   * 发布靠的是正文，不该因为一份 JSON 写歪了就发不出去。
+   * 单文件版草稿压根没有这个文件，血缘从 frontmatter 里读，也不报错。
    */
-  private async readMeta(dirName: string, segments: string[]): Promise<Record<string, unknown> | null> {
+  private async readMeta(dirName: string, metaSegments: string[]): Promise<Record<string, unknown> | null> {
     let text: string
     try {
       const { content } = await safeReadFile(
         this.projectDirService.root,
-        [dirName, ...segments, DRAFT_META_FILE],
+        [dirName, ...metaSegments],
         MAX_TEXT_FILE_BYTES,
       )
       text = content.toString('utf8')
     }
     catch (error) {
-      this.logger.warn(error, `草稿血缘文件读不到，按没有处理: ${dirName}/${segments.join('/')}/${DRAFT_META_FILE}`)
+      this.logger.warn(error, `草稿血缘文件读不到，按没有处理: ${dirName}/${metaSegments.join('/')}`)
       return null
     }
 
@@ -151,7 +207,7 @@ export class DraftSnapshotService {
       return parsed as Record<string, unknown>
     }
     catch {
-      this.logger.warn(`草稿血缘文件不是合法 JSON，按没有处理: ${dirName}/${segments.join('/')}/${DRAFT_META_FILE}`)
+      this.logger.warn(`草稿血缘文件不是合法 JSON，按没有处理: ${dirName}/${metaSegments.join('/')}`)
       return null
     }
   }

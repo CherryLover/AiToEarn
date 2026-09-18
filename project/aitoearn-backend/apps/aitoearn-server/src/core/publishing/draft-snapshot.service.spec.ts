@@ -9,12 +9,16 @@ vi.mock('../../config', () => ({
 
 vi.mock('../projects/safe-fs', () => ({
   safeReadFile: vi.fn(async () => ({ content: Buffer.from(''), size: 0, updatedAt: new Date() })),
+  safeLstat: vi.fn(),
 }))
 
 const safeReadFile = vi.mocked(safeFs.safeReadFile)
+const safeLstat = vi.mocked(safeFs.safeLstat)
 
 const DIR = 'fortyweeks'
 const DRAFT = 'drafts/2026-09-18-xhs-export-friction'
+/** 人手工放进来的那种：一个 .md 文件直接躺在 drafts/ 下面 */
+const SINGLE_DRAFT = 'drafts/2026-09-17-小红书-备孕刷到太多攻略.md'
 
 const CONTENT_MD = [
   '---',
@@ -56,7 +60,18 @@ function card(oss: string): string {
   ].join('\n')
 }
 
-/** 按「相对项目根的路径」摆好文件，读不到的路径一律按 ProjectFileNotFound 抛 */
+/** 假的 lstat 结果，只关心是文件还是目录 */
+function entryStat(type: 'file' | 'dir' | 'other') {
+  return {
+    isFile: () => type === 'file',
+    isDirectory: () => type === 'dir',
+  } as never
+}
+
+/**
+ * 按「相对项目根的路径」摆好文件，读不到的路径一律按 ProjectFileNotFound 抛。
+ * 目录不用单独声明：路径下面挂着文件就算目录，和磁盘上一个样。
+ */
 function mountFiles(files: Record<string, string>) {
   safeReadFile.mockImplementation(async (_root: string, segments: string[]) => {
     const relPath = segments.slice(1).join('/')
@@ -65,6 +80,17 @@ function mountFiles(files: Record<string, string>) {
       throw new AppException(ResponseCode.ProjectFileNotFound)
 
     return { content: Buffer.from(content, 'utf8'), size: content.length, updatedAt: new Date() }
+  })
+
+  safeLstat.mockImplementation(async (_root: string, segments: string[]) => {
+    const relPath = segments.slice(1).join('/')
+    if (files[relPath] !== undefined)
+      return entryStat('file')
+
+    if (Object.keys(files).some(key => key.startsWith(`${relPath}/`)))
+      return entryStat('dir')
+
+    throw new AppException(ResponseCode.ProjectFileNotFound)
   })
 }
 
@@ -230,5 +256,138 @@ describe('草稿快照 · 抄下点「准备发布」那一刻的内容', () => 
     await expect(service.read(DIR, 'background/product')).rejects.toMatchObject({
       code: ResponseCode.PublishedPostDraftNotFound,
     })
+  })
+})
+
+/**
+ * 草稿有两种摆法，形态看磁盘、不看后缀（contract-stage4「建工单时必须做的」第 1 条）。
+ * 第一版只认目录版，线上用户手工放的三份单文件草稿在发布页里一份都用不了。
+ */
+describe('草稿快照 · 单文件草稿和目录版草稿都要认', () => {
+  const SINGLE_CONTENT_MD = [
+    '---',
+    'title: 备孕刷到太多攻略',
+    'platform: xhs',
+    'topics: 备孕, 孕期记录',
+    'images:',
+    '  - media/home.png',
+    '---',
+    '',
+    '手写的正文。',
+    '',
+  ].join('\n')
+
+  it('单文件草稿能读出标题、正文和话题', async () => {
+    mountFiles({ [SINGLE_DRAFT]: SINGLE_CONTENT_MD })
+
+    const result = await createService().read(DIR, SINGLE_DRAFT)
+
+    expect(result.draftPath).toBe(SINGLE_DRAFT)
+    expect(result.snapshot.title).toBe('备孕刷到太多攻略')
+    expect(result.snapshot.body).toBe('手写的正文。')
+    expect(result.snapshot.topics).toEqual(['备孕', '孕期记录'])
+    expect(result.draftPlatform).toBe('xhs')
+  })
+
+  it('单文件草稿读的就是这个文件本身，不会去拼 content.md', async () => {
+    mountFiles({ [SINGLE_DRAFT]: SINGLE_CONTENT_MD })
+
+    await createService().read(DIR, SINGLE_DRAFT)
+
+    expect(safeReadFile).toHaveBeenCalledWith(
+      '/data/projects',
+      [DIR, 'drafts', '2026-09-17-小红书-备孕刷到太多攻略.md'],
+      expect.any(Number),
+    )
+    const touched = safeReadFile.mock.calls.map(call => (call[1] as string[]).join('/'))
+    expect(touched.some(item => item.endsWith('content.md'))).toBe(false)
+    expect(touched.some(item => item.endsWith('meta.json'))).toBe(false)
+  })
+
+  it('单文件草稿的图片照样换成名片里的 OSS 地址', async () => {
+    mountFiles({
+      [SINGLE_DRAFT]: SINGLE_CONTENT_MD,
+      'media/home.png.md': card('https://oss.example.com/k/home.png'),
+    })
+
+    const result = await createService().read(DIR, SINGLE_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/home.png'])
+    expect(result.skippedMedia).toEqual([])
+  })
+
+  it('单文件草稿没有血缘也不报错，frontmatter 里写了就用', async () => {
+    mountFiles({ [SINGLE_DRAFT]: SINGLE_CONTENT_MD })
+
+    const noLineage = await createService().read(DIR, SINGLE_DRAFT)
+    expect(noLineage.angleSlug).toBeUndefined()
+
+    mountFiles({
+      [SINGLE_DRAFT]: SINGLE_CONTENT_MD.replace('platform: xhs', 'platform: xhs\nangle: ttc-overload'),
+    })
+
+    const withLineage = await createService().read(DIR, SINGLE_DRAFT)
+    expect(withLineage.angleSlug).toBe('ttc-overload')
+  })
+
+  it('目录版照旧：正文在 content.md，血缘在 meta.json', async () => {
+    mountFiles({
+      [`${DRAFT}/content.md`]: CONTENT_MD,
+      [`${DRAFT}/meta.json`]: META_JSON,
+      'media/home.png.md': card('https://oss.example.com/k/home.png'),
+    })
+
+    const result = await createService().read(DIR, DRAFT)
+
+    expect(result.snapshot.title).toBe('导出藏得太深，四步变一步')
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/home.png'])
+    expect(result.angleSlug).toBe('export-friction')
+  })
+
+  it('形态看磁盘不看后缀：名字带 .md 的目录照样按目录版读', async () => {
+    mountFiles({
+      'drafts/2026-09-17-手记.md/content.md': CONTENT_MD,
+      'drafts/2026-09-17-手记.md/meta.json': META_JSON,
+      'media/home.png.md': card('https://oss.example.com/k/home.png'),
+    })
+
+    const result = await createService().read(DIR, 'drafts/2026-09-17-手记.md')
+
+    expect(result.snapshot.title).toBe('导出藏得太深，四步变一步')
+    expect(result.angleSlug).toBe('export-friction')
+  })
+
+  it('目录在但没有 content.md，还是报草稿不存在', async () => {
+    mountFiles({ [`${DRAFT}/meta.json`]: META_JSON })
+
+    await expect(createService().read(DIR, DRAFT)).rejects.toMatchObject({
+      code: ResponseCode.PublishedPostDraftNotFound,
+    })
+  })
+
+  it('路径在、却既不是文件也不是目录，报的是格式不对而不是不存在', async () => {
+    mountFiles({})
+    safeLstat.mockResolvedValue(entryStat('other'))
+
+    await expect(createService().read(DIR, SINGLE_DRAFT)).rejects.toMatchObject({
+      code: ResponseCode.PublishedPostDraftInvalid,
+    })
+  })
+
+  it('借单文件草稿的路径往 drafts/ 外面读，照样被拒', async () => {
+    mountFiles({ 'background/product/intro.md': '机密' })
+    const service = createService()
+
+    await expect(service.read(DIR, '../background/product/intro.md')).rejects.toMatchObject({
+      code: ResponseCode.PublishedPostDraftPathInvalid,
+    })
+    await expect(service.read(DIR, '/etc/passwd.md')).rejects.toMatchObject({
+      code: ResponseCode.PublishedPostDraftPathInvalid,
+    })
+    // `background/product/intro.md` 会被当成 drafts/ 下的路径，读不到就是读不到
+    await expect(service.read(DIR, 'background/product/intro.md')).rejects.toMatchObject({
+      code: ResponseCode.PublishedPostDraftNotFound,
+    })
+    expect(safeReadFile).not.toHaveBeenCalled()
   })
 })
