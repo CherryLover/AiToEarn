@@ -20,13 +20,29 @@ import {
 
 /** 图片没进快照的原因，给人看的时候翻译成人话 */
 export type SkippedMediaReason
-  /** 找不到这张图的名片文件（图本身不在 `media/` 里、名字写错了，或者名片读不了） */
+  /** 找不到这张图的名片文件（名字写错了，或者名片读不了） */
   = | 'card_missing'
   /** 名片在，但 `oss` 是空的——当初传 OSS 失败了 */
     | 'oss_missing'
+  /**
+   * 这行声明指到 `media/` 外面去了（`background/xxx`、`../xxx`、`/etc/xxx`……），根本没去读。
+   *
+   * 和 `card_missing` 分开说：那条是「名片读不到」，这条是「这个路径本来就不允许」，
+   * 合成一个的话，人会以为是自己文件名写错了，照着改半天也改不对。
+   */
+    | 'path_not_allowed'
 
 export interface SkippedMedia {
-  /** 相对项目根的图片路径 */
+  /**
+   * 没进快照的这一张，给人看的时候原样显示。
+   *
+   * `card_missing` / `oss_missing` 给的是**相对项目根**的图片路径；
+   * `path_not_allowed` 给的是**用户原样写的那一行**——可能是绝对路径、可能带 `..`，
+   * 它就是因为不允许才没往下走，压根没有对应的项目内路径。
+   *
+   * 所以这个字段只能拿去显示。照着「相对项目根」把它拼进 `img src`、或者拿它再去读一次文件，
+   * 拼出来的就是刚被挡掉的那条路径。
+   */
   path: string
   reason: SkippedMediaReason
 }
@@ -47,13 +63,17 @@ export interface DraftSnapshotResult {
   angleSlug?: string
   /** 草稿自己标的平台，可能是空（平台中立的草稿） */
   draftPlatform?: string
-  /** 名片里没有 OSS 地址、没进快照的图片 */
+  /** 没进快照的图片，各自带上原因（名片读不到 / 名片里没有 OSS 地址 / 路径不允许） */
   skippedMedia: SkippedMedia[]
   /**
    * 正文是「整篇原文」兜出来的，不是 `## 正文` 小节里的内容。
    *
    * 走到这条路，正文里多半连记账清单带 `##` 小标题全在。以前它是悄悄发生的，
    * 现在标出来，网页好提示人「这份草稿没按小节写，发之前自己删一下」。
+   *
+   * **写了 frontmatter 的草稿不算**：那是契约里明确支持的另一种写法，正文本来就是
+   * frontmatter 后面剩下的全部，没有记账清单要删。对着这种干净草稿报警就是喊狼来了，
+   * 喊多了真该看的那条也没人看了。
    */
   bodyFallback: boolean
   /**
@@ -87,6 +107,11 @@ interface MediaCandidate {
   localPath?: string
   /** 草稿里直接写的地址 */
   url?: string
+  /**
+   * 这行声明指到 `media/` 外面去了，不去读任何文件，原样记进 `skippedMedia`。
+   * 值是用户写的那一行，照原样回给他，不然他对不上自己写的是哪一条。
+   */
+  rejectedPath?: string
 }
 
 function isAppExceptionWith(error: unknown, code: ResponseCode): boolean {
@@ -115,7 +140,7 @@ export class DraftSnapshotService {
     const content = await this.readContent(dirName, layout.contentSegments)
     const meta = layout.metaSegments ? await this.readMeta(dirName, layout.metaSegments) : null
 
-    const { meta: front, body: rawBody } = parseFrontMatter(content)
+    const { meta: front, body: rawBody, hasFrontMatter } = parseFrontMatter(content)
 
     // 人手工放的单文件草稿没有 frontmatter，内容靠 `## 标题` / `## 正文` / `## 话题` / `## 配图` 分段，
     // 前面还压着一段自己记账用的清单。整篇当正文抄下来，复制出去的就是没法直接发的东西。
@@ -129,8 +154,10 @@ export class DraftSnapshotService {
     const topics = frontTopics.length > 0 ? frontTopics : sections?.topics ?? []
 
     // 「这一节没写」和「这一节是空的」是两件事：写了 `## 正文` 就以它为准，哪怕是空串；
-    // 只有压根没有这一节才退回整篇原文，而且退回这一步要标出来，不能再像以前那样悄悄发生
-    const bodyFallback = sections !== null && sections.body === undefined
+    // 只有压根没有这一节才退回整篇原文，而且退回这一步要标出来，不能再像以前那样悄悄发生。
+    // 但写了 frontmatter 的单文件草稿不算退回：那条路上正文就该是 frontmatter 后面的全部，
+    // 标出来等于对着一份完全正确的草稿喊「你没按小节写」
+    const bodyFallback = sections !== null && sections.body === undefined && !hasFrontMatter
     const body = sections?.body ?? rawBody
 
     // 标题和正文都空的草稿没东西可发，早点拦住比发出去一条空帖子强
@@ -276,6 +303,12 @@ export class DraftSnapshotService {
     const seenUrls = new Set<string>()
 
     for (const candidate of candidates) {
+      // 路径不允许的那几行连文件都没去读，理由要说实话，不能混进「名片读不到」
+      if (candidate.rejectedPath !== undefined) {
+        skippedMedia.push({ path: candidate.rejectedPath, reason: 'path_not_allowed' })
+        continue
+      }
+
       if (!candidate.localPath) {
         // 只有地址、找不到对应的本地图片（血缘文件缺失时的常态）：
         // 这地址本来就是生成时从名片里抄过去的，按原样用
@@ -312,12 +345,18 @@ export class DraftSnapshotService {
    *
    * 草稿里声明的（frontmatter `images` 或 `## 配图` 小节）是展示顺序，优先；
    * `meta.json` 的 `mediaRefs` 带本地路径，用来把地址反查回本地文件，也补上正文里漏写的图。
+   *
+   * **两个入口过同一道 `toMediaPath`。** 血缘里的 `file` 也是生成时写进去的，一样可能指到
+   * `media/` 外面，只给草稿声明那条路加限界等于只堵了一个门：`meta.json` 里写一条
+   * `{ file: 'background/legal/隐私' }`，服务端照样会去读 `background/legal/隐私.md`，
+   * 把那份文档 frontmatter 里的 `oss` 当成图片地址塞进快照。
    */
   private collectCandidates(declaredImages: string[], meta: Record<string, unknown> | null): MediaCandidate[] {
     const rawRefs = pick(meta, 'mediaRefs')
     const refs = Array.isArray(rawRefs) ? rawRefs : []
     const urlToLocal = new Map<string, string>()
-    const localPaths: string[] = []
+    /** 血缘里的每条引用，按写的顺序：过了限界的留归一化路径，越界的留用户原样写的那一行 */
+    const refPaths: { raw: string, mediaPath: string | null }[] = []
 
     for (const ref of refs) {
       if (!ref || typeof ref !== 'object' || Array.isArray(ref))
@@ -327,11 +366,16 @@ export class DraftSnapshotService {
       const file = readString(pick(item, 'file'))
       const oss = readString(pick(item, 'oss'))
 
-      if (file) {
-        localPaths.push(file)
-        if (oss)
-          urlToLocal.set(oss, file)
-      }
+      if (!file)
+        continue
+
+      const mediaPath = toMediaPath(file)
+      refPaths.push({ raw: file, mediaPath })
+
+      // 越界的引用连反查表都不能进：进了的话，草稿里写外链、血缘里把 `file` 指到 `background/`，
+      // 就能顺着地址反查回那个文件去读它的 frontmatter，绕过刚加的这道限界
+      if (mediaPath !== null && oss)
+        urlToLocal.set(oss, mediaPath)
     }
 
     const candidates: MediaCandidate[] = []
@@ -349,14 +393,24 @@ export class DraftSnapshotService {
         push({ key: localPath ?? entry, localPath, url: entry })
       }
       else {
-        // 只写了文件名的按项目的 `media/` 目录去找，写成 `media/xxx` 的原样用
+        // 只写了文件名的按项目的 `media/` 目录去找，写成 `media/xxx` 的不重复加前缀；
+        // 指到 media/ 外面去的（`background/xxx`、`../xxx`）拿不到路径，这一行到此为止
         const localPath = toMediaPath(entry)
-        push({ key: localPath, localPath })
+        if (localPath === null)
+          push({ key: entry, rejectedPath: entry })
+        else
+          push({ key: localPath, localPath })
       }
     }
 
-    for (const localPath of localPaths)
-      push({ key: localPath, localPath })
+    // 血缘带来的图和草稿声明的那条路走完全同一套规则：越界的不去读任何文件，
+    // 原样记进 skippedMedia，理由同样是「这个路径本来就不允许」
+    for (const { raw, mediaPath } of refPaths) {
+      if (mediaPath === null)
+        push({ key: raw, rejectedPath: raw })
+      else
+        push({ key: mediaPath, localPath: mediaPath })
+    }
 
     return candidates
   }

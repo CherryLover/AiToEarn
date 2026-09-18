@@ -459,9 +459,15 @@
       "submit": "Vorbereiten",
       "submitting": "Wird gebündelt…",
       "created": "Fertig gebündelt, die Karte steht unten",
-      "skippedMedia": "{{num}} Bild(er) ohne OSS-Adresse wurden ausgelassen",
       "noDrafts": "Noch keine Entwürfe. Schreibe zuerst einen im Tab „Generieren“ und komm dann zurück.",
       "manualOnly": "Bündelt nur den Inhalt, veröffentlicht nichts für dich"
+    },
+    "skipped": {
+      "title": "Einige Bilder fehlen im Paket",
+      "pathNotAllowed": "{{num}} Bildpfad(e) sind nicht erlaubt – ein Bild darf nur auf eine Datei in media/ zeigen",
+      "cardMissing": "{{num}} Bild(er) sind im Material nicht zu finden – prüfe, ob die Dateinamen stimmen",
+      "ossMissing": "{{num}} Bild(er) sind noch nicht in die Cloud geladen und derzeit nicht nutzbar",
+      "unknown": "{{num}} Bild(er) fehlen im Paket, Grund: {{reason}}"
     },
     "card": {
       "copy": "Kopieren",
@@ -483,7 +489,7 @@
       "downloadStarted": "Download gestartet",
       "downloadFallback": "In einem neuen Tab geöffnet, dort speichern",
       "noMedia": "Hier gibt es keine Bilder",
-      "noMediaHint": "Bilder aus dem Entwurf kommen nur mit, wenn sie eine OSS-Adresse haben.",
+      "noMediaHint": "Ein Bild kommt nur ins Paket, wenn es auf eine Datei in media/ zeigt und bereits in die Cloud geladen ist.",
       "mediaUndeclared": "Dieser Entwurf nennt keine Bilder",
       "mediaUndeclaredHint": "Wähle oben rechts über „Aus Material wählen“ ein paar aus oder ergänze im Entwurf einen Abschnitt „## Bilder“ und bündle erneut.",
       "pickMedia": "Aus Material wählen",

@@ -88,12 +88,17 @@ export interface PublishedPostDetail extends PublishedPostListItem {
 }
 
 /**
- * 建工单时没能进快照的图片。
- * `card_missing` 名片读不到；`oss_missing` 名片在但里面没有 OSS 地址。
+ * 建工单时没能进快照的图片。三种原因是三件不同的事，给人的话不能混成一句：
+ * - `card_missing` 名片读不到，也就是物料里找不到这张图（多半文件名写错了）
+ * - `oss_missing` 名片在，但里面没有 OSS 地址，这张图还没传上云
+ * - `path_not_allowed` 这一行指到 `media/` 外面去了，服务端压根没去读它
+ *
+ * `path` 的含义跟着原因走：前两种是相对项目根的图片路径；`path_not_allowed` 那种
+ * 根本没解析成一个合法路径，给回来的是草稿里原样写的那一行，人得照着它回草稿里改。
  */
 export interface SkippedMedia {
   path: string
-  reason: 'card_missing' | 'oss_missing'
+  reason: 'card_missing' | 'oss_missing' | 'path_not_allowed'
 }
 
 /**
@@ -105,7 +110,7 @@ export interface SkippedMedia {
  */
 export interface PublishJobCreated {
   post: PublishedPostDetail
-  /** 找不到名片、或名片里没有 OSS 地址，没进快照的图片 */
+  /** 没进快照的图片：找不到名片、名片里没有 OSS 地址，或者这行声明指到 `media/` 外面去了 */
   skippedMedia: SkippedMedia[]
   /**
    * 草稿里有没有声明配图（frontmatter 的 `images`、`## 配图` 小节、血缘的 `mediaRefs`，有一处算一处）。

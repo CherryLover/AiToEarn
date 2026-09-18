@@ -82,20 +82,34 @@ export function isHttpUrl(value: string): boolean {
   return URL_PATTERN.test(value)
 }
 
+export interface FrontMatterResult {
+  meta: Record<string, unknown>
+  body: string
+  /**
+   * 这份草稿用没用 frontmatter 那套写法：`---` 围起来的块认出来了，也从正文里摘掉了。
+   *
+   * 和「`meta` 里有没有字段」是两件事。契约把 frontmatter 列为正经写法之一，
+   * 走这条路的草稿正文本来就是「块后面剩下的全部」，不该被当成「没按小节写」报警，
+   * 见 `DraftSnapshotResult.bodyFallback`。
+   */
+  hasFrontMatter: boolean
+}
+
 /**
  * 拆出 frontmatter 和正文。
  * 没有 frontmatter 时整篇都算正文——AI 可能直接写了一段话，那也是能发的内容。
  * frontmatter 有但 yaml 解析不了才报错。
  */
-export function parseFrontMatter(text: string): { meta: Record<string, unknown>, body: string } {
+export function parseFrontMatter(text: string): FrontMatterResult {
   const normalized = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n')
 
   if (!normalized.startsWith(`${FRONT_MATTER_FENCE}\n`))
-    return { meta: {}, body: normalized.trim() }
+    return { meta: {}, body: normalized.trim(), hasFrontMatter: false }
 
   const end = normalized.indexOf(`\n${FRONT_MATTER_FENCE}`, FRONT_MATTER_FENCE.length)
+  // 开头有 `---` 但没有收尾的那一行：这不是 frontmatter，整篇照旧当正文
   if (end < 0)
-    return { meta: {}, body: normalized.trim() }
+    return { meta: {}, body: normalized.trim(), hasFrontMatter: false }
 
   const frontText = normalized.slice(FRONT_MATTER_FENCE.length + 1, end)
   const body = normalized
@@ -112,9 +126,9 @@ export function parseFrontMatter(text: string): { meta: Record<string, unknown>,
   }
 
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
-    return { meta: {}, body }
+    return { meta: {}, body, hasFrontMatter: true }
 
-  return { meta: parsed as Record<string, unknown>, body }
+  return { meta: parsed as Record<string, unknown>, body, hasFrontMatter: true }
 }
 
 /**
@@ -250,15 +264,74 @@ export function parseDraftSections(text: string): DraftSections {
 export const MEDIA_DIR = 'media'
 
 /**
+ * 按词法归一化一条相对声明：吃掉 `.`、就地回退 `..`，回退到项目根以上就算越界。
+ *
+ * 判前缀之前必须先过这一步。拿字符串前缀硬判的话，`media/../background/x` 一比就放行了。
+ */
+function normalizeSegments(input: string): string[] | null {
+  const segments: string[] = []
+
+  for (const part of input.split('/')) {
+    if (part.length === 0 || part === '.')
+      continue
+
+    if (part === '..') {
+      if (segments.length === 0)
+        return null
+
+      segments.pop()
+      continue
+    }
+
+    segments.push(part)
+  }
+
+  return segments.length > 0 ? segments : null
+}
+
+/**
  * 把 `## 配图` 或 frontmatter 里写的一条声明，换算成相对项目根的图片路径。
  *
- * 只写文件名（`帖1-01.jpg`）的按 `media/` 目录去找；
- * 已经带了目录的（`media/帖1-01.jpg`）原样用，地址（`https://...`）也原样用——
- * 它本来就带着斜杠，不会被当成裸文件名。
+ * **一律锁死在 `media/` 里**（contract-core 第四节：图片原件只放这一个目录）：
+ * 裸文件名（`帖1-01.jpg`）补上前缀，已经带前缀的（`media/帖1-01.jpg`、`media/子目录/图.jpg`）
+ * 不重复加，指到别处去的（`background/xxx`、`../xxx`、`/etc/xxx`、`media/../background/xxx`）
+ * 一律返回 null，由调用方记进 `skippedMedia`。
+ *
+ * 越界的声明本来也跑不出项目目录（`..` 和绝对路径在 `parseRelPathRequired` 那层就被挡了，
+ * safe-fs 还有一层），但「读得到项目里别的文件」和「配图只能指 media/」是两件事：
+ * 没有这一道，草稿里写 `- background/legal/隐私`，服务端就会去读 `background/legal/隐私.md`，
+ * 把那份文档 frontmatter 里的 `oss` 当成图片地址塞进快照。
+ *
+ * 地址（`https://...`）不走这里，调用方先用 `isHttpUrl` 分流。
  */
-export function toMediaPath(entry: string): string {
-  const cleaned = entry.replace(/^\.\/+/, '').trim()
-  return cleaned.includes('/') ? cleaned : `${MEDIA_DIR}/${cleaned}`
+export function toMediaPath(entry: string): string | null {
+  const cleaned = entry.trim()
+  if (cleaned.length === 0)
+    return null
+
+  // 绝对路径、反斜杠不是合法的相对声明，归一化之前先挡掉
+  if (cleaned.startsWith('/') || cleaned.includes('\\'))
+    return null
+
+  // 裸文件名（不带斜杠）才补前缀；带目录的先原样解析，再看解析完还在不在 media/ 里
+  const raw = cleaned.replace(/^\.\/+/, '')
+  const resolved = normalizeSegments(raw.includes('/') ? raw : `${MEDIA_DIR}/${raw}`)
+
+  // 只剩 `media` 一段是指目录本身，不是一张图
+  if (!resolved || resolved.length < 2 || resolved[0] !== MEDIA_DIR)
+    return null
+
+  const mediaPath = resolved.join('/')
+
+  // 段长、控制字符、黑名单目录这些规则和别处共用一套，别在这儿再写一遍
+  try {
+    parseRelPathRequired(mediaPath)
+  }
+  catch {
+    return null
+  }
+
+  return mediaPath
 }
 
 /** `- 帖1-01.jpg` / `1. 帖1-01.jpg` 这类列表前缀，写不写都认 */

@@ -459,9 +459,15 @@
       "submit": "准备发布",
       "submitting": "打包中…",
       "created": "打包好了，往下看卡片",
-      "skippedMedia": "有 {{num}} 张图没有 OSS 地址，这次没打包进来",
       "noDrafts": "还没有草稿。先去「生成」标签页写一条，再回来打包。",
       "manualOnly": "只打包内容，不会替你发"
+    },
+    "skipped": {
+      "title": "有配图没打包进来",
+      "pathNotAllowed": "有 {{num}} 行配图路径不允许，配图只能写 media/ 里的文件",
+      "cardMissing": "有 {{num}} 张图在物料里找不到，检查一下文件名对不对",
+      "ossMissing": "有 {{num}} 张图还没传上云，暂时用不了",
+      "unknown": "有 {{num}} 张图没打包进来，原因是 {{reason}}"
     },
     "card": {
       "copy": "复制",
@@ -483,7 +489,7 @@
       "downloadStarted": "已开始下载",
       "downloadFallback": "图片已在新标签页打开，右键另存为",
       "noMedia": "这条没有配图",
-      "noMediaHint": "草稿里的图片要有 OSS 地址才会打包进来。",
+      "noMediaHint": "配图要写 media/ 里的文件，而且已经传上云，才会打包进来。",
       "mediaUndeclared": "这份草稿没写配图",
       "mediaUndeclaredHint": "点右上角「从物料里挑图」挑几张，或者回草稿里加一节「## 配图」再打包一次。",
       "pickMedia": "从物料里挑图",

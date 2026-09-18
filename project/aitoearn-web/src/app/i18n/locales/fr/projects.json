@@ -459,9 +459,15 @@
       "submit": "Préparer",
       "submitting": "Préparation…",
       "created": "C'est prêt, la fiche est en dessous",
-      "skippedMedia": "{{num}} image(s) sans adresse OSS ont été laissées de côté",
       "noDrafts": "Aucun brouillon pour l'instant. Écris-en un dans l'onglet « Générer », puis reviens ici.",
       "manualOnly": "Prépare seulement le contenu, ne publie jamais à ta place"
+    },
+    "skipped": {
+      "title": "Des images n'ont pas été incluses",
+      "pathNotAllowed": "{{num}} chemin(s) d'image ne sont pas autorisés : une image ne peut pointer que vers un fichier dans media/",
+      "cardMissing": "{{num}} image(s) sont introuvables dans les ressources : vérifie que les noms de fichiers sont bons",
+      "ossMissing": "{{num}} image(s) ne sont pas encore envoyées sur le cloud et sont donc inutilisables pour l'instant",
+      "unknown": "{{num}} image(s) ont été laissées de côté, raison : {{reason}}"
     },
     "card": {
       "copy": "Copier",
@@ -483,7 +489,7 @@
       "downloadStarted": "Téléchargement lancé",
       "downloadFallback": "Ouvert dans un nouvel onglet, enregistre-le depuis là",
       "noMedia": "Pas d'image ici",
-      "noMediaHint": "Les images du brouillon ne sont reprises que si elles ont une adresse OSS.",
+      "noMediaHint": "Une image n'est incluse que si elle pointe vers un fichier dans media/ et qu'elle est déjà envoyée sur le cloud.",
       "mediaUndeclared": "Ce brouillon n'indique aucune image",
       "mediaUndeclaredHint": "Choisis-en quelques-unes avec « Choisir dans les matériaux » en haut à droite, ou ajoute une section « ## Images » au brouillon puis prépare-le à nouveau.",
       "pickMedia": "Choisir dans les matériaux",

@@ -4,7 +4,7 @@
  */
 
 import type { FileNode } from '@/api/projects/project-file.types'
-import type { PublishSnapshot } from '@/api/publishing/publishing.types'
+import type { PublishSnapshot, SkippedMedia } from '@/api/publishing/publishing.types'
 import { ProjectFileType } from '@/api/projects/project-file.types'
 import { POST_URL_MAX_LENGTH, PUBLISHING_ERROR_CODE } from '@/api/publishing/publishing.constants'
 import { LinkStatus, PublishStatus } from '@/api/publishing/publishing.types'
@@ -230,7 +230,7 @@ export function getPlatformLabelKey(platform: string): string | null {
 }
 
 /**
- * 打包那一刻服务端从草稿里读出来的两条提示。
+ * 打包那一刻服务端从草稿里读出来的三条提示。
  *
  * 服务端只在「从草稿建工单」的返回里给一次，**不落库**：列表和详情里都没有，
  * 页面刷新之后就拿不到了。所以这份提示跟着刚建出来的那条记录走，`postId` 就是用来认人的。
@@ -242,6 +242,89 @@ export interface PublishDraftNotes {
   mediaDeclared: boolean
   /** 正文是不是整篇原文兜出来的。true = 草稿没写 `## 正文` 小节 */
   bodyFallback: boolean
+  /** 声明了、但没能进快照的图片，按服务端给的原因原样带着 */
+  skippedMedia: SkippedMedia[]
+}
+
+/** 一类跳过原因归成一组：几条、说哪句话、具体是哪几行 */
+export interface SkippedMediaGroup {
+  /** 服务端给的原因，原样保留，用作 React key */
+  reason: string
+  /** 这一类有几条 */
+  count: number
+  /** 这一类该说的那句话的文案键 */
+  messageKey: string
+  /**
+   * 服务端给回来的路径，原样带上。
+   * `path_not_allowed` 那种给的是草稿里写的那一行，人得照着它回草稿里改，所以必须显示出来。
+   */
+  paths: string[]
+}
+
+/**
+ * 三种跳过原因的显示顺序。
+ * `path_not_allowed` 排最前：另外两种是物料那边的事（图没传上去、名字对不上），
+ * 这一种是草稿里那一行写错了，只有人回去改那一行才有救，最该先看见。
+ */
+const SKIPPED_MEDIA_REASON_ORDER = ['path_not_allowed', 'card_missing', 'oss_missing']
+
+/**
+ * 跳过原因 → 文案键。
+ * 认不出来的原因返回 null，由调用方退回「不知道为什么」那句，
+ * 并把原因原样显示出来——**宁可说不知道，也不能安给它一个现成的理由**。
+ */
+function getSkippedMediaMessageKey(reason: string): string | null {
+  switch (reason) {
+    case 'path_not_allowed':
+      return 'publish.skipped.pathNotAllowed'
+    case 'card_missing':
+      return 'publish.skipped.cardMissing'
+    case 'oss_missing':
+      return 'publish.skipped.ossMissing'
+    default:
+      return null
+  }
+}
+
+/**
+ * 把跳过的图片按原因分组、分别计数。
+ *
+ * 三种原因是三件不同的事：找不到图 / 图还没传上云 / 这一行路径不允许。
+ * 合成一句「有 N 张图没有 OSS 地址」会把人往错误的方向带——路径被拒的那几行
+ * 跟 OSS 一点关系都没有，人照着去查 OSS 永远查不出来。
+ */
+export function groupSkippedMedia(skipped: SkippedMedia[] | null | undefined): SkippedMediaGroup[] {
+  if (!Array.isArray(skipped) || skipped.length === 0)
+    return []
+
+  // 先按原因装桶，同时记住没见过的原因是什么顺序来的
+  const buckets = new Map<string, string[]>()
+  for (const item of skipped) {
+    if (!item)
+      continue
+
+    const reason = typeof item.reason === 'string' ? item.reason : ''
+    const path = typeof item.path === 'string' ? item.path : ''
+    const paths = buckets.get(reason)
+    if (paths)
+      paths.push(path)
+    else
+      buckets.set(reason, [path])
+  }
+
+  // 认识的原因按固定顺序排前面，认不出来的按出现顺序接在后面
+  const known = SKIPPED_MEDIA_REASON_ORDER.filter(reason => buckets.has(reason))
+  const unknown = [...buckets.keys()].filter(reason => !SKIPPED_MEDIA_REASON_ORDER.includes(reason))
+
+  return [...known, ...unknown].map((reason) => {
+    const paths = buckets.get(reason) ?? []
+    return {
+      reason,
+      count: paths.length,
+      messageKey: getSkippedMediaMessageKey(reason) ?? 'publish.skipped.unknown',
+      paths,
+    }
+  })
 }
 
 /** 路径里的文件名，取不到就把整段路径当名字 */

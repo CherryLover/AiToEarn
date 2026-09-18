@@ -1,6 +1,7 @@
 /**
  * PreparePublishPanel - 选一份草稿 + 选平台 → 打包成一张发布卡片
  * 「准备发布」只做一件事：把点下去那一刻的正文、话题、配图快照下来，建一条待发登记。
+ * 有图没打包进来就按原因分开提示，三种原因说三句话，不合并。
  * 它不会、也不允许往任何平台发内容，发是人自己去平台发。
  */
 'use client'
@@ -25,7 +26,7 @@ import {
 import { toast } from '@/utils/ui/toast'
 import { DEFAULT_DRAFT_PLATFORM } from '../DraftsTab/drafts.constants'
 import { PUBLISH_PLATFORMS } from './publish.constants'
-import { getPublishErrorKey, guessPlatformFromDraftPath } from './publish.utils'
+import { getPublishErrorKey, groupSkippedMedia, guessPlatformFromDraftPath } from './publish.utils'
 
 interface PreparePublishPanelProps {
   projectId: string
@@ -79,15 +80,20 @@ export function PreparePublishPanel(props: PreparePublishPanelProps) {
       if (res && res.code === 0 && res.data?.post) {
         toast.success(t('publish.prepare.created'))
 
-        // 名片里没有 OSS 地址的图片进不了快照，得说一声，不然人会以为图丢了
+        // 有图没进快照就得说一声，不然人会以为图丢了。
+        // 但三种原因要分开说：路径被拒的那几行跟 OSS 一点关系都没有，
+        // 混成一句「没有 OSS 地址」会让人照着错的方向去查。
         const skipped = res.data.skippedMedia
-        if (Array.isArray(skipped) && skipped.length > 0)
-          toast.warning(t('publish.prepare.skippedMedia', { num: skipped.length }))
+        const skippedGroups = groupSkippedMedia(skipped)
+        for (const group of skippedGroups)
+          toast.warning(t(group.messageKey, { num: group.count, reason: group.reason }))
 
         onCreated(res.data.post, {
           postId: res.data.post.id,
           mediaDeclared: res.data.mediaDeclared !== false,
           bodyFallback: res.data.bodyFallback === true,
+          // 卡片上还要再显示一遍：toast 会飘走，而路径写错那种得让人照着那一行回去改
+          skippedMedia: Array.isArray(skipped) ? skipped : [],
         })
         return
       }

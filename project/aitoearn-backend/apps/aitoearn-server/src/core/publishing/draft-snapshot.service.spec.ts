@@ -768,6 +768,90 @@ describe('草稿快照 · 手写草稿的配图', () => {
     expect(result.skippedMedia).toEqual([])
   })
 
+  it('`media/` 开头的不重复加前缀，子目录里的图也认', async () => {
+    mountFiles({
+      [HAND_DRAFT]: handContent(['- media/帖1-01.jpg', '- media/2026-09/帖1-02.jpg']),
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+      'media/2026-09/帖1-02.jpg.md': card('https://oss.example.com/k/02.jpg'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    // 再加一层前缀就会去读 media/media/帖1-01.jpg.md，名片读不到，这两张都会掉进 skippedMedia
+    expect(result.snapshot.mediaUrls).toEqual([
+      'https://oss.example.com/k/01.jpg',
+      'https://oss.example.com/k/02.jpg',
+    ])
+    expect(result.skippedMedia).toEqual([])
+  })
+
+  it('指到 media/ 外面的声明一律拒掉，理由是「路径不允许」', async () => {
+    mountFiles({
+      [HAND_DRAFT]: handContent([
+        '- 帖1-01.jpg',
+        '- background/legal/隐私',
+        '- media/../background/legal/隐私',
+        '- ../../etc/passwd',
+        '- /etc/passwd',
+      ]),
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+      // 越界那几行真被读进去的话，这份文档 frontmatter 里的 oss 就会被当成图片地址塞进快照
+      'background/legal/隐私.md': card('https://oss.example.com/leak/privacy.png'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/01.jpg'])
+    expect(result.skippedMedia).toEqual([
+      { path: 'background/legal/隐私', reason: 'path_not_allowed' },
+      { path: 'media/../background/legal/隐私', reason: 'path_not_allowed' },
+      { path: '../../etc/passwd', reason: 'path_not_allowed' },
+      { path: '/etc/passwd', reason: 'path_not_allowed' },
+    ])
+    // 写了就是声明过，只是这几行不作数
+    expect(result.mediaDeclared).toBe(true)
+  })
+
+  it('frontmatter 的 images 里写越界路径，一样拒掉', async () => {
+    const withFront = [
+      '---',
+      'title: 备孕刷到太多攻略',
+      'images:',
+      '  - background/legal/隐私',
+      '  - 帖1-01.jpg',
+      '---',
+      '',
+      '手写的正文。',
+      '',
+    ].join('\n')
+
+    mountFiles({
+      [HAND_DRAFT]: withFront,
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+      'background/legal/隐私.md': card('https://oss.example.com/leak/privacy.png'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/01.jpg'])
+    expect(result.skippedMedia).toEqual([{ path: 'background/legal/隐私', reason: 'path_not_allowed' }])
+  })
+
+  it('外链照旧原样进快照，不受 media/ 这道限制影响', async () => {
+    mountFiles({
+      [HAND_DRAFT]: handContent(['- https://oss.example.com/k/remote.jpg', '- 帖1-01.jpg']),
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([
+      'https://oss.example.com/k/remote.jpg',
+      'https://oss.example.com/k/01.jpg',
+    ])
+    expect(result.skippedMedia).toEqual([])
+  })
+
   it('目录版照旧走 frontmatter 和血缘，`## 配图` 这条路不插手', async () => {
     mountFiles({
       [`${DRAFT}/content.md`]: CONTENT_MD,
@@ -779,6 +863,111 @@ describe('草稿快照 · 手写草稿的配图', () => {
 
     expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/home.png'])
     expect(result.mediaDeclared).toBe(true)
+  })
+})
+
+/**
+ * 配图限界一开始只加在「草稿里声明的」那条路上，`meta.json` 的 `mediaRefs[].file` 是直接放行的。
+ * 血缘也是生成出来的，一样会写歪：只堵一个门，另一个门照样能把 `background/` 里某份文档
+ * frontmatter 里的 `oss` 当成图片地址塞进快照。两个入口必须走完全同一套规则。
+ */
+describe('草稿快照 · 血缘里的配图走同一道限界', () => {
+  /** 目录版正文，frontmatter 的 `images` 由调用方给（不给就只剩血缘这一个入口） */
+  function dirContent(images: string[]): string {
+    return [
+      '---',
+      'title: 导出藏得太深，四步变一步',
+      ...(images.length > 0 ? ['images:', ...images.map(item => `  - ${item}`)] : []),
+      '---',
+      '',
+      '正文第一段。',
+      '',
+    ].join('\n')
+  }
+
+  function metaWith(mediaRefs: Record<string, string>[]): string {
+    return JSON.stringify({ angleSlug: 'export-friction', platform: 'xhs', mediaRefs })
+  }
+
+  it('`mediaRefs` 里指到 media/ 外面的那条被拒，理由是「路径不允许」', async () => {
+    mountFiles({
+      [`${DRAFT}/content.md`]: dirContent([]),
+      [`${DRAFT}/meta.json`]: metaWith([
+        { file: 'background/legal/靶子' },
+        { file: 'media/home.png', oss: 'https://oss.example.com/k/home.png' },
+      ]),
+      'media/home.png.md': card('https://oss.example.com/k/home.png'),
+      // 越界那条真被读进去的话，这份文档 frontmatter 里的 oss 就成了「图片地址」
+      'background/legal/靶子.md': card('https://oss.example.com/leak/target.png'),
+    })
+
+    const result = await createService().read(DIR, DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/home.png'])
+    expect(result.skippedMedia).toEqual([{ path: 'background/legal/靶子', reason: 'path_not_allowed' }])
+    // 写了就是声明过，只是这一条不作数
+    expect(result.mediaDeclared).toBe(true)
+  })
+
+  it('`..`、绝对路径、绕回去的写法在血缘里也一律拒掉，原样回给人', async () => {
+    mountFiles({
+      [`${DRAFT}/content.md`]: dirContent([]),
+      [`${DRAFT}/meta.json`]: metaWith([
+        { file: 'media/../background/legal/靶子' },
+        { file: '../../etc/passwd' },
+        { file: '/etc/passwd' },
+      ]),
+      'background/legal/靶子.md': card('https://oss.example.com/leak/target.png'),
+    })
+
+    const result = await createService().read(DIR, DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([])
+    expect(result.skippedMedia).toEqual([
+      { path: 'media/../background/legal/靶子', reason: 'path_not_allowed' },
+      { path: '../../etc/passwd', reason: 'path_not_allowed' },
+      { path: '/etc/passwd', reason: 'path_not_allowed' },
+    ])
+  })
+
+  it('血缘里正常的 media/ 路径照旧进快照，裸文件名照样补上 media/ 前缀', async () => {
+    mountFiles({
+      [`${DRAFT}/content.md`]: dirContent([]),
+      [`${DRAFT}/meta.json`]: metaWith([
+        { file: 'media/home.png', oss: 'https://oss.example.com/k/home.png' },
+        { file: 'media/2026-09/inner.png' },
+        { file: 'bare.png' },
+      ]),
+      'media/home.png.md': card('https://oss.example.com/k/home.png'),
+      'media/2026-09/inner.png.md': card('https://oss.example.com/k/inner.png'),
+      'media/bare.png.md': card('https://oss.example.com/k/bare.png'),
+    })
+
+    const result = await createService().read(DIR, DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([
+      'https://oss.example.com/k/home.png',
+      'https://oss.example.com/k/inner.png',
+      'https://oss.example.com/k/bare.png',
+    ])
+    expect(result.skippedMedia).toEqual([])
+  })
+
+  it('草稿写外链、血缘把它指到 media/ 外面：不许顺着地址反查回去读那份文件', async () => {
+    mountFiles({
+      [`${DRAFT}/content.md`]: dirContent(['https://oss.example.com/k/home.png']),
+      // 反查表要是收下了这条，越界的限界就等于白加：地址一对上就去读 background 那份文档
+      [`${DRAFT}/meta.json`]: metaWith([
+        { file: 'background/legal/靶子', oss: 'https://oss.example.com/k/home.png' },
+      ]),
+      'background/legal/靶子.md': card('https://oss.example.com/leak/target.png'),
+    })
+
+    const result = await createService().read(DIR, DRAFT)
+
+    // 外链照旧原样进快照，但那份文档里的 oss 一个字都不许进来
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/home.png'])
+    expect(result.skippedMedia).toEqual([{ path: 'background/legal/靶子', reason: 'path_not_allowed' }])
   })
 })
 
@@ -862,6 +1051,45 @@ describe('草稿快照 · 正文兜底不能再悄悄发生', () => {
     expect(result.bodyFallback).toBe(false)
     expect(result.snapshot.title).toBe('手写的标题')
     expect(result.snapshot.topics).toEqual(['怀孕'])
+  })
+
+  it('单文件 + 标准 frontmatter：正文就是 frontmatter 后面那段，不算兜底', async () => {
+    const withFront = [
+      '---',
+      'title: 备孕刷到太多攻略',
+      'topics:',
+      '  - 备孕',
+      '  - 孕期记录',
+      'images:',
+      '  - 帖1-01.jpg',
+      '---',
+      '',
+      '我们结婚已经 4 年了，一直在佛系备孕。',
+      '',
+    ].join('\n')
+
+    mountFiles({
+      [HAND_DRAFT]: withFront,
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.title).toBe('备孕刷到太多攻略')
+    expect(result.snapshot.body).toBe('我们结婚已经 4 年了，一直在佛系备孕。')
+    expect(result.snapshot.topics).toEqual(['备孕', '孕期记录'])
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/01.jpg'])
+    // 快照四项全对，这时候还标一句「没按小节写」就是对着干净草稿喊狼来了
+    expect(result.bodyFallback).toBe(false)
+  })
+
+  it('开头有 `---` 却没收尾：那不是 frontmatter，照旧算兜底', async () => {
+    const dangling = ['---', 'title: 这行没人收尾', '', '就一段话。', ''].join('\n')
+    mountFiles({ [HAND_DRAFT]: dangling })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.bodyFallback).toBe(true)
   })
 
   it('目录版不走小节那套，正文本来就是 content.md 的正文，不算兜底', async () => {

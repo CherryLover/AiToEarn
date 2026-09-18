@@ -41,16 +41,18 @@ const PublishedPostDetailVoSchema = PublishedPostBaseSchema.extend({
 export class PublishedPostDetailVo extends createZodDto(PublishedPostDetailVoSchema, 'PublishedPostDetailVo') {}
 
 const SkippedMediaVoSchema = z.object({
-  path: z.string().describe('没进快照的图片，相对项目根'),
-  reason: z.enum(['card_missing', 'oss_missing']).describe('card_missing 名片读不到；oss_missing 名片在但没有 OSS 地址'),
+  path: z.string().describe('没进快照的图片：能定位到的是相对项目根的路径，路径不允许的那种是草稿里原样写的那一行'),
+  reason: z
+    .enum(['card_missing', 'oss_missing', 'path_not_allowed'])
+    .describe('card_missing 名片读不到；oss_missing 名片在但没有 OSS 地址；path_not_allowed 这行指到 media/ 外面去了，压根没读'),
 })
 
 /** 建完工单返回：记录本身 + 这份草稿有哪些地方要人再看一眼 */
 const PublishJobCreatedVoSchema = z.object({
   post: PublishedPostDetailVoSchema.describe('建出来的发布记录'),
-  skippedMedia: z.array(SkippedMediaVoSchema).describe('找不到名片、或名片里没有 OSS 地址，没进快照的图片'),
+  skippedMedia: z.array(SkippedMediaVoSchema).describe('没进快照的图片：找不到名片、名片里没有 OSS 地址，或者这行声明指到 media/ 外面去了'),
   mediaDeclared: z.boolean().describe('草稿里有没有声明配图；false 表示一张都没声明，图文平台要提示人补上再发'),
-  bodyFallback: z.boolean().describe('正文是不是整篇原文兜出来的（草稿没写 `## 正文` 小节）；true 时要提示人发之前自己删一遍'),
+  bodyFallback: z.boolean().describe('正文是不是整篇原文兜出来的（草稿既没写 frontmatter 也没写 `## 正文` 小节）；true 时要提示人发之前自己删一遍'),
 })
 export class PublishJobCreatedVo extends createZodDto(PublishJobCreatedVoSchema, 'PublishJobCreatedVo') {}
 

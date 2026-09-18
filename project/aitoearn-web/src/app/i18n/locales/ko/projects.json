@@ -459,9 +459,15 @@
       "submit": "준비하기",
       "submitting": "묶는 중…",
       "created": "다 묶었습니다. 아래 카드를 보세요",
-      "skippedMedia": "OSS 주소가 없는 이미지 {{num}}장은 빠졌습니다",
       "noDrafts": "아직 초안이 없습니다. 「생성」 탭에서 하나 쓰고 다시 오세요.",
       "manualOnly": "내용만 묶고, 대신 올려주지는 않습니다"
+    },
+    "skipped": {
+      "title": "함께 담기지 못한 이미지가 있습니다",
+      "pathNotAllowed": "이미지 경로 {{num}}줄이 허용되지 않습니다. 이미지는 media/ 안의 파일만 쓸 수 있습니다",
+      "cardMissing": "이미지 {{num}}장을 자료에서 찾을 수 없습니다. 파일 이름이 맞는지 확인하세요",
+      "ossMissing": "이미지 {{num}}장은 아직 클라우드에 올라가지 않아 지금은 쓸 수 없습니다",
+      "unknown": "이미지 {{num}}장이 빠졌습니다. 이유: {{reason}}"
     },
     "card": {
       "copy": "복사",
@@ -483,7 +489,7 @@
       "downloadStarted": "내려받기를 시작했습니다",
       "downloadFallback": "새 탭에서 열었습니다. 거기서 저장하세요",
       "noMedia": "이 건에는 이미지가 없습니다",
-      "noMediaHint": "초안의 이미지는 OSS 주소가 있을 때만 묶입니다.",
+      "noMediaHint": "이미지는 media/ 안의 파일을 가리키고 이미 클라우드에 올라가 있어야만 함께 담깁니다.",
       "mediaUndeclared": "이 초안에는 이미지가 적혀 있지 않습니다",
       "mediaUndeclaredHint": "오른쪽 위 「자료에서 고르기」로 몇 장 고르거나, 초안에 「## 이미지」 절을 넣고 다시 묶으세요.",
       "pickMedia": "자료에서 고르기",

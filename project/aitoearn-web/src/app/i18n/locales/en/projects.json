@@ -459,9 +459,15 @@
       "submit": "Prepare",
       "submitting": "Packing…",
       "created": "Packed. The card is below.",
-      "skippedMedia": "{{num}} image(s) had no OSS address and were left out",
       "noDrafts": "No drafts yet. Write one in the Generate tab, then come back.",
       "manualOnly": "Packs the content only, it never posts for you"
+    },
+    "skipped": {
+      "title": "Some images were left out",
+      "pathNotAllowed": "{{num}} image path(s) are not allowed — an image can only point at a file inside media/",
+      "cardMissing": "{{num}} image(s) are not in the materials — check that the file names are right",
+      "ossMissing": "{{num}} image(s) are not uploaded to the cloud yet, so they cannot be used",
+      "unknown": "{{num}} image(s) were left out, reason: {{reason}}"
     },
     "card": {
       "copy": "Copy",
@@ -483,7 +489,7 @@
       "downloadStarted": "Download started",
       "downloadFallback": "Opened in a new tab, save it from there",
       "noMedia": "No images on this one",
-      "noMediaHint": "Images are packed only when the draft's image has an OSS address.",
+      "noMediaHint": "An image is packed in only if it points at a file inside media/ and has already been uploaded to the cloud.",
       "mediaUndeclared": "This draft does not list any images",
       "mediaUndeclaredHint": "Pick a few with Pick from materials above, or add a ## Images section to the draft and pack it again.",
       "pickMedia": "Pick from materials",
