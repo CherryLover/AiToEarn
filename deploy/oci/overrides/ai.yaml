@@ -17,9 +17,31 @@ assets:
   cdnEndpoint: https://${DOMAIN}/oss
   publicEndpoint: https://${OSS_DOMAIN}
 ai:
-  # OpenAI 兼容上游（DeepSeek 渠道的模型也走这组）
+  # OpenAI 兼容上游（DeepSeek 渠道的模型也走这组）。地址要带 /v1
   openai:
     baseUrl: ${OPENAI_BASE_URL}
     apiKey: ${OPENAI_API_KEY}
   relay:
     apiKey: ${AI_RELAY_API_KEY}
+  # 对话模型清单换成上游实际放行的（官方默认那份里的 Gemini / Claude / DeepSeek 我们没有）
+  # scenes：web=网页对话，comment=评论回复，draft-generation=草稿生成，plugin=浏览器插件里的 AI 助手
+  models:
+    chat:
+      - name: gpt-5.6
+        description: GPT 5.6
+        channel: openai
+        scenes: [web, comment, draft-generation, plugin]
+        inputModalities: [text, image]
+        outputModalities: [text]
+      - name: gpt-5.5
+        description: GPT 5.5
+        channel: openai
+        scenes: [web, comment, draft-generation, plugin]
+        inputModalities: [text, image]
+        outputModalities: [text]
+      - name: gpt-5.6-luna
+        description: GPT 5.6 Luna
+        channel: openai
+        scenes: [web, comment]
+        inputModalities: [text, image]
+        outputModalities: [text]
