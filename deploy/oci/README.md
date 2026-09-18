@@ -85,3 +85,54 @@ $C logs -f aitoearn-server
 - Pocket ID 客户端回调地址：`https://pub.flyooo.uk/api/auth/oidc/callback`
 - `.env` 填 `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET`，`OIDC_ALLOWED_EMAILS` 是允许登录的邮箱（逗号分隔）
 - 名单里的邮箱第一次登录自动建号；签发的登录凭证默认 30 天有效，格式和官方一致，插件照常读取
+
+## 推送（Bark）
+
+草稿生成完、有 manual 工单等着人工去发时，往手机推一条提醒。`.env` 里四个变量（见 `.env.example`）：
+
+| 变量 | 作用 | 留空会怎样 |
+|---|---|---|
+| `NOTIFY_ENABLED` | 总开关，要真推必须是 `true` | 关掉推送 |
+| `NOTIFY_BARK_URL` | Bark 地址，形如 `https://<域名>/<设备 key>/` | 关掉推送 |
+| `NOTIFY_BARK_KEY` | 请求头 `bark-key` 的值 | 关掉推送 |
+| `NOTIFY_GROUP` | 通知分组，默认 `AiToEarn` | 用默认值 |
+
+**四行必须留在 `.env` 里（可以是空值）**：`render_config.py` 是严格替换，缺变量直接 KeyError，配置渲染不出来。
+
+**真实地址和 key 只写在服务器的 `/opt/stack/aitoearn/.env`，绝不进仓库。**
+
+三样（开关 / 地址 / key）配齐了才真推，缺一样就静默关掉：不推、不抛错、不刷日志。推送本身也只是旁支——超时 5 秒、失败只记一行 warn，绝不影响草稿生成和发布工单。
+
+### 留空到底渲染成什么
+
+`.env` 里 `NOTIFY_ENABLED=` 这种空值，在 override 模板里是 `enabled:`，YAML 解析成 null，`render_config.py` 的 `prune()` 会把整个键丢掉。所以「清空配置」得到的不是一堆空字符串，而是 `notify: {}`（或只剩 `group`），由代码里的默认值兜底。
+
+这条链路有单测锁着，改配置 schema 前先看：
+
+- `apps/aitoearn-server/src/core/notify/notify.config.spec.ts`
+- `apps/aitoearn-ai/src/core/notify/notify.config.spec.ts`
+
+用例里的输入就是真跑 `render_config.py` 渲染出来的四种形态，文件头有复现命令。**别把这几个字段改成 required**：配置是进程启动时用 zod 校验的，校验不过不是推送不工作，是服务直接起不来。
+
+### 待办：下次重启窗口实跑一次
+
+契约的验收项「把 Bark 配置清空，一切照常工作、不报错」只在本地测过，**线上没实跑过**——要清空就得改 `.env` 再重新部署，上线那一轮没有这个窗口。下次有计划内的重启窗口时顺手做一次：
+
+```bash
+cd /opt/stack/aitoearn
+cp .env .env.bak                                        # 先备份
+sed -i 's/^NOTIFY_ENABLED=.*/NOTIFY_ENABLED=/' .env     # 只清总开关，地址和 key 不动
+repo/deploy/oci/deploy.sh                               # 只更新配置，沿用现有镜像标签
+
+# 期望：两个都是「缺省，等于关」。别直接 cat 渲染出来的配置，里面有真实的 key
+for f in config/server.yaml config/ai.yaml; do
+  python3 -c "import yaml,sys;n=yaml.safe_load(open(sys.argv[1])).get('notify') or {};print(sys.argv[1],'enabled =',n.get('enabled','缺省，等于关'))" "$f"
+done
+
+C="docker compose --project-directory . --env-file .env -f repo/deploy/oci/docker-compose.yml"
+$C ps                                                   # 期望：server / ai 都 healthy
+$C logs --tail=200 aitoearn-server | grep -ic bark      # 期望：0，一条推送日志都没有
+mv .env.bak .env && repo/deploy/oci/deploy.sh           # 复原，再确认一次 healthy
+```
+
+顺手也验一下反面：复原之后在网页上生成一份草稿，手机应该收到「✅ 新草稿生成好了」。

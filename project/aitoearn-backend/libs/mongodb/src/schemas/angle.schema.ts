@@ -33,6 +33,9 @@ export enum AngleStatus {
  *
  * 战绩（名下帖子的数据汇总）阶段 5 才做，到时候在这里加 `stats` 一类的字段，
  * 按 `angleId` 从发布记录汇总，不要把它塞进文件——文件只放写作指引。
+ *
+ * 集合名是 `angle`，不是 contract-core 早期例子里的 `projectAngle`。已按实现定稿
+ * （见 contract-core.md「重做已落地的集合名」），**别顺手改**：改了就是建一张空表，老数据全读不到。
  */
 @Schema({ ...DEFAULT_SCHEMA_OPTIONS, collection: 'angle' })
 export class Angle extends WithTimestampSchema {

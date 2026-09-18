@@ -124,10 +124,24 @@ throw new AppException(ResponseCode.ProjectNotFound)
 
 | 对象 | 规则 | 例子 |
 |---|---|---|
-| Mongo 集合 | 小驼峰单数 | `project`、`projectAngle`、`agentTask`、`postMetric` |
+| Mongo 集合 | 小驼峰单数 | `project`、`angle`、`executionTask`、`publishedPost` |
 | 接口路径 | 小写复数 + 动作 | `/projects/create`、`/projects/list` |
 | 错误码 | 20000 起，按模块分段 | 项目 200xx、物料 201xx、方向 202xx |
 | 项目英文名 | 见下 | `fortyweeks` |
+
+### 重做已落地的集合名（以代码为准）
+
+新增集合前先看这张表，别按印象另起名字：
+
+| 集合 | 阶段 | Schema |
+|---|---|---|
+| `project` | 0 | `libs/mongodb/src/schemas/project.schema.ts` |
+| `angle` | 2 | `libs/mongodb/src/schemas/angle.schema.ts` |
+| `device` | 3 | `libs/mongodb/src/schemas/device.schema.ts` |
+| `executionTask` | 3 | `libs/mongodb/src/schemas/execution-task.schema.ts` |
+| `publishedPost` | 4 | `libs/mongodb/src/schemas/published-post.schema.ts` |
+
+**这一段是补记，不是改设计。** 本节早期的例子写的是 `projectAngle` / `agentTask`，实现时用的是 `angle` / `executionTask`——集合已经有线上数据，改名要停机迁移，收益为零，所以定为**以代码为准**，契约跟着改。以后谁想统一命名，得单独排一次迁移，别顺手改 `@Schema({ collection })`：改了就等于建了一张空表，老数据全部读不到。
 
 ## 三、项目英文名规则（重要，多处依赖）
 
