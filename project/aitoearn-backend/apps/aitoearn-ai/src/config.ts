@@ -202,6 +202,11 @@ const serverClientConfigSchema = z.object({
   baseUrl: z.string(),
 })
 
+// 与 aitoearn-server 的 projectsConfigSchema 保持一致：两个容器挂的是同一个物料目录
+export const projectsConfigSchema = z.object({
+  root: z.string().default('/data/projects').describe('项目物料根目录（容器内路径）'),
+}).default({ root: '/data/projects' })
+
 export const appConfigSchema = z.object({
   ...baseConfig.shape,
   auth: aitoearnAuthConfigSchema,
@@ -212,6 +217,7 @@ export const appConfigSchema = z.object({
   assets: assetsConfigSchema,
   ai: aiConfigSchema,
   agent: agentConfigSchema,
+  projects: projectsConfigSchema,
 })
 
 export class AppConfig extends createZodDto(appConfigSchema) { }

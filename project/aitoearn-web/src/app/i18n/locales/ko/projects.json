@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "title": "프로젝트",
+    "description": "프로젝트 단위로 실제 자료를 모으고 발행 방향을 정리해 콘텐츠를 만듭니다.",
+    "keywords": "프로젝트, 콘텐츠 운영, 자료, 발행 방향, AiToEarn"
+  },
+  "page": {
+    "title": "프로젝트",
+    "subtitle": "프로젝트마다 자료를 모으고, 방향과 콘텐츠는 거기서 자랍니다"
+  },
+  "action": {
+    "create": "새 프로젝트",
+    "refresh": "새로고침",
+    "viewArchived": "보관함 보기",
+    "viewActive": "진행 중으로 돌아가기",
+    "back": "뒤로",
+    "retry": "다시 시도",
+    "backToList": "프로젝트 목록으로"
+  },
+  "status": {
+    "active": "진행 중",
+    "archived": "보관됨"
+  },
+  "list": {
+    "createdAt": "{{time}} 생성",
+    "loadFailed": "프로젝트 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    "noDesc": "설명이 아직 없습니다"
+  },
+  "empty": {
+    "title": "아직 프로젝트가 없습니다",
+    "desc": "먼저 프로젝트를 만들고 제품 소개, 사이트 문구, 사용자 피드백 같은 실제 자료를 넣어 두세요. 이후의 방향과 콘텐츠가 모두 여기서 나옵니다.",
+    "action": "첫 프로젝트 만들기"
+  },
+  "emptyArchived": {
+    "title": "보관된 프로젝트가 없습니다",
+    "desc": "보관한 프로젝트가 여기에 표시됩니다. 디스크의 파일은 삭제되지 않습니다."
+  },
+  "label": {
+    "displayName": "표시 이름",
+    "name": "영문 이름",
+    "desc": "한 줄 설명",
+    "audience": "대상",
+    "goal": "이루려는 것",
+    "dirName": "디렉터리 이름",
+    "status": "상태",
+    "createdAt": "생성 시각",
+    "updatedAt": "수정 시각",
+    "archivedAt": "보관 시각"
+  },
+  "placeholder": {
+    "displayName": "예: 포티위크스",
+    "name": "예: fortyweeks",
+    "desc": "이 프로젝트는 무엇을 하나요?",
+    "audience": "예: 임신을 준비하는 부부",
+    "goal": "예: 제품을 더 많은 사람에게 알리기"
+  },
+  "form": {
+    "title": "새 프로젝트",
+    "subtitle": "영문 이름은 생성 후 바꿀 수 없으니 신중히 정하세요.",
+    "optional": "선택",
+    "nameHint": "생성 후에는 바꿀 수 없으며, 서버의 디렉터리 이름으로도 쓰입니다",
+    "suggest": "이름 추천",
+    "suggestFailed": "추천 이름을 받지 못했습니다. 직접 정해 주세요.",
+    "submit": "만들기",
+    "submitting": "만드는 중…",
+    "cancel": "취소",
+    "createSuccess": "프로젝트를 만들었습니다"
+  },
+  "nameError": {
+    "required": "영문 이름을 입력해 주세요",
+    "charset": "소문자, 숫자, 하이픈만 쓸 수 있습니다",
+    "start": "소문자 알파벳으로 시작해야 합니다",
+    "end": "하이픈으로 끝날 수 없습니다",
+    "length": "3~40자로 입력해 주세요",
+    "doubleHyphen": "하이픈을 연속으로 쓸 수 없습니다",
+    "reserved": "시스템이 예약한 이름입니다. 다른 이름을 써 주세요."
+  },
+  "displayNameError": {
+    "required": "표시 이름을 입력해 주세요",
+    "tooLong": "표시 이름은 최대 60자입니다"
+  },
+  "error": {
+    "notFound": "프로젝트가 없습니다. 삭제되었을 수 있습니다.",
+    "nameInvalid": "영문 이름이 규칙에 맞지 않습니다. 고친 뒤 다시 시도해 주세요.",
+    "nameTaken": "이미 사용 중인 영문 이름입니다. 다른 이름을 써 주세요.",
+    "nameReserved": "시스템이 예약한 이름입니다. 다른 이름을 써 주세요.",
+    "dirCreateFailed": "서버에 디렉터리를 만들지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    "dirRenameFailed": "서버의 디렉터리 이름을 바꾸지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    "archived": "보관된 프로젝트라 수정할 수 없습니다.",
+    "pathEscape": "경로가 올바르지 않아 요청이 거부되었습니다.",
+    "unknown": "처리하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    "network": "네트워크에 연결할 수 없습니다. 연결을 확인해 주세요."
+  },
+  "detail": {
+    "loading": "불러오는 중…",
+    "loadFailed": "프로젝트를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    "notFound": "프로젝트를 찾을 수 없습니다",
+    "notFoundDesc": "삭제되었거나 현재 계정의 프로젝트가 아닐 수 있습니다.",
+    "basicInfo": "기본 정보",
+    "settings": "프로젝트 설정",
+    "settingsDesc": "표시 이름 등은 언제든 바꿀 수 있습니다. 영문 이름과 디렉터리 이름은 바꿀 수 없습니다.",
+    "nameFixed": "생성 후에는 바꿀 수 없으며, 서버의 디렉터리 이름으로도 쓰입니다",
+    "save": "저장",
+    "saving": "저장 중…",
+    "saveSuccess": "저장했습니다",
+    "reset": "변경 취소",
+    "archive": "프로젝트 보관",
+    "archiving": "보관 중…",
+    "archiveSuccess": "프로젝트를 보관했습니다",
+    "archiveConfirmTitle": "이 프로젝트를 보관할까요?",
+    "archiveConfirmDesc": "보관하면 목록에서 사라지고 더 이상 수정할 수 없습니다. 디스크의 파일은 삭제되지 않고 디렉터리 이름만 바뀝니다.",
+    "archiveConfirmOk": "보관",
+    "archiveConfirmCancel": "나중에",
+    "archivedTip": "보관된 프로젝트라 보기만 할 수 있습니다.",
+    "emptyField": "(미입력)"
+  },
+  "tabs": {
+    "materials": "자료",
+    "generate": "생성",
+    "publish": "발행",
+    "data": "데이터",
+    "placeholder": "아직 만들지 않았습니다. 다음 단계에서 열립니다."
+  }
+}

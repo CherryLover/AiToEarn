@@ -212,4 +212,16 @@ export enum ResponseCode {
   // ========================================
   ApiKeyInvalid = 19000,
   RelayServerUnavailable = 19001,
+
+  // ========================================
+  // 20000-20099: projects（项目）
+  // ========================================
+  ProjectNotFound = 20000,
+  ProjectNameInvalid = 20001, // 不符合命名规则
+  ProjectNameTaken = 20002, // 已存在
+  ProjectNameReserved = 20003, // 命中保留字
+  ProjectDirCreateFailed = 20004, // 目录创建失败
+  ProjectArchived = 20005, // 已归档，不能操作
+  ProjectPathEscape = 20006, // 路径越界
+  ProjectDirRenameFailed = 20007, // 目录改名失败（归档、归档回滚）
 }

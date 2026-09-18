@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "title": "Projects",
+    "description": "Collect real source material, distill publishing angles, and generate content project by project.",
+    "keywords": "projects, content operations, source material, publishing angles, AiToEarn"
+  },
+  "page": {
+    "title": "Projects",
+    "subtitle": "One project, one set of source material. Everything else grows from here."
+  },
+  "action": {
+    "create": "New project",
+    "refresh": "Refresh",
+    "viewArchived": "View archived",
+    "viewActive": "Back to active",
+    "back": "Back",
+    "retry": "Retry",
+    "backToList": "Back to projects"
+  },
+  "status": {
+    "active": "Active",
+    "archived": "Archived"
+  },
+  "list": {
+    "createdAt": "Created {{time}}",
+    "loadFailed": "Could not load the project list. Please try again.",
+    "noDesc": "No description yet"
+  },
+  "empty": {
+    "title": "No projects yet",
+    "desc": "Create a project first, then drop in the real material: product notes, website copy, user feedback. Every angle and draft later grows out of it.",
+    "action": "Create your first project"
+  },
+  "emptyArchived": {
+    "title": "No archived projects",
+    "desc": "Archived projects show up here. Their files on disk are kept, never deleted."
+  },
+  "label": {
+    "displayName": "Display name",
+    "name": "Project key",
+    "desc": "One-line description",
+    "audience": "Who it is for",
+    "goal": "What you want out of it",
+    "dirName": "Directory name",
+    "status": "Status",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "archivedAt": "Archived at"
+  },
+  "placeholder": {
+    "displayName": "e.g. Forty Weeks",
+    "name": "e.g. fortyweeks",
+    "desc": "What is this project about?",
+    "audience": "e.g. couples trying to conceive",
+    "goal": "e.g. get more people to know the product"
+  },
+  "form": {
+    "title": "New project",
+    "subtitle": "The project key cannot be changed later, so pick it carefully.",
+    "optional": "Optional",
+    "nameHint": "Cannot be changed after creation. It is also the directory name on the server.",
+    "suggest": "Suggest one",
+    "suggestFailed": "Could not fetch a suggestion. Pick a name yourself.",
+    "submit": "Create",
+    "submitting": "Creating…",
+    "cancel": "Cancel",
+    "createSuccess": "Project created"
+  },
+  "nameError": {
+    "required": "The project key cannot be empty",
+    "charset": "Only lowercase letters, digits and hyphens are allowed",
+    "start": "Must start with a lowercase letter",
+    "end": "Cannot end with a hyphen",
+    "length": "Must be between 3 and 40 characters",
+    "doubleHyphen": "Cannot contain two hyphens in a row",
+    "reserved": "This name is reserved by the system. Pick another one."
+  },
+  "displayNameError": {
+    "required": "The display name cannot be empty",
+    "tooLong": "The display name can be at most 60 characters"
+  },
+  "error": {
+    "notFound": "This project does not exist. It may have been removed.",
+    "nameInvalid": "The project key does not follow the rules. Adjust it and try again.",
+    "nameTaken": "That project key is already taken. Pick another one.",
+    "nameReserved": "This name is reserved by the system. Pick another one.",
+    "dirCreateFailed": "The directory could not be created on the server. Please try again.",
+    "dirRenameFailed": "The directory could not be renamed on the server. Please try again.",
+    "archived": "This project is archived and can no longer be changed.",
+    "pathEscape": "Invalid path. The operation was rejected.",
+    "unknown": "That did not work. Please try again.",
+    "network": "Network unavailable. Check your connection and try again."
+  },
+  "detail": {
+    "loading": "Loading…",
+    "loadFailed": "Could not load the project. Please try again.",
+    "notFound": "Project not found",
+    "notFoundDesc": "It may have been removed, or it does not belong to this account.",
+    "basicInfo": "Basic info",
+    "settings": "Project settings",
+    "settingsDesc": "Display name and the rest can be edited anytime. The project key and directory name cannot.",
+    "nameFixed": "Cannot be changed after creation. It is also the directory name on the server.",
+    "save": "Save",
+    "saving": "Saving…",
+    "saveSuccess": "Saved",
+    "reset": "Discard changes",
+    "archive": "Archive project",
+    "archiving": "Archiving…",
+    "archiveSuccess": "Project archived",
+    "archiveConfirmTitle": "Archive this project?",
+    "archiveConfirmDesc": "An archived project leaves the list and can no longer be edited. Files on disk are kept; the directory is just renamed.",
+    "archiveConfirmOk": "Archive",
+    "archiveConfirmCancel": "Not now",
+    "archivedTip": "This project is archived and is read-only.",
+    "emptyField": "(not set)"
+  },
+  "tabs": {
+    "materials": "Material",
+    "generate": "Generate",
+    "publish": "Publish",
+    "data": "Data",
+    "placeholder": "Not built yet. It arrives in a later stage."
+  }
+}

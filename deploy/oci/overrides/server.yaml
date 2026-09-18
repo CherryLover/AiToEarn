@@ -33,3 +33,7 @@ oidcLogin:
   redirectUri: https://${DOMAIN}/api/auth/oidc/callback
   webBaseUrl: https://${DOMAIN}
   allowedEmails: "${OIDC_ALLOWED_EMAILS}"
+
+# 项目物料根目录（容器内路径），对应 docker-compose.yml 里 $${DATA_DIR}/projects 的挂载点
+projects:
+  root: /data/projects

@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "title": "Projets",
+    "description": "Rassemblez des matériaux réels, dégagez des angles de publication et générez du contenu, projet par projet.",
+    "keywords": "projets, gestion de contenu, matériaux, angles de publication, AiToEarn"
+  },
+  "page": {
+    "title": "Projets",
+    "subtitle": "Un projet, un fonds de matériaux. Tout le reste en découle."
+  },
+  "action": {
+    "create": "Nouveau projet",
+    "refresh": "Actualiser",
+    "viewArchived": "Voir les archives",
+    "viewActive": "Revenir aux projets actifs",
+    "back": "Retour",
+    "retry": "Réessayer",
+    "backToList": "Retour aux projets"
+  },
+  "status": {
+    "active": "Actif",
+    "archived": "Archivé"
+  },
+  "list": {
+    "createdAt": "Créé le {{time}}",
+    "loadFailed": "Impossible de charger la liste des projets. Réessayez plus tard.",
+    "noDesc": "Pas encore de description"
+  },
+  "empty": {
+    "title": "Aucun projet pour l'instant",
+    "desc": "Créez d'abord un projet, puis déposez-y les matériaux réels : présentation produit, textes du site, retours utilisateurs. Les angles et les contenus en découleront.",
+    "action": "Créer un premier projet"
+  },
+  "emptyArchived": {
+    "title": "Aucun projet archivé",
+    "desc": "Les projets archivés apparaissent ici. Les fichiers sur le disque sont conservés."
+  },
+  "label": {
+    "displayName": "Nom affiché",
+    "name": "Clé du projet",
+    "desc": "Description en une ligne",
+    "audience": "Pour qui",
+    "goal": "Objectif visé",
+    "dirName": "Nom du dossier",
+    "status": "Statut",
+    "createdAt": "Créé le",
+    "updatedAt": "Mis à jour le",
+    "archivedAt": "Archivé le"
+  },
+  "placeholder": {
+    "displayName": "ex. : Forty Weeks",
+    "name": "ex. : fortyweeks",
+    "desc": "De quoi parle ce projet ?",
+    "audience": "ex. : couples en projet de bébé",
+    "goal": "ex. : faire connaître le produit plus largement"
+  },
+  "form": {
+    "title": "Nouveau projet",
+    "subtitle": "La clé du projet ne pourra plus être modifiée : réfléchissez bien.",
+    "optional": "Facultatif",
+    "nameHint": "Non modifiable après la création. C'est aussi le nom du dossier sur le serveur.",
+    "suggest": "Proposer un nom",
+    "suggestFailed": "Aucune suggestion reçue. Choisissez un nom vous-même.",
+    "submit": "Créer",
+    "submitting": "Création…",
+    "cancel": "Annuler",
+    "createSuccess": "Projet créé"
+  },
+  "nameError": {
+    "required": "La clé du projet ne peut pas être vide",
+    "charset": "Seuls les minuscules, les chiffres et les tirets sont autorisés",
+    "start": "Doit commencer par une lettre minuscule",
+    "end": "Ne peut pas se terminer par un tiret",
+    "length": "Doit contenir entre 3 et 40 caractères",
+    "doubleHyphen": "Deux tirets consécutifs ne sont pas autorisés",
+    "reserved": "Ce nom est réservé par le système. Choisissez-en un autre."
+  },
+  "displayNameError": {
+    "required": "Le nom affiché ne peut pas être vide",
+    "tooLong": "Le nom affiché ne peut pas dépasser 60 caractères"
+  },
+  "error": {
+    "notFound": "Ce projet n'existe pas. Il a peut-être été supprimé.",
+    "nameInvalid": "La clé du projet ne respecte pas les règles. Corrigez-la et réessayez.",
+    "nameTaken": "Cette clé de projet est déjà prise. Choisissez-en une autre.",
+    "nameReserved": "Ce nom est réservé par le système. Choisissez-en un autre.",
+    "dirCreateFailed": "Le dossier n'a pas pu être créé sur le serveur. Réessayez plus tard.",
+    "dirRenameFailed": "Le dossier n'a pas pu être renommé sur le serveur. Réessayez plus tard.",
+    "archived": "Ce projet est archivé et ne peut plus être modifié.",
+    "pathEscape": "Chemin invalide. L'opération a été refusée.",
+    "unknown": "Cela n'a pas fonctionné. Réessayez plus tard.",
+    "network": "Réseau indisponible. Vérifiez votre connexion."
+  },
+  "detail": {
+    "loading": "Chargement…",
+    "loadFailed": "Impossible de charger le projet. Réessayez plus tard.",
+    "notFound": "Projet introuvable",
+    "notFoundDesc": "Il a peut-être été supprimé, ou il n'appartient pas à ce compte.",
+    "basicInfo": "Informations de base",
+    "settings": "Paramètres du projet",
+    "settingsDesc": "Le nom affiché et le reste se modifient à tout moment. La clé et le nom du dossier, non.",
+    "nameFixed": "Non modifiable après la création. C'est aussi le nom du dossier sur le serveur.",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saveSuccess": "Enregistré",
+    "reset": "Annuler les modifications",
+    "archive": "Archiver le projet",
+    "archiving": "Archivage…",
+    "archiveSuccess": "Projet archivé",
+    "archiveConfirmTitle": "Archiver ce projet ?",
+    "archiveConfirmDesc": "Un projet archivé disparaît de la liste et ne peut plus être modifié. Les fichiers sont conservés, le dossier est simplement renommé.",
+    "archiveConfirmOk": "Archiver",
+    "archiveConfirmCancel": "Pas maintenant",
+    "archivedTip": "Ce projet est archivé, en lecture seule.",
+    "emptyField": "(non renseigné)"
+  },
+  "tabs": {
+    "materials": "Matériaux",
+    "generate": "Génération",
+    "publish": "Publication",
+    "data": "Données",
+    "placeholder": "Pas encore développé. Prévu pour une étape ultérieure."
+  }
+}

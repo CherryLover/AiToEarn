@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "title": "Projekte",
+    "description": "Sammle echtes Material, leite Veröffentlichungswinkel ab und erstelle Inhalte – Projekt für Projekt.",
+    "keywords": "Projekte, Content-Betrieb, Material, Veröffentlichungswinkel, AiToEarn"
+  },
+  "page": {
+    "title": "Projekte",
+    "subtitle": "Ein Projekt, ein Materialbestand. Alles Weitere wächst daraus."
+  },
+  "action": {
+    "create": "Neues Projekt",
+    "refresh": "Aktualisieren",
+    "viewArchived": "Archiv ansehen",
+    "viewActive": "Zurück zu aktiv",
+    "back": "Zurück",
+    "retry": "Erneut versuchen",
+    "backToList": "Zurück zu den Projekten"
+  },
+  "status": {
+    "active": "Aktiv",
+    "archived": "Archiviert"
+  },
+  "list": {
+    "createdAt": "Erstellt am {{time}}",
+    "loadFailed": "Die Projektliste konnte nicht geladen werden. Bitte später erneut versuchen.",
+    "noDesc": "Noch keine Beschreibung"
+  },
+  "empty": {
+    "title": "Noch keine Projekte",
+    "desc": "Lege zuerst ein Projekt an und lege echtes Material hinein: Produktinfos, Website-Texte, Nutzerfeedback. Alle späteren Winkel und Entwürfe entstehen daraus.",
+    "action": "Erstes Projekt anlegen"
+  },
+  "emptyArchived": {
+    "title": "Keine archivierten Projekte",
+    "desc": "Archivierte Projekte erscheinen hier. Dateien auf der Festplatte bleiben erhalten."
+  },
+  "label": {
+    "displayName": "Anzeigename",
+    "name": "Projektschlüssel",
+    "desc": "Kurzbeschreibung",
+    "audience": "Für wen",
+    "goal": "Was erreicht werden soll",
+    "dirName": "Verzeichnisname",
+    "status": "Status",
+    "createdAt": "Erstellt am",
+    "updatedAt": "Aktualisiert am",
+    "archivedAt": "Archiviert am"
+  },
+  "placeholder": {
+    "displayName": "z. B. Forty Weeks",
+    "name": "z. B. fortyweeks",
+    "desc": "Worum geht es in diesem Projekt?",
+    "audience": "z. B. Paare mit Kinderwunsch",
+    "goal": "z. B. das Produkt bekannter machen"
+  },
+  "form": {
+    "title": "Neues Projekt",
+    "subtitle": "Der Projektschlüssel lässt sich später nicht mehr ändern – gut überlegen.",
+    "optional": "Optional",
+    "nameHint": "Nach dem Anlegen nicht mehr änderbar. Er ist zugleich der Verzeichnisname auf dem Server.",
+    "suggest": "Vorschlag holen",
+    "suggestFailed": "Kein Vorschlag erhalten. Bitte selbst einen Namen wählen.",
+    "submit": "Anlegen",
+    "submitting": "Wird angelegt…",
+    "cancel": "Abbrechen",
+    "createSuccess": "Projekt angelegt"
+  },
+  "nameError": {
+    "required": "Der Projektschlüssel darf nicht leer sein",
+    "charset": "Nur Kleinbuchstaben, Ziffern und Bindestriche erlaubt",
+    "start": "Muss mit einem Kleinbuchstaben beginnen",
+    "end": "Darf nicht mit einem Bindestrich enden",
+    "length": "Muss zwischen 3 und 40 Zeichen lang sein",
+    "doubleHyphen": "Zwei Bindestriche hintereinander sind nicht erlaubt",
+    "reserved": "Dieser Name ist vom System reserviert. Bitte einen anderen wählen."
+  },
+  "displayNameError": {
+    "required": "Der Anzeigename darf nicht leer sein",
+    "tooLong": "Der Anzeigename darf höchstens 60 Zeichen haben"
+  },
+  "error": {
+    "notFound": "Dieses Projekt existiert nicht. Möglicherweise wurde es entfernt.",
+    "nameInvalid": "Der Projektschlüssel entspricht nicht den Regeln. Bitte anpassen.",
+    "nameTaken": "Dieser Projektschlüssel ist bereits vergeben. Bitte einen anderen wählen.",
+    "nameReserved": "Dieser Name ist vom System reserviert. Bitte einen anderen wählen.",
+    "dirCreateFailed": "Das Verzeichnis konnte auf dem Server nicht angelegt werden. Bitte später erneut versuchen.",
+    "dirRenameFailed": "Das Verzeichnis konnte auf dem Server nicht umbenannt werden. Bitte später erneut versuchen.",
+    "archived": "Das Projekt ist archiviert und kann nicht mehr geändert werden.",
+    "pathEscape": "Ungültiger Pfad. Der Vorgang wurde abgelehnt.",
+    "unknown": "Hat nicht geklappt. Bitte später erneut versuchen.",
+    "network": "Keine Netzwerkverbindung. Bitte Verbindung prüfen."
+  },
+  "detail": {
+    "loading": "Wird geladen…",
+    "loadFailed": "Das Projekt konnte nicht geladen werden. Bitte später erneut versuchen.",
+    "notFound": "Projekt nicht gefunden",
+    "notFoundDesc": "Es wurde möglicherweise entfernt oder gehört nicht zu diesem Konto.",
+    "basicInfo": "Basisdaten",
+    "settings": "Projekteinstellungen",
+    "settingsDesc": "Anzeigename und Co. sind jederzeit änderbar. Projektschlüssel und Verzeichnisname nicht.",
+    "nameFixed": "Nach dem Anlegen nicht mehr änderbar. Er ist zugleich der Verzeichnisname auf dem Server.",
+    "save": "Speichern",
+    "saving": "Wird gespeichert…",
+    "saveSuccess": "Gespeichert",
+    "reset": "Änderungen verwerfen",
+    "archive": "Projekt archivieren",
+    "archiving": "Wird archiviert…",
+    "archiveSuccess": "Projekt archiviert",
+    "archiveConfirmTitle": "Dieses Projekt archivieren?",
+    "archiveConfirmDesc": "Ein archiviertes Projekt verschwindet aus der Liste und kann nicht mehr bearbeitet werden. Dateien bleiben erhalten, das Verzeichnis wird nur umbenannt.",
+    "archiveConfirmOk": "Archivieren",
+    "archiveConfirmCancel": "Doch nicht",
+    "archivedTip": "Dieses Projekt ist archiviert und nur lesbar.",
+    "emptyField": "(nicht angegeben)"
+  },
+  "tabs": {
+    "materials": "Material",
+    "generate": "Erzeugen",
+    "publish": "Veröffentlichen",
+    "data": "Daten",
+    "placeholder": "Noch nicht gebaut. Kommt in einer späteren Stufe."
+  }
+}

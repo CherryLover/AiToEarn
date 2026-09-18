@@ -673,4 +673,38 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'en-US': 'Relay server unavailable',
     'zh-CN': '中转服务器不可用',
   },
+
+  // 20000 (projects)
+  [ResponseCode.ProjectNotFound]: {
+    'en-US': 'Project not found',
+    'zh-CN': '项目不存在',
+  },
+  [ResponseCode.ProjectNameInvalid]: {
+    'en-US': 'Invalid project name: 3-40 characters, must start with a lowercase letter, only lowercase letters, digits and single hyphens, cannot end with a hyphen',
+    'zh-CN': '项目英文名不合法：3~40 个字符，小写字母开头，只能包含小写字母、数字和连字符，不能以连字符结尾，也不能出现连续连字符',
+  },
+  [ResponseCode.ProjectNameTaken]: {
+    'en-US': 'Project name already taken',
+    'zh-CN': '项目英文名已被占用',
+  },
+  [ResponseCode.ProjectNameReserved]: {
+    'en-US': 'Project name is reserved',
+    'zh-CN': '项目英文名是保留字，请换一个',
+  },
+  [ResponseCode.ProjectDirCreateFailed]: {
+    'en-US': 'Failed to create project directory',
+    'zh-CN': '项目物料目录创建失败',
+  },
+  [ResponseCode.ProjectArchived]: {
+    'en-US': 'Project is archived',
+    'zh-CN': '项目已归档，不能操作',
+  },
+  [ResponseCode.ProjectPathEscape]: {
+    'en-US': 'Path is outside the project directory',
+    'zh-CN': '路径越出项目目录范围',
+  },
+  [ResponseCode.ProjectDirRenameFailed]: {
+    'en-US': 'Failed to rename project directory',
+    'zh-CN': '项目物料目录改名失败',
+  },
 }

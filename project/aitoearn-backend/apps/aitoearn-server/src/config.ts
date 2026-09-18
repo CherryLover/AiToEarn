@@ -45,6 +45,10 @@ export const apiKeyConfigSchema = z.object({
   prefix: z.string().min(1).default('ai_'),
 }).default({ prefix: 'ai_' })
 
+export const projectsConfigSchema = z.object({
+  root: z.string().default('/data/projects').describe('项目物料根目录（容器内路径）'),
+}).default({ root: '/data/projects' })
+
 export const channelConfigSchema = z.object({
   channelDb: channelDbConfigSchema,
   shortLink: z.object({
@@ -71,6 +75,7 @@ export const appConfigSchema = z.object({
   environment: z.enum(['development', 'production']).default('development'),
   auth: aitoearnAuthConfigSchema,
   apiKey: apiKeyConfigSchema,
+  projects: projectsConfigSchema,
   redis: redisConfigSchema,
   mongodb: mongodbConfigSchema,
   redlock: redlockConfigSchema,

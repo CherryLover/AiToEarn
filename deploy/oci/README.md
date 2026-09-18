@@ -23,8 +23,38 @@
   repo/        fork 的仓库副本（deploy.sh 切到指定引用）
   .env         密码、域名、镜像标签（600，照 .env.example 填）
   config/      deploy.sh 渲染出的 server.yaml / ai.yaml（600）
-/data/aitoearn/  mongodb / redis / rustfs 数据
+/data/aitoearn/  = $DATA_DIR，mongodb / redis / rustfs 数据 + projects 项目物料
 ```
+
+## 项目物料目录
+
+每个项目在磁盘上有一个自己的目录，放背景物料、发布方向、草稿、图片。这些东西以文件为准，不进数据库。
+
+宿主机位置是 `$DATA_DIR/projects/`，和 mongodb / redis / rustfs 并排，由 `deploy.sh` 建出来。
+两个应用容器都把它挂到容器内的 `/data/projects`，可读写，看到的是同一份文件：
+
+| 服务 | 宿主机 | 容器内 | 权限 |
+|---|---|---|---|
+| `aitoearn-server` | `$DATA_DIR/projects` | `/data/projects` | 读写 |
+| `aitoearn-ai` | `$DATA_DIR/projects` | `/data/projects` | 读写 |
+
+容器内路径同时写进两份渲染配置的 `projects.root`（来自 `overrides/server.yaml`、`overrides/ai.yaml`），代码读配置拿这个根目录，不要写死。
+
+属主：这两个镜像的 Dockerfile 都没有 `USER`，容器里跑的是 root（uid 0），所以 `sudo mkdir` 建出来的 `root:root` 目录直接就能读写，不需要像 rustfs 那样 `chown`。哪天镜像加了 `USER`，`deploy.sh` 里要补上对应的 `chown`。
+
+**为什么必须挂出来**：`deploy.sh` 每次部署都会 `rm --stop --force` 掉 `aitoearn-ai` / `aitoearn-server` / `aitoearn-web` / `nginx` 再重建。只存在容器里的文件重新部署一次就没了，物料必须落在宿主机上。
+
+### `DATA_DIR` 怎么设
+
+在服务器的 `/opt/stack/aitoearn/.env` 里，默认 `/data/aitoearn`（挂的数据盘）。
+
+想让物料目录和 `docker-compose.yml` 放在一起，就把它指到项目目录下的 `data`：
+
+```bash
+DATA_DIR=/opt/stack/aitoearn/data
+```
+
+**必须写绝对路径**：`deploy.sh` 拿它直接 `sudo mkdir -p`，compose 也拿它做挂载源，相对路径会建到当时的工作目录去。改完这个值等于换了一套数据目录，老数据要自己搬过去。
 
 ## 部署 / 更新
 

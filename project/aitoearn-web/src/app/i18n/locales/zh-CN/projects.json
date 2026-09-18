@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "title": "项目",
+    "description": "以项目为单位沉淀真实物料、提炼发布方向、生成并派发内容。",
+    "keywords": "项目, 内容运营, 物料库, 发布方向, AiToEarn"
+  },
+  "page": {
+    "title": "项目",
+    "subtitle": "一个项目一套物料，之后的方向和内容都从这里长出来"
+  },
+  "action": {
+    "create": "新建项目",
+    "refresh": "刷新",
+    "viewArchived": "查看归档",
+    "viewActive": "返回进行中",
+    "back": "返回",
+    "retry": "重试",
+    "backToList": "返回项目列表"
+  },
+  "status": {
+    "active": "进行中",
+    "archived": "已归档"
+  },
+  "list": {
+    "createdAt": "创建于 {{time}}",
+    "loadFailed": "项目列表没加载出来，请稍后重试",
+    "noDesc": "还没写说明"
+  },
+  "empty": {
+    "title": "还没有项目",
+    "desc": "先建一个项目，把产品介绍、网站文案、用户反馈这些真实材料放进去，后面的发布方向和内容都从这里长出来。",
+    "action": "建第一个项目"
+  },
+  "emptyArchived": {
+    "title": "没有归档的项目",
+    "desc": "归档过的项目会出现在这里，磁盘上的文件不会被删除。"
+  },
+  "label": {
+    "displayName": "显示名",
+    "name": "英文名",
+    "desc": "一句话说明",
+    "audience": "面向谁",
+    "goal": "想达成什么",
+    "dirName": "目录名",
+    "status": "状态",
+    "createdAt": "创建时间",
+    "updatedAt": "更新时间",
+    "archivedAt": "归档时间"
+  },
+  "placeholder": {
+    "displayName": "例如：四十周",
+    "name": "例如：fortyweeks",
+    "desc": "这个项目是做什么的",
+    "audience": "例如：备孕和孕早期的夫妻",
+    "goal": "例如：让更多人知道这个产品"
+  },
+  "form": {
+    "title": "新建项目",
+    "subtitle": "英文名创建后不能改，先想清楚再填",
+    "optional": "选填",
+    "nameHint": "创建后不可修改，它同时是服务器上的目录名",
+    "suggest": "随机生成",
+    "suggestFailed": "没取到建议名字，自己起一个吧",
+    "submit": "创建",
+    "submitting": "创建中…",
+    "cancel": "取消",
+    "createSuccess": "项目已创建"
+  },
+  "nameError": {
+    "required": "英文名不能为空",
+    "charset": "只能用小写字母、数字和连字符",
+    "start": "必须以小写字母开头",
+    "end": "不能以连字符结尾",
+    "length": "长度要在 3 到 40 个字符之间",
+    "doubleHyphen": "不能出现连续的连字符",
+    "reserved": "这个名字被系统占用了，换一个"
+  },
+  "displayNameError": {
+    "required": "显示名不能为空",
+    "tooLong": "显示名最多 60 个字"
+  },
+  "error": {
+    "notFound": "项目不存在，可能已经被删掉了",
+    "nameInvalid": "英文名不符合规则，改一下再试",
+    "nameTaken": "这个英文名已经有人用了，换一个",
+    "nameReserved": "这个名字被系统占用了，换一个",
+    "dirCreateFailed": "服务器上的目录没建成功，稍后再试一次",
+    "dirRenameFailed": "服务器上的目录没改名成功，稍后再试一次",
+    "archived": "项目已归档，不能再改了",
+    "pathEscape": "路径不合法，操作已被拒绝",
+    "unknown": "没成功，稍后再试一次",
+    "network": "网络不通，检查一下再试"
+  },
+  "detail": {
+    "loading": "加载中…",
+    "loadFailed": "项目详情没加载出来，请稍后重试",
+    "notFound": "找不到这个项目",
+    "notFoundDesc": "它可能已经被删除，或者不属于当前账号。",
+    "basicInfo": "基本信息",
+    "settings": "项目设置",
+    "settingsDesc": "显示名、说明这些随时能改；英文名和目录名不能改。",
+    "nameFixed": "创建后不可修改，它同时是服务器上的目录名",
+    "save": "保存",
+    "saving": "保存中…",
+    "saveSuccess": "已保存",
+    "reset": "撤销改动",
+    "archive": "归档项目",
+    "archiving": "归档中…",
+    "archiveSuccess": "项目已归档",
+    "archiveConfirmTitle": "确定归档这个项目？",
+    "archiveConfirmDesc": "归档后项目不再出现在列表里，也不能再修改。磁盘上的文件不会删除，目录会被改名保存。",
+    "archiveConfirmOk": "归档",
+    "archiveConfirmCancel": "再想想",
+    "archivedTip": "这个项目已归档，只能查看。",
+    "emptyField": "（未填写）"
+  },
+  "tabs": {
+    "materials": "物料",
+    "generate": "生成",
+    "publish": "发布",
+    "data": "数据",
+    "placeholder": "这块还没做，等后面的阶段开出来。"
+  }
+}

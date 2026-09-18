@@ -19,6 +19,7 @@ import { RelayModule } from './core/channels/relay/relay.module'
 import { ContentMcpModule } from './core/content/content-mcp.module'
 import { ContentModule } from './core/content/content.module'
 import { OidcLoginModule } from './core/oidc-login/oidc-login.module'
+import { ProjectsModule } from './core/projects/projects.module'
 import { PublishModule } from './core/publish-record/publish-record.module'
 import { ShortLinkModule } from './core/short-link/short-link.module'
 import { UnifiedMcpModule } from './core/unified-mcp/unified-mcp.module'
@@ -74,6 +75,7 @@ import { UserModule } from './core/user/user.module'
     PublishModule,
     ShortLinkModule,
     ApiKeyModule,
+    ProjectsModule,
     RelayModule,
     // MCP modules (after business modules to ensure @Global services are available)
     ChannelsMcpModule,

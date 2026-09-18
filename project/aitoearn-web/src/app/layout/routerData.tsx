@@ -5,6 +5,7 @@
 
 import {
   Bot,
+  FolderKanban,
   History,
   Home,
   Sparkles,
@@ -30,6 +31,12 @@ export const routerData: IRouterDataItem[] = [
     translationKey: 'header.draftBox',
     path: '/',
     icon: <Home size={20} />,
+  },
+  {
+    name: 'Projects',
+    translationKey: 'projects',
+    path: '/projects',
+    icon: <FolderKanban size={20} />,
   },
   {
     name: 'AI Publish',

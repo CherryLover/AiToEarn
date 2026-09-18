@@ -12,6 +12,7 @@ import { MaterialRepository } from './material.repository'
 import { MediaGroupRepository } from './media-group.repository'
 import { MediaRepository } from './media.repository'
 import { OAuth2CredentialRepository } from './oauth2-credential.repository'
+import { ProjectRepository } from './project.repository'
 import { PublishRecordRepository } from './publish-record.repository'
 import { UserRepository } from './user.repository'
 
@@ -30,6 +31,7 @@ export * from './material.repository'
 export * from './media-group.repository'
 export * from './media.repository'
 export * from './oauth2-credential.repository'
+export * from './project.repository'
 export * from './publish-record.repository'
 export * from './user.repository'
 
@@ -50,4 +52,5 @@ export const repositories = [
   OAuth2CredentialRepository,
   ContentGenerationTaskRepository,
   DraftGenerationMemoryRepository,
+  ProjectRepository,
 ] as const
