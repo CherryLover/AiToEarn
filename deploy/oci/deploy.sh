@@ -27,10 +27,15 @@ done
 cd "$STACK_DIR"
 [ -f .env ] || { echo "✗ 缺少 $STACK_DIR/.env，照 repo/deploy/oci/.env.example 填好" >&2; exit 1; }
 
-echo "==> 同步部署文件（$REF）"
-git -C repo fetch --quiet origin
-git -C repo checkout --quiet --detach "$REF"
-git -C repo log -1 --format='    %h %s'
+# 同步会改写本脚本自身，bash 边读边执行会读到新旧混合的内容，所以同步完立刻用新版重跑一次
+if [ -z "${DEPLOY_REEXEC:-}" ]; then
+  echo "==> 同步部署文件（$REF）"
+  git -C repo fetch --quiet origin
+  git -C repo checkout --quiet --detach "$REF"
+  git -C repo log -1 --format='    %h %s'
+  export DEPLOY_REEXEC=1
+  exec "$STACK_DIR/repo/deploy/oci/deploy.sh" ${TAG:+"$TAG"} --ref "$REF"
+fi
 
 # 某个镜像有没有这个标签（匿名查 ghcr，镜像是公开的）
 image_has_tag() {
