@@ -32,13 +32,32 @@ git -C repo fetch --quiet origin
 git -C repo checkout --quiet --detach "$REF"
 git -C repo log -1 --format='    %h %s'
 
+# 某个镜像有没有这个标签（匿名查 ghcr，镜像是公开的）
+image_has_tag() {
+  local repo="$1" tag="$2" token
+  token=$(curl -fsS "https://ghcr.io/token?scope=repository:cherrylover/$repo:pull" | sed -E 's/.*"token":"([^"]+)".*/\1/')
+  [ "$(curl -s -o /dev/null -w '%{http_code}' "https://ghcr.io/v2/cherrylover/$repo/manifests/$tag" \
+      -H "Accept: application/vnd.oci.image.index.v1+json,application/vnd.oci.image.manifest.v1+json,application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.distribution.manifest.list.v2+json" \
+      -H "Authorization: Bearer $token")" = "200" ]
+}
+
 if [ -n "$TAG" ]; then
-  echo "==> 镜像标签改为 $TAG"
-  sed -i "s/^AITOEARN_TAG=.*/AITOEARN_TAG=$TAG/" .env
+  echo "==> 镜像标签 $TAG"
+  for pair in "aitoearn-server:SERVER_TAG" "aitoearn-ai:AI_TAG" "aitoearn-web:WEB_TAG"; do
+    repo="${pair%%:*}"; var="${pair##*:}"
+    if image_has_tag "$repo" "$TAG"; then
+      sed -i "s/^$var=.*/$var=$TAG/" .env
+      echo "    $repo -> $TAG"
+    else
+      echo "    $repo 没有这个版本，沿用 $(grep -E "^$var=" .env | cut -d= -f2)"
+    fi
+  done
 fi
 
 set -a; . ./.env; set +a
-[ -n "${AITOEARN_TAG:-}" ] || { echo "✗ .env 里 AITOEARN_TAG 为空" >&2; exit 1; }
+for var in SERVER_TAG AI_TAG WEB_TAG; do
+  [ -n "$(eval echo \$$var)" ] || { echo "✗ .env 里 $var 为空" >&2; exit 1; }
+done
 
 echo "==> 渲染配置"
 mkdir -p config
@@ -51,7 +70,7 @@ sudo mkdir -p "$DATA_DIR"/{mongodb/db,mongodb/configdb,redis,rustfs}
 # rustfs 镜像以 uid 10001 运行，数据目录要归它，否则启动报 Permission denied
 sudo chown 10001:10001 "$DATA_DIR/rustfs"
 
-echo "==> 拉镜像并启动（$AITOEARN_TAG）"
+echo "==> 拉镜像并启动（server=$SERVER_TAG ai=$AI_TAG web=$WEB_TAG）"
 "${COMPOSE[@]}" pull --quiet
 # 基础服务：配置没变就不动
 "${COMPOSE[@]}" up -d --remove-orphans mongodb mongodb-rs-init redis rustfs rustfs-init

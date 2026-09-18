@@ -1,5 +1,6 @@
 # OCI 部署用的 compose。和仓库根目录的官方 docker-compose.yml 相比：
-# - 应用镜像用 fork 自己在 GitHub Actions 构建的 ghcr.io/cherrylover/aitoearn-*，钉死版本（AITOEARN_TAG）
+# - 应用镜像用 fork 自己在 GitHub Actions 构建的 ghcr.io/cherrylover/aitoearn-*，三个服务各自钉版本
+#   （SERVER_TAG / AI_TAG / WEB_TAG：只改后台时不会重建网页镜像，版本号对不齐）
 # - 所有密码从 .env 读，不用默认值
 # - 数据库、缓存、存储都不映射宿主机端口；nginx 由服务器上的 Traefik 接入（pub / pub-oss 两个域名），另绑 127.0.0.1 端口给本机检查
 # - 不再用官方的自动登录：网页不带任何凭证，登录走后台的 Pocket ID（OIDC）接口；因此也没有 aitoearn-init
@@ -89,7 +90,7 @@ services:
     restart: "no"
 
   aitoearn-ai:
-    image: ghcr.io/cherrylover/aitoearn-ai:${AITOEARN_TAG:?}
+    image: ghcr.io/cherrylover/aitoearn-ai:${AI_TAG:?}
     container_name: aitoearn-ai
     restart: unless-stopped
     depends_on:
@@ -107,7 +108,7 @@ services:
       start_period: 60s
 
   aitoearn-server:
-    image: ghcr.io/cherrylover/aitoearn-server:${AITOEARN_TAG:?}
+    image: ghcr.io/cherrylover/aitoearn-server:${SERVER_TAG:?}
     container_name: aitoearn-server
     restart: unless-stopped
     depends_on:
@@ -127,7 +128,7 @@ services:
       start_period: 60s
 
   aitoearn-web:
-    image: ghcr.io/cherrylover/aitoearn-web:${AITOEARN_TAG:?}
+    image: ghcr.io/cherrylover/aitoearn-web:${WEB_TAG:?}
     container_name: aitoearn-web
     restart: unless-stopped
     depends_on:
