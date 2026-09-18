@@ -1,16 +1,15 @@
 /**
  * ProjectCard - 项目列表卡片
- * 显示名为主、英文名为次（等宽字体），点击进入项目详情
+ * 显示名为主、英文名为次（等宽字体），标题旁显示状态，点击进入项目详情
  */
 'use client'
 
 import type { ProjectListItem } from '@/api/projects/project.types'
 import Link from 'next/link'
-import { ProjectStatus } from '@/api/projects/project.types'
 import { useTransClient } from '@/app/i18n/client'
-import { Badge } from '@/components/ui/badge'
 import { useGetClientLng } from '@/hooks/useSystem'
 import { formatDate } from '@/utils/format'
+import { ProjectStatusBadge } from '../ProjectStatusBadge'
 
 interface ProjectCardProps {
   project: ProjectListItem
@@ -19,7 +18,6 @@ interface ProjectCardProps {
 export function ProjectCard({ project }: ProjectCardProps) {
   const { t } = useTransClient('projects')
   const lng = useGetClientLng()
-  const isArchived = project.status === ProjectStatus.Archived
 
   return (
     <Link
@@ -31,11 +29,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <h3 className="min-w-0 truncate text-base font-medium text-foreground">
           {project.displayName}
         </h3>
-        {isArchived && (
-          <Badge variant="secondary" className="shrink-0">
-            {t('status.archived')}
-          </Badge>
-        )}
+        <ProjectStatusBadge status={project.status} />
       </div>
 
       <p className="mt-1 truncate font-mono text-xs text-muted-foreground">{project.name}</p>

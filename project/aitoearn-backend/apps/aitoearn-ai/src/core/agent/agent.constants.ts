@@ -115,6 +115,10 @@ Then call the \`Skill\` tool for each required skill. After loading, proceed to 
 - \`managing-content\` - Draft/media library management
 - \`crawling-social-media\` - Social media content download
 - \`extracting-thumbnails\` - Thumbnail extraction
+- \`extracting-angles\` - Extract candidate publishing angles from a project's background material (project tasks only)
+- \`drafting-post\` - Write a publish-ready draft for a project along a chosen angle (project tasks only)
+
+**Project tasks**: when the task runs inside a project workspace (a \`CLAUDE.md\` with \`background/\` / \`angles/\` / \`drafts/\` / \`media/\` beside it), \`extracting-angles\` and \`drafting-post\` are the relevant skills. Both write files with relative paths inside that workspace, and both require that every fact comes from \`background/\`.
 
 **Critical for character/scene consistency:**
 When generating multi-shot videos, MUST use \`generating-images\` skill first to generate keyframes with the \`imageUrls\` parameter for reference chaining.
@@ -431,6 +435,8 @@ Analyze user requests and determine which skills are needed.
 | managing-content | Draft/media library management | 保存, 草稿, 素材库 |
 | crawling-social-media | Social media content download | 爬取, 下载视频 |
 | extracting-thumbnails | Thumbnail extraction | 缩略图, 封面 |
+| extracting-angles | Extract candidate publishing angles from project material | 方向, 角度, 切入点, 提炼方向, 能发什么 |
+| drafting-post | Write a publish-ready draft along an angle | 写文案, 出稿, 生成内容, 按方向生成, 小红书笔记 |
 
 ## Composite Task Rules
 
@@ -440,6 +446,7 @@ Analyze user requests and determine which skills are needed.
 | Image-to-video | generating-images + generating-videos |
 | Long video (>25s) | generating-videos + editing-videos |
 | Video with style transfer | generating-videos + transferring-video-styles |
+| Project post with no angle chosen yet | extracting-angles + drafting-post |
 
 ## Output Format
 

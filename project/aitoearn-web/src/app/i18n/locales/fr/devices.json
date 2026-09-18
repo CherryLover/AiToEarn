@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "title": "Appareils",
+    "description": "Gérez les appareils et les tâches : appairez l’extension de navigateur, suivez l’état des tâches et testez la chaîne avec une tâche echo.",
+    "keywords": "appareils, extension de navigateur, tâches, publication automatique, AiToEarn"
+  },
+  "page": {
+    "title": "Appareils",
+    "subtitle": "L’extension de navigateur tourne sur votre ordinateur et récupère le travail depuis le serveur"
+  },
+  "tabs": {
+    "devices": "Appareils",
+    "tasks": "Tâches"
+  },
+  "action": {
+    "refresh": "Actualiser",
+    "addDevice": "Ajouter un appareil",
+    "rename": "Renommer",
+    "revoke": "Révoquer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saving": "Enregistrement",
+    "close": "Fermer",
+    "copy": "Copier",
+    "regenerate": "Nouveau code",
+    "viewTasks": "Tâches récentes",
+    "hideTasks": "Masquer les tâches",
+    "createEcho": "Créer une tâche echo",
+    "detail": "Détails",
+    "retry": "Réessayer",
+    "cancelTask": "Annuler la tâche"
+  },
+  "empty": {
+    "title": "Aucun appareil pour l’instant",
+    "desc": "Un appareil, c’est l’extension de navigateur installée sur votre ordinateur. Elle reste connectée au serveur, récupère le travail et s’occupe de la publication et de la collecte de données sur les plateformes.",
+    "hint": "Cliquez sur « Ajouter un appareil » pour obtenir un code d’appairage, puis saisissez-le dans l’extension.",
+    "action": "Ajouter un premier appareil"
+  },
+  "device": {
+    "status": {
+      "online": "En ligne",
+      "offline": "Hors ligne"
+    },
+    "lastSeen": "Dernier signal {{time}}",
+    "neverSeen": "Aucun signal pour l’instant",
+    "version": "Extension {{version}}",
+    "platform": "Tourne sur {{platform}}",
+    "pairedAt": "Appairé le {{time}}",
+    "unknown": "Inconnu",
+    "capabilities": "Plateformes prises en charge",
+    "noCapabilities": "L’extension n’a encore rien signalé",
+    "accounts": "Comptes connectés",
+    "noAccounts": "L’extension n’a encore signalé aucun compte",
+    "loadFailed": "La liste des appareils n’a pas pu être chargée. Réessayez plus tard.",
+    "recentTasks": {
+      "empty": "Cet appareil n’a encore pris aucune tâche",
+      "loadFailed": "Les tâches récentes n’ont pas pu être chargées. Réessayez plus tard."
+    }
+  },
+  "pair": {
+    "title": "Ajouter un appareil",
+    "desc": "Saisissez ce code d’appairage dans l’extension de navigateur. Une fois appairé, l’appareil apparaît dans la liste.",
+    "step1": "Ouvrez l’extension de navigateur AiToEarn sur votre ordinateur",
+    "step2": "Allez dans l’appairage d’appareil et saisissez le code ci-dessus",
+    "step3": "Revenez ici et actualisez pour voir l’appareil",
+    "expiresIn": "Expire dans {{time}}",
+    "expired": "Ce code a expiré. Demandez-en un nouveau.",
+    "copySuccess": "Code d’appairage copié",
+    "copyFailed": "La copie a échoué. Sélectionnez le code et copiez-le à la main.",
+    "generateFailed": "Aucun code d’appairage reçu. Réessayez ci-dessous.",
+    "done": "Terminé"
+  },
+  "rename": {
+    "title": "Renommer l’appareil",
+    "desc": "Seul le nom change. Les plateformes et les comptes sont signalés par l’extension.",
+    "label": "Nom de l’appareil",
+    "placeholder": "Par exemple : le Mac de la maison",
+    "emptyError": "Le nom de l’appareil ne peut pas être vide",
+    "success": "Renommé"
+  },
+  "revoke": {
+    "title": "Révoquer cet appareil ?",
+    "desc": "La révocation invalide immédiatement le jeton de « {{name}} ». Il ne peut plus prendre de travail ni renvoyer de résultat, et il faudra l’appairer à nouveau pour le réutiliser.",
+    "confirm": "Révoquer",
+    "revoking": "Révocation",
+    "success": "Appareil révoqué"
+  },
+  "tasks": {
+    "filter": {
+      "allStatus": "Tous les états",
+      "allType": "Tous les types",
+      "allDevice": "Tous les appareils"
+    },
+    "column": {
+      "device": "Appareil : {{device}}",
+      "attempts": "Tentatives {{attempts}}/{{maxAttempts}}"
+    },
+    "durationSeconds": "Durée {{seconds}} s",
+    "durationPending": "Pas encore terminé",
+    "unknownDevice": "Appareil inconnu",
+    "anyDevice": "N’importe quel appareil compatible",
+    "loadFailed": "La liste des tâches n’a pas pu être chargée. Réessayez plus tard.",
+    "retrySuccess": "Remise en file d’attente",
+    "cancelSuccess": "Annulée",
+    "cancelConfirmTitle": "Annuler cette tâche ?",
+    "cancelConfirmDesc": "Une fois annulée, aucun appareil ne peut la prendre. Une exécution déjà en cours n’est pas interrompue, mais son résultat ne sera pas retenu.",
+    "empty": {
+      "title": "Aucune tâche pour l’instant",
+      "desc": "Une tâche, c’est du travail confié à un appareil. Pour vérifier la chaîne de bout en bout, créez une tâche echo : l’appareil la prend et renvoie le message tel quel. Un retour en succès veut dire que la chaîne fonctionne."
+    }
+  },
+  "taskType": {
+    "publish": "Publier",
+    "claim_link": "Retrouver le lien",
+    "collect_metrics": "Collecter les données",
+    "echo": "Echo"
+  },
+  "taskStatus": {
+    "pending": "En attente",
+    "leased": "Prise en charge",
+    "running": "En cours",
+    "succeeded": "Réussie",
+    "failed": "Échouée",
+    "cancelled": "Annulée"
+  },
+  "taskMode": {
+    "auto": "Exécutée par un appareil",
+    "manual": "Faite à la main"
+  },
+  "detail": {
+    "title": "Détails de la tâche",
+    "desc": "La charge et le résultat changent selon le type et sont affichés tels quels.",
+    "loadFailed": "Les détails de la tâche n’ont pas pu être chargés. Réessayez plus tard.",
+    "attempts": "Tentatives",
+    "duration": "Durée",
+    "durationValue": "{{seconds}} s",
+    "durationPending": "Pas encore terminé",
+    "createdAt": "Créée le",
+    "availableAt": "Disponible à partir de",
+    "device": "Appareil",
+    "capability": "Capacité requise",
+    "noCapability": "Indifférente",
+    "error": "Raison de l’échec",
+    "payload": "Charge",
+    "result": "Résultat",
+    "noResult": "Pas encore de résultat"
+  },
+  "echo": {
+    "title": "Créer une tâche echo",
+    "desc": "L’appareil la prend et renvoie le message tel quel. Cela vérifie la chaîne : le web crée, l’extension prend, le résultat revient.",
+    "project": "Projet",
+    "projectPlaceholder": "Choisissez un projet",
+    "message": "Message à renvoyer",
+    "messagePlaceholder": "N’importe quoi. L’appareil le renvoie tel quel.",
+    "device": "Appareil visé",
+    "deviceAny": "N’importe quel appareil compatible",
+    "submit": "Créer la tâche",
+    "submitting": "Création",
+    "success": "Tâche créée",
+    "noProject": "Aucun projet en cours. Créez-en un sur la page Projets.",
+    "loadProjectFailed": "La liste des projets n’a pas pu être chargée. Réessayez plus tard."
+  },
+  "capability": {
+    "xhs": "Xiaohongshu",
+    "douyin": "Douyin",
+    "wechatChannels": "WeChat Channels",
+    "bilibili": "Bilibili",
+    "kwai": "Kuaishou",
+    "wxGzh": "Compte officiel WeChat"
+  },
+  "error": {
+    "network": "Réseau indisponible. Vérifiez votre connexion et réessayez.",
+    "unknown": "Ça n’a pas marché. Réessayez plus tard.",
+    "pairingCodeGenerateFailed": "Le code d’appairage n’a pas pu être créé. Réessayez plus tard.",
+    "deviceNotFound": "Cet appareil n’existe plus. Il a peut-être été révoqué.",
+    "deviceRevoked": "Cet appareil a été révoqué. Appairez-le à nouveau pour l’utiliser.",
+    "deviceOffline": "Cet appareil est hors ligne.",
+    "deviceNameInvalid": "Ce nom d’appareil n’est pas accepté. Modifiez-le et réessayez.",
+    "deviceLimitExceeded": "Vous avez atteint la limite d’appareils.",
+    "taskNotFound": "Cette tâche n’existe plus. Actualisez la liste.",
+    "taskStatusInvalid": "L’état actuel n’autorise pas cette action.",
+    "taskTypeNotSupported": "Ce type de tâche n’est pas pris en charge.",
+    "taskPayloadInvalid": "Le contenu de la tâche n’est pas valide.",
+    "taskCreateFailed": "La tâche n’a pas pu être créée. Réessayez plus tard.",
+    "taskCancelNotAllowed": "Cette tâche ne peut pas être annulée pour le moment.",
+    "taskRetryNotAllowed": "Cette tâche ne peut pas être relancée pour le moment.",
+    "taskMaxAttemptsExceeded": "Toutes les tentatives ont été utilisées.",
+    "taskProjectMismatch": "Cette tâche appartient à un autre projet.",
+    "projectNotFound": "Ce projet n’existe pas. Il a peut-être été supprimé.",
+    "projectArchived": "Ce projet est archivé et n’accepte plus de nouvelles tâches."
+  }
+}

@@ -126,6 +126,7 @@
   },
   "tabs": {
     "materials": "자료",
+    "angles": "방향",
     "generate": "생성",
     "publish": "발행",
     "data": "데이터",
@@ -231,6 +232,220 @@
       "canceled": "취소했습니다",
       "tooLarge": "파일 하나는 100MB를 넘을 수 없습니다",
       "dropHint": "여기에 파일을 끌어다 놓으면 올라갑니다. 저장 위치: {{dir}}"
+    }
+  },
+  "angles": {
+    "title": "발행 방향",
+    "subtitle": "방향은 분류가 아니라 검증할 가설입니다. 반응이 좋은 줄기는 더 파고, 멈춘 줄기는 접습니다.",
+    "archived": "보관된 프로젝트라 방향을 열 수 없습니다. 보거나 바꾸려면 먼저 복원하세요.",
+    "loadFailed": "방향을 불러오지 못했습니다",
+    "loadFailedDesc": "네트워크 문제이거나 서버가 아직 준비되지 않았을 수 있습니다. 다시 시도해 보세요.",
+    "view": {
+      "tree": "계보 트리",
+      "status": "상태별"
+    },
+    "action": {
+      "extract": "AI에게 방향 뽑게 하기",
+      "create": "방향 추가",
+      "derive": "여기서 더 파기",
+      "edit": "편집",
+      "delete": "삭제"
+    },
+    "empty": {
+      "title": "아직 방향이 없습니다",
+      "desc": "방향은 처음부터 확정하는 게 아니라 시험하는 것입니다. 후보를 몇 개 세우고, 올려서 숫자를 보고, 잘 되는 줄기를 더 파고 나머지는 바꿉니다.",
+      "hint": "background/ 자료에서 AI가 후보를 뽑게 해도 되고, 직접 하나 써도 됩니다.",
+      "extract": "AI에게 방향 뽑게 하기",
+      "create": "직접 쓰기"
+    },
+    "status": {
+      "candidate": "후보",
+      "testing": "검증 중",
+      "effective": "효과 있음",
+      "retired": "접음"
+    },
+    "statusDesc": {
+      "candidate": "막 세운 가설, 아직 올려서 확인하지 않았습니다.",
+      "testing": "실제로 올려 검증 중이고 숫자를 기다립니다.",
+      "effective": "숫자가 뒷받침합니다. 이 줄기를 더 팔 만합니다.",
+      "retired": "해 봤지만 안 됐습니다. 기록으로 남기고 더 가지 않습니다."
+    },
+    "source": {
+      "ai": "AI 추출",
+      "user": "직접 작성",
+      "derived": "파생"
+    },
+    "card": {
+      "childCount": "아래로 {{num}}갈래",
+      "noDesc": "어떤 지점을 파고드는지 아직 안 적었습니다",
+      "sources": "자료 {{num}}건 사용:"
+    },
+    "group": {
+      "count": "{{num}}개",
+      "empty": "이 칸에는 아직 없습니다"
+    },
+    "statusChange": {
+      "success": "'{{status}}'(으)로 바꿨습니다"
+    },
+    "form": {
+      "createTitle": "방향 추가",
+      "createDesc": "어떤 지점을 파고들고 누구를 향하는지 적어 두면, 이후 생성이 여기에 맞춰집니다.",
+      "deriveTitle": "이 방향에서 더 파기",
+      "deriveDesc": "새 방향에는 어느 줄기에서 나왔는지가 기록되어 계보 트리에 나타납니다.",
+      "editTitle": "방향 편집",
+      "editDesc": "이름·설명·상태는 언제든 바꿀 수 있습니다. slug은 파일 이름이라 여기서 바꾸지 않습니다.",
+      "parent": "상위 방향: {{name}}({{slug}})",
+      "slugLabel": "slug",
+      "slugHint": "파일 이름으로 쓰이며 프로젝트 안에서 유일합니다. 소문자로 시작하고 소문자·숫자·하이픈만 됩니다.",
+      "slugFixed": "slug은 angles/ 아래 파일 이름입니다. 여기서는 바꾸지 않습니다.",
+      "slugPlaceholder": "예: pain-point",
+      "nameLabel": "표시 이름",
+      "namePlaceholder": "예: 불편함부터 파고들기",
+      "descLabel": "이 방향이 파고드는 지점",
+      "descPlaceholder": "예: 배란일을 못 챙기는 불안을 파고들고 '한 번 기록하면 덜 다툰다'를 후크로",
+      "descHint": "구체적으로 쓸수록 생성된 내용이 덜 흔들립니다.",
+      "statusLabel": "상태",
+      "cancel": "취소",
+      "submitCreate": "만들기",
+      "submitDerive": "파생",
+      "submitSave": "저장",
+      "createSuccess": "방향을 만들었습니다",
+      "deriveSuccess": "하위 방향을 만들었습니다",
+      "saveSuccess": "저장했습니다"
+    },
+    "slugError": {
+      "required": "slug은 비울 수 없습니다",
+      "charset": "소문자·숫자·하이픈만 쓸 수 있습니다",
+      "start": "소문자로 시작해야 합니다",
+      "end": "하이픈으로 끝날 수 없습니다",
+      "length": "3~40자여야 합니다",
+      "doubleHyphen": "하이픈을 연속으로 쓸 수 없습니다",
+      "reserved": "시스템이 예약한 이름입니다. 다른 이름을 쓰세요",
+      "taken": "이 프로젝트에서 이미 쓰는 slug입니다. 다른 이름을 쓰세요"
+    },
+    "nameError": {
+      "required": "표시 이름은 비울 수 없습니다",
+      "tooLong": "표시 이름은 최대 60자입니다"
+    },
+    "descError": {
+      "tooLong": "설명은 최대 500자입니다"
+    },
+    "delete": {
+      "title": "이 방향을 삭제할까요?",
+      "desc": "'{{name}}'과 방향 파일 angles/{{slug}}.md를 지웁니다. 되돌릴 수 없습니다. 이미 생성된 초안은 그대로입니다.",
+      "confirm": "삭제",
+      "cancel": "그만두기",
+      "deleting": "삭제 중…",
+      "success": "방향을 삭제했습니다"
+    },
+    "extract": {
+      "title": "AI에게 방향 뽑게 하기",
+      "desc": "이 프로젝트의 background/ 자료를 읽고 후보 방향 3~6개를 정리해 angles/에 씁니다.",
+      "rule": "사실은 넣어 둔 자료에서만 가져옵니다. 자료가 부족하면 부족하다고 말하고 지어내지 않습니다.",
+      "start": "시작",
+      "again": "다시 실행",
+      "running": "실행 중…",
+      "stop": "중지",
+      "waiting": "보냈습니다. 자료를 읽기 시작하길 기다리는 중…",
+      "noLog": "이번 실행 기록이 없습니다.",
+      "done": "끝났습니다. 방향 목록을 새로고침했습니다.",
+      "doneHint": "AI는 angles/ 아래 방향 파일을 씁니다. 목록에 새 방향이 안 보이면 '자료' 탭의 angles 폴더를 확인하세요.",
+      "failed": "방향을 뽑지 못했습니다",
+      "close": "닫기"
+    },
+    "error": {
+      "notFound": "이 방향이 없습니다. 새로고침해 보세요",
+      "slugInvalid": "slug이 규칙에 맞지 않습니다. 고쳐서 다시 시도하세요",
+      "slugTaken": "이미 쓰는 slug입니다. 다른 이름을 쓰세요",
+      "slugReserved": "시스템이 예약한 이름입니다. 다른 이름을 쓰세요",
+      "parentNotFound": "상위 방향이 없습니다. 새로고침해 보세요",
+      "parentSelf": "자기 자신을 상위로 둘 수 없습니다",
+      "parentCycle": "순환이 생깁니다. 다른 상위를 고르세요",
+      "parentProjectMismatch": "상위 방향이 다른 프로젝트 것입니다",
+      "retired": "접은 방향은 바꿀 수 없습니다",
+      "statusInvalid": "상태 값이 올바르지 않습니다. 새로고침 후 다시 시도하세요",
+      "depthExceeded": "너무 깊게 파생됐습니다. 더는 따라가기 어렵습니다",
+      "hasChildren": "아래에 하위 방향이 남아 있습니다. 그것부터 처리하세요",
+      "projectMismatch": "이 방향은 현재 프로젝트 것이 아닙니다",
+      "fileNotFound": "방향 파일이 없습니다. 새로고침해 보세요",
+      "fileWriteFailed": "방향 파일을 쓰지 못했습니다. 잠시 후 다시 시도하세요",
+      "fileRenameFailed": "방향 파일 이름을 바꾸지 못했습니다. 잠시 후 다시 시도하세요",
+      "fileDeleteFailed": "방향 파일을 지우지 못했습니다. 잠시 후 다시 시도하세요",
+      "fileInvalid": "방향 파일 내용이 올바르지 않습니다. 자료 탭에서 확인하세요",
+      "extractionFailed": "AI 추출에 실패했습니다. 잠시 후 다시 시도하세요",
+      "draftNotFound": "이 초안이 없습니다. 새로고침해 보세요",
+      "draftGenerateFailed": "내용을 만들지 못했습니다. 잠시 후 다시 시도하세요",
+      "draftWriteFailed": "초안을 쓰지 못했습니다. 잠시 후 다시 시도하세요",
+      "draftMetaInvalid": "초안의 계보 기록이 올바르지 않습니다. 파일을 확인하세요",
+      "platformNotSupported": "이 플랫폼은 아직 지원하지 않습니다"
+    }
+  },
+  "drafts": {
+    "archived": "보관된 프로젝트라 생성과 초안을 열 수 없습니다. 보거나 바꾸려면 먼저 복원하세요.",
+    "generate": {
+      "title": "내용 생성",
+      "desc": "방향과 플랫폼을 고르면 AI가 방향의 작성 지침과 background/ 자료를 따라 한 편 쓰고 drafts/에 저장합니다.",
+      "angleLabel": "어느 방향으로 쓸지",
+      "anglePlaceholder": "방향 고르기",
+      "platformLabel": "어느 플랫폼에 올릴지",
+      "recommended": "추천",
+      "extraLabel": "추가 요청(선택)",
+      "extraPlaceholder": "예: 이번엔 사용자 말 그대로를 더 쓰고 기능 설명은 줄여 주세요",
+      "submit": "생성",
+      "running": "생성 중…",
+      "stop": "중지",
+      "done": "생성했습니다. 초안 목록을 새로고침했습니다.",
+      "failed": "생성하지 못했습니다",
+      "waiting": "보냈습니다. 자료를 읽기 시작하길 기다리는 중…",
+      "noLog": "이번 실행 기록이 없습니다.",
+      "noAngles": "쓸 수 있는 방향이 없습니다. '방향' 탭에서 먼저 뽑거나 만든 뒤 돌아오세요."
+    },
+    "platform": {
+      "xhs": "샤오훙수",
+      "douyin": "더우인",
+      "wxSph": "위챗 채널스",
+      "wxGzh": "위챗 공식계정"
+    },
+    "platformRule": {
+      "xhs": "샤오훙수: 제목 20자 이내, 본문 1000자 이내, 해시태그는 10개까지.",
+      "douyin": "더우인: 제목은 짧을수록 좋고 본문은 간결하게, 태그는 많이 붙이지 않기.",
+      "wxSph": "위챗 채널스: 볼거리를 한 문장으로, 설명은 짧게.",
+      "wxGzh": "위챗 공식계정: 제목만으로도 서야 하고, 본문은 길어도 되지만 문단을 나눠 쓰기."
+    },
+    "list": {
+      "title": "초안({{num}})",
+      "loadFailed": "초안을 불러오지 못했습니다",
+      "loadFailedDesc": "네트워크 문제이거나 drafts 폴더에 문제가 있을 수 있습니다. 다시 시도해 보세요.",
+      "pickTitle": "왼쪽에서 초안을 고르세요",
+      "pickDesc": "열면 본문과 이미지는 물론, 어느 방향에서 어떤 자료와 어떤 지시로 나왔는지 볼 수 있습니다."
+    },
+    "empty": {
+      "title": "아직 초안이 없습니다",
+      "desc": "위에서 방향과 플랫폼을 골라 하나 만들면 본문과 계보가 함께 drafts/에 저장됩니다."
+    },
+    "detail": {
+      "content": "본문",
+      "media": "이미지",
+      "lineage": "계보",
+      "noContent": "이 초안에서 본문 파일을 찾지 못했습니다.",
+      "noMedia": "이 초안에는 이미지가 없습니다",
+      "noMediaHint": "이미지는 media/에서 고릅니다. 본문이나 meta.json에 경로를 적으면 여기에 표시됩니다.",
+      "mediaFailed": "이 이미지를 가져오지 못했습니다",
+      "meta": "{{time}}에 수정",
+      "unsaved": "저장하지 않은 변경",
+      "saveSuccess": "저장했습니다"
+    },
+    "lineage": {
+      "angle": "방향",
+      "platform": "플랫폼",
+      "project": "프로젝트",
+      "model": "모델",
+      "createdAt": "생성 시각",
+      "sources": "사용한 자료",
+      "prompt": "지시문",
+      "none": "(기록 없음)",
+      "missing": "이 초안에는 계보 기록이 없습니다",
+      "missingHint": "계보는 초안 폴더의 meta.json에 들어갑니다. 손으로 만든 초안에는 보통 없습니다."
     }
   }
 }

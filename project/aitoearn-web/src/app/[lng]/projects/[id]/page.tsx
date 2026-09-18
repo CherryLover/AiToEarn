@@ -1,7 +1,9 @@
 /**
  * 项目详情页 - Project Detail
+ * 标题旁显示项目状态；基本信息与项目设置是一次性配置，默认折叠，展开过的记在浏览器本地
  * 基本信息 + 可编辑显示名/说明/受众/目标 + 归档
- * 「物料」标签页做了文件浏览器；生成/发布/数据三个标签页先留占位，阶段 2 再做
+ * 「物料」标签页做了文件浏览器，「方向」和「生成」是阶段 2 的方向演进树与草稿；
+ * 发布、数据两个标签页先留占位
  */
 'use client'
 
@@ -22,22 +24,58 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useDocumentTitle } from '@/hooks'
 import { toast } from '@/utils/ui/toast'
+import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
 import { getProjectErrorKey } from '../projects.utils'
+import { AnglesTab } from './components/AnglesTab'
+import { DraftsTab } from './components/DraftsTab'
 import { MaterialsTab } from './components/MaterialsTab'
 import { ProjectInfoCard } from './components/ProjectInfoCard'
 import { ProjectSettingsForm } from './components/ProjectSettingsForm'
 
-/** 标签页顺序，materials 已经实现，其余三个阶段 2 再做 */
-const TABS = ['materials', 'generate', 'publish', 'data'] as const
+/** 标签页顺序：物料 → 方向 → 生成，发布和数据留给后面的阶段 */
+const TABS = ['materials', 'angles', 'generate', 'publish', 'data'] as const
 
 /** 还没实现的标签页 */
-const PLACEHOLDER_TABS = ['generate', 'publish', 'data'] as const
+const PLACEHOLDER_TABS = ['publish', 'data'] as const
+
+/** 基本信息 / 项目设置的展开状态，记在浏览器本地 */
+const SECTION_STORAGE_KEY = {
+  basicInfo: 'projects.detail.basicInfoOpen',
+  settings: 'projects.detail.settingsOpen',
+} as const
+
+type SectionKey = keyof typeof SECTION_STORAGE_KEY
+
+/** 读不到（隐私模式、被禁用）就按默认折叠处理，不能让页面崩 */
+function readSectionOpen(key: string): boolean {
+  if (typeof window === 'undefined')
+    return false
+
+  try {
+    return window.localStorage.getItem(key) === '1'
+  }
+  catch {
+    return false
+  }
+}
+
+/** 写不进去也只是下次进来仍然折叠，不提示、不打断 */
+function writeSectionOpen(key: string, open: boolean) {
+  if (typeof window === 'undefined')
+    return
+
+  try {
+    window.localStorage.setItem(key, open ? '1' : '0')
+  }
+  catch {
+    // 忽略：无痕模式下写入会抛异常
+  }
+}
 
 export default function ProjectDetailPage() {
   const { t } = useTransClient('projects')
@@ -50,6 +88,11 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isArchiving, setIsArchiving] = useState(false)
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
+  // 默认折叠，首屏渲染与服务端一致，挂载后再补上本地记住的展开状态
+  const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
+    basicInfo: false,
+    settings: false,
+  })
 
   useDocumentTitle(project?.displayName, t('page.title'))
 
@@ -82,6 +125,18 @@ export default function ProjectDetailPage() {
     if (id)
       loadDetail()
   }, [id, loadDetail])
+
+  useEffect(() => {
+    setOpenSections({
+      basicInfo: readSectionOpen(SECTION_STORAGE_KEY.basicInfo),
+      settings: readSectionOpen(SECTION_STORAGE_KEY.settings),
+    })
+  }, [])
+
+  const handleSectionOpenChange = (section: SectionKey, open: boolean) => {
+    setOpenSections(prev => ({ ...prev, [section]: open }))
+    writeSectionOpen(SECTION_STORAGE_KEY[section], open)
+  }
 
   const handleBack = () => {
     router.push(`/${lng}/projects`)
@@ -150,7 +205,7 @@ export default function ProjectDetailPage() {
               <h1 className="truncate text-2xl font-semibold text-foreground">
                 {project.displayName}
               </h1>
-              {isArchived && <Badge variant="secondary">{t('status.archived')}</Badge>}
+              <ProjectStatusBadge status={project.status} />
             </div>
             <p className="mt-1 font-mono text-xs text-muted-foreground">{project.name}</p>
           </div>
@@ -174,17 +229,27 @@ export default function ProjectDetailPage() {
         </p>
       )}
 
-      {/* 基本信息 */}
+      {/* 基本信息：一次性配置，默认折叠 */}
       <div className="mt-6">
-        <ProjectInfoCard project={project} />
+        <ProjectInfoCard
+          project={project}
+          open={openSections.basicInfo}
+          onOpenChange={open => handleSectionOpenChange('basicInfo', open)}
+        />
       </div>
 
-      {/* 可编辑字段 */}
-      <div className="mt-4">
-        <ProjectSettingsForm project={project} onSaved={setProject} disabled={isArchived} />
+      {/* 可编辑字段：一次性配置，默认折叠 */}
+      <div className="mt-3">
+        <ProjectSettingsForm
+          project={project}
+          onSaved={setProject}
+          disabled={isArchived}
+          open={openSections.settings}
+          onOpenChange={open => handleSectionOpenChange('settings', open)}
+        />
       </div>
 
-      {/* 物料 / 生成 / 发布 / 数据 */}
+      {/* 物料 / 方向 / 生成 / 发布 / 数据 */}
       <div className="mt-6">
         <Tabs defaultValue={TABS[0]}>
           <TabsList>
@@ -205,6 +270,39 @@ export default function ProjectDetailPage() {
                   </div>
                 )
               : <MaterialsTab projectId={project.id} readOnly={false} />}
+          </TabsContent>
+
+          <TabsContent value="angles">
+            {/* 方向接口和物料接口一样，归档项目在服务端一律拒绝，直接说清楚为什么打不开 */}
+            {isArchived
+              ? (
+                  <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
+                    {t('angles.archived')}
+                  </div>
+                )
+              : (
+                  <AnglesTab
+                    projectId={project.id}
+                    projectName={project.name}
+                    readOnly={false}
+                  />
+                )}
+          </TabsContent>
+
+          <TabsContent value="generate">
+            {isArchived
+              ? (
+                  <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
+                    {t('drafts.archived')}
+                  </div>
+                )
+              : (
+                  <DraftsTab
+                    projectId={project.id}
+                    projectName={project.name}
+                    readOnly={false}
+                  />
+                )}
           </TabsContent>
 
           {PLACEHOLDER_TABS.map(tab => (

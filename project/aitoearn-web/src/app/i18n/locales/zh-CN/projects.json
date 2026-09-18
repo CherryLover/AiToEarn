@@ -126,6 +126,7 @@
   },
   "tabs": {
     "materials": "物料",
+    "angles": "方向",
     "generate": "生成",
     "publish": "发布",
     "data": "数据",
@@ -231,6 +232,220 @@
       "canceled": "已取消",
       "tooLarge": "单个文件不能超过 100 MB",
       "dropHint": "把文件拖到这里就能上传，当前落点：{{dir}}"
+    }
+  },
+  "angles": {
+    "title": "发布方向",
+    "subtitle": "方向是待验证的假设，不是分类。试出效果的往下深入，试不动的淘汰换新的。",
+    "archived": "项目已归档，方向不再开放。需要查看或修改，先把项目恢复。",
+    "loadFailed": "方向没加载出来",
+    "loadFailedDesc": "可能是网络不通，也可能是服务端还没准备好，重试一下。",
+    "view": {
+      "tree": "演进树",
+      "status": "按状态"
+    },
+    "action": {
+      "extract": "让 AI 提炼方向",
+      "create": "新建方向",
+      "derive": "从这里深入",
+      "edit": "编辑",
+      "delete": "删除"
+    },
+    "empty": {
+      "title": "还没有方向",
+      "desc": "方向是拿来试的，不是一开始就要定死的：先定几个候选，发出去看数据，好的沿着这条线深入，差的淘汰换新的。",
+      "hint": "可以让 AI 从 background/ 里的物料提炼几个候选，也可以自己先写一个。",
+      "extract": "让 AI 提炼方向",
+      "create": "自己写一个"
+    },
+    "status": {
+      "candidate": "候选",
+      "testing": "测试中",
+      "effective": "有效",
+      "retired": "已淘汰"
+    },
+    "statusDesc": {
+      "candidate": "刚提出来，还没发东西验证。",
+      "testing": "已经在发内容验证，等数据。",
+      "effective": "数据认可，值得沿着这条线往下深入。",
+      "retired": "试过不行，留个记录，不再往下走。"
+    },
+    "source": {
+      "ai": "AI 提炼",
+      "user": "自己建",
+      "derived": "派生"
+    },
+    "card": {
+      "childCount": "往下长出 {{num}} 条",
+      "noDesc": "还没写这个方向切什么痛点、用什么噱头",
+      "sources": "吃了 {{num}} 份物料："
+    },
+    "group": {
+      "count": "{{num}} 个",
+      "empty": "这一栏还没有方向"
+    },
+    "statusChange": {
+      "success": "已改成「{{status}}」"
+    },
+    "form": {
+      "createTitle": "新建方向",
+      "createDesc": "先说清楚这个方向切什么痛点、面向谁，后面生成内容都照着它写。",
+      "deriveTitle": "从这个方向深入",
+      "deriveDesc": "新方向会记下它是从哪条线长出来的，演进树上看得到这条血统。",
+      "editTitle": "编辑方向",
+      "editDesc": "名字、说明、状态随时能改；slug 是文件名，这里不改。",
+      "parent": "上级方向：{{name}}（{{slug}}）",
+      "slugLabel": "slug",
+      "slugHint": "文件名用，项目内唯一：小写字母开头，只能用小写字母、数字和连字符。",
+      "slugFixed": "slug 是 angles/ 下的文件名，这里不改。",
+      "slugPlaceholder": "例如：pain-point",
+      "nameLabel": "显示名",
+      "namePlaceholder": "例如：痛点切入",
+      "descLabel": "这个方向切什么",
+      "descPlaceholder": "例如：切备孕夫妻记不住排卵期的焦虑，用「记一次少吵一架」当噱头",
+      "descHint": "写得越具体，生成出来的内容越不跑偏。",
+      "statusLabel": "状态",
+      "cancel": "取消",
+      "submitCreate": "创建",
+      "submitDerive": "派生",
+      "submitSave": "保存",
+      "createSuccess": "方向已创建",
+      "deriveSuccess": "子方向已创建",
+      "saveSuccess": "已保存"
+    },
+    "slugError": {
+      "required": "slug 不能为空",
+      "charset": "只能用小写字母、数字和连字符",
+      "start": "必须以小写字母开头",
+      "end": "不能以连字符结尾",
+      "length": "长度要在 3 到 40 个字符之间",
+      "doubleHyphen": "不能出现连续的连字符",
+      "reserved": "这个名字被系统占用了，换一个",
+      "taken": "这个 slug 在项目里已经有了，换一个"
+    },
+    "nameError": {
+      "required": "显示名不能为空",
+      "tooLong": "显示名最多 60 个字"
+    },
+    "descError": {
+      "tooLong": "说明最多 500 个字"
+    },
+    "delete": {
+      "title": "确定删除这个方向？",
+      "desc": "会删掉「{{name}}」和它的方向文件 angles/{{slug}}.md，删了拿不回来。已经生成的草稿不受影响。",
+      "confirm": "删除",
+      "cancel": "再想想",
+      "deleting": "删除中…",
+      "success": "方向已删除"
+    },
+    "extract": {
+      "title": "让 AI 提炼方向",
+      "desc": "AI 会读这个项目 background/ 下的物料，提炼 3~6 个候选方向，写进 angles/。",
+      "rule": "事实只能来自你放进去的物料。材料不够，它会直说不够，不会替你编。",
+      "start": "开始提炼",
+      "again": "再提炼一次",
+      "running": "提炼中…",
+      "stop": "停止",
+      "waiting": "已经派下去了，等它开始读物料…",
+      "noLog": "这次没有过程记录。",
+      "done": "提炼完了，方向列表已经刷新。",
+      "doneHint": "AI 写的是 angles/ 下的方向文件；列表里没出现新方向的话，去「物料」标签页的 angles 目录看一眼。",
+      "failed": "没提炼成功",
+      "close": "关闭"
+    },
+    "error": {
+      "notFound": "这个方向不在了，刷新一下看看",
+      "slugInvalid": "slug 不符合规则，改一下再试",
+      "slugTaken": "这个 slug 已经有人用了，换一个",
+      "slugReserved": "这个名字被系统占用了，换一个",
+      "parentNotFound": "上级方向不在了，刷新一下看看",
+      "parentSelf": "不能把自己当成自己的上级",
+      "parentCycle": "这样会绕成一个圈，换一个上级",
+      "parentProjectMismatch": "上级方向属于别的项目",
+      "retired": "这个方向已经淘汰，不能再改了",
+      "statusInvalid": "状态值不对，刷新一下再试",
+      "depthExceeded": "派生得太深了，再深就看不清了",
+      "hasChildren": "它下面还有子方向，先把子方向处理掉",
+      "projectMismatch": "这个方向不属于当前项目",
+      "fileNotFound": "方向文件不在了，刷新一下看看",
+      "fileWriteFailed": "方向文件没写进去，稍后再试一次",
+      "fileRenameFailed": "方向文件没改名成功，稍后再试一次",
+      "fileDeleteFailed": "方向文件没删掉，稍后再试一次",
+      "fileInvalid": "方向文件的内容不对，去物料里看一眼",
+      "extractionFailed": "AI 提炼没成功，稍后再试一次",
+      "draftNotFound": "这条草稿不在了，刷新一下看看",
+      "draftGenerateFailed": "内容没生成出来，稍后再试一次",
+      "draftWriteFailed": "草稿没写进去，稍后再试一次",
+      "draftMetaInvalid": "草稿的血缘记录不对，去文件里看一眼",
+      "platformNotSupported": "这个平台还不支持"
+    }
+  },
+  "drafts": {
+    "archived": "项目已归档，生成和草稿都不再开放。需要查看或修改，先把项目恢复。",
+    "generate": {
+      "title": "生成内容",
+      "desc": "选一个方向和平台，AI 照着方向的写作指引和 background/ 里的物料写一条，落到 drafts/。",
+      "angleLabel": "按哪个方向写",
+      "anglePlaceholder": "选一个方向",
+      "platformLabel": "发到哪个平台",
+      "recommended": "推荐",
+      "extraLabel": "额外要求（选填）",
+      "extraPlaceholder": "例如：这次多用用户原话，少讲功能",
+      "submit": "生成",
+      "running": "生成中…",
+      "stop": "停止",
+      "done": "生成完了，草稿列表已经刷新。",
+      "failed": "没生成成功",
+      "waiting": "已经派下去了，等它开始读物料…",
+      "noLog": "这次没有过程记录。",
+      "noAngles": "还没有可用的方向。先去「方向」标签页提炼或新建一个，再回来生成。"
+    },
+    "platform": {
+      "xhs": "小红书",
+      "douyin": "抖音",
+      "wxSph": "视频号",
+      "wxGzh": "公众号"
+    },
+    "platformRule": {
+      "xhs": "小红书：标题 20 字以内，正文 1000 字以内，话题最多 10 个。",
+      "douyin": "抖音：标题短一点更好，正文简短，话题别堆。",
+      "wxSph": "视频号：一句话说清楚看点，描述简短。",
+      "wxGzh": "公众号：标题要能单独立住，正文可以长，按段落写。"
+    },
+    "list": {
+      "title": "草稿（{{num}}）",
+      "loadFailed": "草稿没加载出来",
+      "loadFailedDesc": "可能是网络不通，也可能是 drafts 目录出了问题，重试一下。",
+      "pickTitle": "左边挑一条草稿",
+      "pickDesc": "点开能看正文、配图，还有它是怎么来的：哪个方向、吃了哪些物料、什么提示词。"
+    },
+    "empty": {
+      "title": "还没有草稿",
+      "desc": "上面选一个方向和平台生成一条，正文和血缘会一起落到 drafts/ 目录里。"
+    },
+    "detail": {
+      "content": "正文",
+      "media": "配图",
+      "lineage": "血缘",
+      "noContent": "这条草稿里没找到正文文件。",
+      "noMedia": "这条草稿没有配图",
+      "noMediaHint": "图片从 media/ 里挑，正文或 meta.json 里带上路径，这里就会显示。",
+      "mediaFailed": "这张图没取到",
+      "meta": "更新于 {{time}}",
+      "unsaved": "有改动没保存",
+      "saveSuccess": "已保存"
+    },
+    "lineage": {
+      "angle": "方向",
+      "platform": "平台",
+      "project": "项目",
+      "model": "模型",
+      "createdAt": "生成时间",
+      "sources": "用了哪些物料",
+      "prompt": "提示词",
+      "none": "（没有记录）",
+      "missing": "这条草稿没有血缘记录",
+      "missingHint": "血缘记在草稿目录的 meta.json 里，手工建的草稿一般没有。"
     }
   }
 }

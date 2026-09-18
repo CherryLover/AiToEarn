@@ -49,6 +49,16 @@ export const projectsConfigSchema = z.object({
   root: z.string().default('/data/projects').describe('项目物料根目录（容器内路径）'),
 }).default({ root: '/data/projects' })
 
+export const deviceConfigSchema = z.object({
+  heartbeatSeconds: z.number().int().positive().default(30).describe('设备心跳间隔（秒），lastSeenAt 在 3 倍间隔内算在线'),
+  pairingCodeTtlSeconds: z.number().int().positive().default(600).describe('配对码有效期（秒）'),
+}).default({ heartbeatSeconds: 30, pairingCodeTtlSeconds: 600 })
+
+export const executionTaskConfigSchema = z.object({
+  leaseSeconds: z.number().int().positive().default(300).describe('执行工单租约时长（秒），超时未续租会被回收重排'),
+  maxAttempts: z.number().int().positive().default(3).describe('执行工单最大尝试次数，超过后转失败'),
+}).default({ leaseSeconds: 300, maxAttempts: 3 })
+
 export const channelConfigSchema = z.object({
   channelDb: channelDbConfigSchema,
   shortLink: z.object({
@@ -76,6 +86,8 @@ export const appConfigSchema = z.object({
   auth: aitoearnAuthConfigSchema,
   apiKey: apiKeyConfigSchema,
   projects: projectsConfigSchema,
+  device: deviceConfigSchema,
+  executionTask: executionTaskConfigSchema,
   redis: redisConfigSchema,
   mongodb: mongodbConfigSchema,
   redlock: redlockConfigSchema,

@@ -126,6 +126,7 @@
   },
   "tabs": {
     "materials": "素材",
+    "angles": "方向性",
     "generate": "生成",
     "publish": "配信",
     "data": "データ",
@@ -231,6 +232,220 @@
       "canceled": "中止しました",
       "tooLarge": "1ファイル100MBまでです",
       "dropHint": "ここにファイルをドロップするとアップロードされます。保存先：{{dir}}"
+    }
+  },
+  "angles": {
+    "title": "発信の方向性",
+    "subtitle": "方向性は検証するための仮説で、分類ではありません。手応えのある線は掘り下げ、伸びない線は退役させます。",
+    "archived": "このプロジェクトはアーカイブ済みのため、方向性は開けません。編集するにはまず復元してください。",
+    "loadFailed": "方向性を読み込めませんでした",
+    "loadFailedDesc": "ネットワークの問題か、サーバー側がまだ準備できていない可能性があります。もう一度お試しください。",
+    "view": {
+      "tree": "系統ツリー",
+      "status": "ステータス別"
+    },
+    "action": {
+      "extract": "AI に方向性を抽出させる",
+      "create": "方向性を追加",
+      "derive": "ここから掘り下げる",
+      "edit": "編集",
+      "delete": "削除"
+    },
+    "empty": {
+      "title": "方向性がまだありません",
+      "desc": "方向性は最初から決め切るものではなく、試すためのものです。まず候補をいくつか立て、投稿して数字を見て、伸びた線を掘り下げ、伸びない線は入れ替えます。",
+      "hint": "background/ の素材から AI に候補を出させることも、自分で一つ書くこともできます。",
+      "extract": "AI に方向性を抽出させる",
+      "create": "自分で書く"
+    },
+    "status": {
+      "candidate": "候補",
+      "testing": "検証中",
+      "effective": "有効",
+      "retired": "退役"
+    },
+    "statusDesc": {
+      "candidate": "立てたばかりで、まだ投稿で検証していません。",
+      "testing": "実際に投稿して検証中、数字待ちです。",
+      "effective": "数字が裏づけています。この線を掘り下げる価値があります。",
+      "retired": "試したが伸びませんでした。記録として残し、これ以上進めません。"
+    },
+    "source": {
+      "ai": "AI 抽出",
+      "user": "手動作成",
+      "derived": "派生"
+    },
+    "card": {
+      "childCount": "下に {{num}} 本",
+      "noDesc": "どんな悩みを突くのか、まだ書かれていません",
+      "sources": "素材 {{num}} 件を参照："
+    },
+    "group": {
+      "count": "{{num}} 件",
+      "empty": "この列にはまだありません"
+    },
+    "statusChange": {
+      "success": "「{{status}}」に変更しました"
+    },
+    "form": {
+      "createTitle": "方向性を追加",
+      "createDesc": "どんな悩みを突くのか、誰に向けるのかを書いておくと、以後の生成はこれに従います。",
+      "deriveTitle": "この方向性を掘り下げる",
+      "deriveDesc": "新しい方向性にはどの線から伸びたかが記録され、系統ツリーに表示されます。",
+      "editTitle": "方向性を編集",
+      "editDesc": "名前・説明・ステータスはいつでも変更できます。slug はファイル名なのでここでは変えません。",
+      "parent": "親の方向性：{{name}}（{{slug}}）",
+      "slugLabel": "slug",
+      "slugHint": "ファイル名に使い、プロジェクト内で一意です。英小文字で始まり、英小文字・数字・ハイフンのみ。",
+      "slugFixed": "slug は angles/ 配下のファイル名です。ここでは変更しません。",
+      "slugPlaceholder": "例：pain-point",
+      "nameLabel": "表示名",
+      "namePlaceholder": "例：悩みから入る",
+      "descLabel": "この方向性が突くもの",
+      "descPlaceholder": "例：排卵日を覚えていられない不安を突き、「一度記録すれば喧嘩が減る」を切り口にする",
+      "descHint": "具体的に書くほど、生成される内容がぶれません。",
+      "statusLabel": "ステータス",
+      "cancel": "キャンセル",
+      "submitCreate": "作成",
+      "submitDerive": "派生",
+      "submitSave": "保存",
+      "createSuccess": "方向性を作成しました",
+      "deriveSuccess": "子の方向性を作成しました",
+      "saveSuccess": "保存しました"
+    },
+    "slugError": {
+      "required": "slug は必須です",
+      "charset": "英小文字・数字・ハイフンのみ使えます",
+      "start": "英小文字で始めてください",
+      "end": "ハイフンで終われません",
+      "length": "3〜40 文字にしてください",
+      "doubleHyphen": "ハイフンを連続させられません",
+      "reserved": "システムで予約された名前です。別の名前にしてください",
+      "taken": "この slug はこのプロジェクトで使用済みです。別の名前にしてください"
+    },
+    "nameError": {
+      "required": "表示名は必須です",
+      "tooLong": "表示名は 60 文字までです"
+    },
+    "descError": {
+      "tooLong": "説明は 500 文字までです"
+    },
+    "delete": {
+      "title": "この方向性を削除しますか？",
+      "desc": "「{{name}}」と方向性ファイル angles/{{slug}}.md を削除します。元に戻せません。生成済みの下書きには影響しません。",
+      "confirm": "削除",
+      "cancel": "やめる",
+      "deleting": "削除中…",
+      "success": "方向性を削除しました"
+    },
+    "extract": {
+      "title": "AI に方向性を抽出させる",
+      "desc": "このプロジェクトの background/ にある素材を読み、候補の方向性を 3〜6 個に整理して angles/ に書き出します。",
+      "rule": "事実は入れた素材からしか取りません。足りなければ足りないと言い、作り話はしません。",
+      "start": "開始",
+      "again": "もう一度実行",
+      "running": "実行中…",
+      "stop": "停止",
+      "waiting": "送信しました。素材を読み始めるのを待っています…",
+      "noLog": "今回の記録はありません。",
+      "done": "完了しました。方向性の一覧を更新しました。",
+      "doneHint": "AI が書くのは angles/ 配下のファイルです。一覧に出てこない場合は「素材」タブの angles を確認してください。",
+      "failed": "抽出できませんでした",
+      "close": "閉じる"
+    },
+    "error": {
+      "notFound": "この方向性は見つかりません。更新して確認してください",
+      "slugInvalid": "slug が規則に合いません。直してからお試しください",
+      "slugTaken": "この slug は使用済みです。別の名前にしてください",
+      "slugReserved": "システムで予約された名前です。別の名前にしてください",
+      "parentNotFound": "親の方向性が見つかりません。更新して確認してください",
+      "parentSelf": "自分自身を親にはできません",
+      "parentCycle": "循環してしまいます。別の親を選んでください",
+      "parentProjectMismatch": "親の方向性は別のプロジェクトのものです",
+      "retired": "退役した方向性は変更できません",
+      "statusInvalid": "ステータスが不正です。更新してお試しください",
+      "depthExceeded": "派生が深すぎます。これ以上は追えません",
+      "hasChildren": "子の方向性が残っています。先にそちらを処理してください",
+      "projectMismatch": "この方向性は現在のプロジェクトのものではありません",
+      "fileNotFound": "方向性ファイルが見つかりません。更新して確認してください",
+      "fileWriteFailed": "方向性ファイルを書き込めませんでした。あとでお試しください",
+      "fileRenameFailed": "方向性ファイルの名前を変更できませんでした。あとでお試しください",
+      "fileDeleteFailed": "方向性ファイルを削除できませんでした。あとでお試しください",
+      "fileInvalid": "方向性ファイルの内容が不正です。素材タブで確認してください",
+      "extractionFailed": "AI の抽出に失敗しました。あとでお試しください",
+      "draftNotFound": "この下書きは見つかりません。更新して確認してください",
+      "draftGenerateFailed": "内容を生成できませんでした。あとでお試しください",
+      "draftWriteFailed": "下書きを書き込めませんでした。あとでお試しください",
+      "draftMetaInvalid": "下書きの来歴記録が不正です。ファイルを確認してください",
+      "platformNotSupported": "このプラットフォームはまだ対応していません"
+    }
+  },
+  "drafts": {
+    "archived": "このプロジェクトはアーカイブ済みのため、生成と下書きは開けません。編集するにはまず復元してください。",
+    "generate": {
+      "title": "内容を生成",
+      "desc": "方向性とプラットフォームを選ぶと、AI が方向性の指針と background/ の素材に沿って 1 本書き、drafts/ に保存します。",
+      "angleLabel": "どの方向性で書くか",
+      "anglePlaceholder": "方向性を選ぶ",
+      "platformLabel": "どのプラットフォーム向けか",
+      "recommended": "おすすめ",
+      "extraLabel": "追加の要望（任意）",
+      "extraPlaceholder": "例：今回はユーザーの生の声を多めに、機能説明は控えめに",
+      "submit": "生成",
+      "running": "生成中…",
+      "stop": "停止",
+      "done": "生成しました。下書き一覧を更新しました。",
+      "failed": "生成できませんでした",
+      "waiting": "送信しました。素材を読み始めるのを待っています…",
+      "noLog": "今回の記録はありません。",
+      "noAngles": "使える方向性がありません。先に「方向性」タブで抽出するか作成してから戻ってきてください。"
+    },
+    "platform": {
+      "xhs": "小紅書",
+      "douyin": "抖音",
+      "wxSph": "WeChat チャンネルズ",
+      "wxGzh": "WeChat 公式アカウント"
+    },
+    "platformRule": {
+      "xhs": "小紅書：タイトル 20 文字以内、本文 1000 文字以内、ハッシュタグは 10 個まで。",
+      "douyin": "抖音：タイトルは短いほど良く、本文は簡潔に、タグは盛りすぎない。",
+      "wxSph": "WeChat チャンネルズ：見どころを一言で、説明は短く。",
+      "wxGzh": "WeChat 公式アカウント：タイトル単体で成立させ、本文は長めでも段落を分けて書く。"
+    },
+    "list": {
+      "title": "下書き（{{num}}）",
+      "loadFailed": "下書きを読み込めませんでした",
+      "loadFailedDesc": "ネットワークの問題か、drafts ディレクトリに問題がある可能性があります。もう一度お試しください。",
+      "pickTitle": "左から下書きを選んでください",
+      "pickDesc": "開くと本文・画像に加えて、どの方向性から、どの素材を使い、どんな指示で生まれたのかが見られます。"
+    },
+    "empty": {
+      "title": "下書きがまだありません",
+      "desc": "上で方向性とプラットフォームを選んで生成すると、本文と来歴が drafts/ に保存されます。"
+    },
+    "detail": {
+      "content": "本文",
+      "media": "画像",
+      "lineage": "来歴",
+      "noContent": "この下書きに本文ファイルが見つかりません。",
+      "noMedia": "この下書きに画像はありません",
+      "noMediaHint": "画像は media/ から選びます。本文か meta.json にパスを書くとここに表示されます。",
+      "mediaFailed": "この画像を取得できませんでした",
+      "meta": "{{time}} に更新",
+      "unsaved": "未保存の変更あり",
+      "saveSuccess": "保存しました"
+    },
+    "lineage": {
+      "angle": "方向性",
+      "platform": "プラットフォーム",
+      "project": "プロジェクト",
+      "model": "モデル",
+      "createdAt": "生成日時",
+      "sources": "使った素材",
+      "prompt": "指示文",
+      "none": "（記録なし）",
+      "missing": "この下書きに来歴の記録はありません",
+      "missingHint": "来歴は下書きフォルダーの meta.json に入ります。手動で作った下書きには通常ありません。"
     }
   }
 }

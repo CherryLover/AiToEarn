@@ -21,7 +21,10 @@
 |---|---|---|
 | `contract-core.md` | 跨阶段通用约定：代码范式、命名、目录规范、文件与数据库分界、错误码 | **所有 Agent** |
 | `contract-stage0.md` | 阶段 0 逐项契约：部署挂载、Project 表、接口、网页页面（**已上线**） | 阶段 0 的 Agent |
-| `contract-stage1.md` | 阶段 1 逐项契约：路径安全重做、文件管理接口、图片与名片、AI 服务改造、网页文件浏览器 | 阶段 1 的 Agent |
+| `contract-stage1.md` | 阶段 1 逐项契约：路径安全重做、文件管理接口、图片与名片、AI 服务改造、网页文件浏览器 | 阶段 1 的 Agent（**已上线**） |
+| `contract-skeleton.md` | **跨阶段共用骨架**：执行工单、设备、WebSocket 协议、任务载荷、帖子身份、错误码分段 | **阶段 2/3/4 全部 Agent，以及插件线** |
+| `contract-stage2.md` | 阶段 2：发布方向与内容生成 | 阶段 2 的 Agent |
+| `contract-stage3.md` | 阶段 3：执行端通道（服务端与网页侧） | 阶段 3 的 Agent |
 
 ## 开工须知
 

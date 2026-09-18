@@ -236,4 +236,75 @@ export enum ResponseCode {
   ProjectFileWriteFailed = 20105, // 写入失败
   ProjectFileIsSymlink = 20106, // 目标是软链，拒绝操作
   ProjectFileUploadFailed = 20107, // 上传失败
+
+  // ========================================
+  // 20200-20299: angles（发布方向与内容生成，阶段 2）
+  // ========================================
+  AngleNotFound = 20200, // 方向不存在
+  AngleSlugInvalid = 20201, // slug 不符合命名规则
+  AngleSlugTaken = 20202, // slug 在同项目内已被占用
+  AngleSlugReserved = 20203, // slug 命中保留字
+  AngleParentNotFound = 20204, // 父方向不存在
+  AngleParentSelf = 20205, // 不能把自己当父方向
+  AngleParentCycle = 20206, // 父子关系成环
+  AngleParentProjectMismatch = 20207, // 父方向不属于同一个项目
+  AngleRetired = 20208, // 方向已淘汰，不能再操作
+  AngleStatusInvalid = 20209, // 状态值不合法或不允许这样流转
+  AngleDepthExceeded = 20210, // 派生层级过深
+  AngleHasChildren = 20211, // 名下还有子方向，不能直接删
+  AngleProjectMismatch = 20212, // 方向不属于该项目
+  AngleFileNotFound = 20213, // 方向指引文件缺失
+  AngleFileWriteFailed = 20214, // 方向指引文件写入失败
+  AngleFileRenameFailed = 20215, // 改 slug 时同步改文件名失败
+  AngleFileDeleteFailed = 20216, // 方向指引文件删除失败
+  AngleFileInvalid = 20217, // 方向指引文件格式不合法（frontmatter 缺失或无法解析）
+  AngleExtractionFailed = 20218, // AI 提炼候选方向失败
+  AngleDraftNotFound = 20219, // 草稿不存在
+  AngleDraftGenerateFailed = 20220, // 按方向生成内容失败
+  AngleDraftWriteFailed = 20221, // 草稿写入失败
+  AngleDraftMetaInvalid = 20222, // 草稿血缘文件不合法
+  AnglePlatformNotSupported = 20223, // 目标平台不支持
+
+  // ========================================
+  // 20300-20399: devices（执行端设备，阶段 3）
+  // ========================================
+  DevicePairingCodeInvalid = 20300, // 配对码无效或已过期
+  DevicePairingCodeUsed = 20301, // 配对码已被使用
+  DevicePairingCodeGenerateFailed = 20302, // 配对码生成失败
+  DeviceNotFound = 20303, // 设备不存在
+  DeviceTokenInvalid = 20304, // 设备令牌无效
+  DeviceTokenMissing = 20305, // 请求没有携带设备令牌
+  DeviceRevoked = 20306, // 设备已吊销
+  DeviceOffline = 20307, // 设备不在线
+  DeviceNameInvalid = 20308, // 设备名不合法
+  DeviceLimitExceeded = 20309, // 设备数量超出上限
+  DeviceCapabilityInvalid = 20310, // 上报的设备能力不合法
+  DeviceHeartbeatInvalid = 20311, // 心跳载荷不合法
+  DeviceAlreadyPaired = 20312, // 该设备已经配对过
+  DeviceWsUnauthorized = 20313, // WebSocket 握手鉴权失败
+  DeviceWsHelloTimeout = 20314, // 连接后未在限定时间内发送 hello
+  DeviceWsMessageInvalid = 20315, // WebSocket 报文不合法
+
+  // ========================================
+  // 20400-20499: execution-tasks（执行工单，阶段 3）
+  // ========================================
+  ExecutionTaskNotFound = 20400, // 工单不存在
+  ExecutionTaskLeaseInvalid = 20401, // 租约 id 对不上
+  ExecutionTaskLeaseExpired = 20402, // 租约已过期
+  ExecutionTaskStatusInvalid = 20403, // 当前状态不允许该操作
+  ExecutionTaskNoneAvailable = 20404, // 没有可领取的工单
+  ExecutionTaskManualNotClaimable = 20405, // 手动模式的工单不进入领取流程
+  ExecutionTaskCapabilityMismatch = 20406, // 设备能力不满足工单要求
+  ExecutionTaskDeviceMismatch = 20407, // 工单指定了别的设备
+  ExecutionTaskAlreadyClaimed = 20408, // 工单已被其他设备领走
+  ExecutionTaskNotLeasedByDevice = 20409, // 当前设备不是租约持有者
+  ExecutionTaskTypeNotSupported = 20410, // 工单类型不支持
+  ExecutionTaskPayloadInvalid = 20411, // 工单载荷与类型不匹配
+  ExecutionTaskResultInvalid = 20412, // 回报结果不合法
+  ExecutionTaskCreateFailed = 20413, // 工单创建失败
+  ExecutionTaskCancelNotAllowed = 20414, // 已是终态，不能取消
+  ExecutionTaskRetryNotAllowed = 20415, // 只有失败的工单可以重试
+  ExecutionTaskMaxAttemptsExceeded = 20416, // 重试次数已用尽
+  ExecutionTaskManualCompleteNotAllowed = 20417, // 只有手动模式的工单可以人工回填
+  ExecutionTaskProjectMismatch = 20418, // 工单不属于该项目
 }

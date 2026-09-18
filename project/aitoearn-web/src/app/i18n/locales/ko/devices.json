@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "title": "기기",
+    "description": "작업을 수행하는 기기와 작업 관리: 브라우저 확장 프로그램 연결, 작업 상태 확인, echo 작업으로 연결 확인.",
+    "keywords": "기기, 브라우저 확장 프로그램, 실행 작업, 자동 게시, AiToEarn"
+  },
+  "page": {
+    "title": "기기",
+    "subtitle": "브라우저 확장 프로그램이 내 컴퓨터에서 돌면서 서버에서 일을 받아 갑니다"
+  },
+  "tabs": {
+    "devices": "기기",
+    "tasks": "작업"
+  },
+  "action": {
+    "refresh": "새로고침",
+    "addDevice": "기기 추가",
+    "rename": "이름 변경",
+    "revoke": "해지",
+    "cancel": "취소",
+    "save": "저장",
+    "saving": "저장 중",
+    "close": "닫기",
+    "copy": "복사",
+    "regenerate": "새 코드",
+    "viewTasks": "최근 작업",
+    "hideTasks": "작업 접기",
+    "createEcho": "echo 작업 만들기",
+    "detail": "상세",
+    "retry": "다시 시도",
+    "cancelTask": "작업 취소"
+  },
+  "empty": {
+    "title": "아직 기기가 없습니다",
+    "desc": "기기는 내 컴퓨터에 설치하는 브라우저 확장 프로그램입니다. 서버에 연결된 상태로 일을 받아 각 플랫폼에서 게시와 데이터 수집을 대신 해 줍니다.",
+    "hint": "「기기 추가」를 눌러 연결 코드를 받은 뒤 확장 프로그램에 입력하세요.",
+    "action": "첫 기기 추가하기"
+  },
+  "device": {
+    "status": {
+      "online": "온라인",
+      "offline": "오프라인"
+    },
+    "lastSeen": "마지막 신호 {{time}}",
+    "neverSeen": "아직 신호가 없습니다",
+    "version": "확장 프로그램 {{version}}",
+    "platform": "실행 환경 {{platform}}",
+    "pairedAt": "연결 시각 {{time}}",
+    "unknown": "알 수 없음",
+    "capabilities": "지원하는 플랫폼",
+    "noCapabilities": "확장 프로그램이 아직 보고하지 않았습니다",
+    "accounts": "로그인된 계정",
+    "noAccounts": "확장 프로그램이 아직 계정을 보고하지 않았습니다",
+    "loadFailed": "기기 목록을 불러오지 못했습니다. 잠시 후 다시 시도하세요.",
+    "recentTasks": {
+      "empty": "이 기기는 아직 작업을 받은 적이 없습니다",
+      "loadFailed": "최근 작업을 불러오지 못했습니다. 잠시 후 다시 시도하세요."
+    }
+  },
+  "pair": {
+    "title": "기기 추가",
+    "desc": "이 연결 코드를 브라우저 확장 프로그램에 입력하세요. 연결되면 목록에 기기가 나타납니다.",
+    "step1": "컴퓨터에서 AiToEarn 브라우저 확장 프로그램을 엽니다",
+    "step2": "기기 연결 화면에서 위 코드를 입력합니다",
+    "step3": "여기로 돌아와 새로고침하면 기기가 보입니다",
+    "expiresIn": "{{time}} 후 만료",
+    "expired": "코드가 만료되었습니다. 새로 받아 주세요.",
+    "copySuccess": "연결 코드를 복사했습니다",
+    "copyFailed": "복사하지 못했습니다. 코드를 직접 선택해 복사하세요.",
+    "generateFailed": "연결 코드를 받지 못했습니다. 아래에서 다시 시도하세요.",
+    "done": "완료"
+  },
+  "rename": {
+    "title": "기기 이름 변경",
+    "desc": "이름만 바뀝니다. 지원 플랫폼과 계정은 확장 프로그램이 보고합니다.",
+    "label": "기기 이름",
+    "placeholder": "예: 집에 있는 Mac",
+    "emptyError": "기기 이름은 비워 둘 수 없습니다",
+    "success": "이름을 변경했습니다"
+  },
+  "revoke": {
+    "title": "이 기기를 해지할까요?",
+    "desc": "해지하면 「{{name}}」의 토큰이 즉시 무효가 됩니다. 더 이상 일을 받거나 결과를 보낼 수 없고, 다시 쓰려면 새로 연결해야 합니다.",
+    "confirm": "해지",
+    "revoking": "해지 중",
+    "success": "기기를 해지했습니다"
+  },
+  "tasks": {
+    "filter": {
+      "allStatus": "모든 상태",
+      "allType": "모든 유형",
+      "allDevice": "모든 기기"
+    },
+    "column": {
+      "device": "기기: {{device}}",
+      "attempts": "시도 {{attempts}}/{{maxAttempts}}"
+    },
+    "durationSeconds": "소요 {{seconds}}초",
+    "durationPending": "아직 끝나지 않았습니다",
+    "unknownDevice": "알 수 없는 기기",
+    "anyDevice": "조건에 맞는 아무 기기",
+    "loadFailed": "작업 목록을 불러오지 못했습니다. 잠시 후 다시 시도하세요.",
+    "retrySuccess": "다시 대기열에 넣었습니다",
+    "cancelSuccess": "취소했습니다",
+    "cancelConfirmTitle": "이 작업을 취소할까요?",
+    "cancelConfirmDesc": "취소하면 기기가 더 이상 받아 갈 수 없습니다. 이미 실행 중인 건은 중단되지 않지만 그 결과는 반영되지 않습니다.",
+    "empty": {
+      "title": "아직 작업이 없습니다",
+      "desc": "작업은 기기에 맡기는 일입니다. 연결을 확인하려면 echo 작업을 만들어 보세요. 기기가 받아 내용을 그대로 돌려주고, 성공으로 돌아오면 연결이 된 것입니다."
+    }
+  },
+  "taskType": {
+    "publish": "게시",
+    "claim_link": "링크 찾기",
+    "collect_metrics": "데이터 수집",
+    "echo": "echo"
+  },
+  "taskStatus": {
+    "pending": "대기 중",
+    "leased": "가져감",
+    "running": "실행 중",
+    "succeeded": "성공",
+    "failed": "실패",
+    "cancelled": "취소됨"
+  },
+  "taskMode": {
+    "auto": "기기가 자동 실행",
+    "manual": "사람이 직접 실행"
+  },
+  "detail": {
+    "title": "작업 상세",
+    "desc": "페이로드와 결과는 유형마다 달라서 그대로 보여 줍니다.",
+    "loadFailed": "작업 상세를 불러오지 못했습니다. 잠시 후 다시 시도하세요.",
+    "attempts": "시도 횟수",
+    "duration": "소요 시간",
+    "durationValue": "{{seconds}}초",
+    "durationPending": "아직 끝나지 않았습니다",
+    "createdAt": "생성 시각",
+    "availableAt": "수령 가능 시각",
+    "device": "기기",
+    "capability": "필요한 능력",
+    "noCapability": "제한 없음",
+    "error": "실패 이유",
+    "payload": "페이로드",
+    "result": "결과",
+    "noResult": "아직 결과가 없습니다"
+  },
+  "echo": {
+    "title": "echo 작업 만들기",
+    "desc": "기기가 받아 내용을 그대로 돌려줍니다. 웹에서 만들고, 확장 프로그램이 받아 가고, 결과가 돌아오는 흐름을 확인할 때 씁니다.",
+    "project": "프로젝트",
+    "projectPlaceholder": "프로젝트를 선택하세요",
+    "message": "돌려줄 내용",
+    "messagePlaceholder": "아무거나 적으세요. 기기가 그대로 돌려줍니다.",
+    "device": "지정 기기",
+    "deviceAny": "조건에 맞는 아무 기기",
+    "submit": "작업 만들기",
+    "submitting": "만드는 중",
+    "success": "작업을 만들었습니다",
+    "noProject": "진행 중인 프로젝트가 없습니다. 프로젝트 페이지에서 먼저 하나 만드세요.",
+    "loadProjectFailed": "프로젝트 목록을 불러오지 못했습니다. 잠시 후 다시 시도하세요."
+  },
+  "capability": {
+    "xhs": "샤오훙수",
+    "douyin": "더우인",
+    "wechatChannels": "위챗 채널",
+    "bilibili": "빌리빌리",
+    "kwai": "콰이쇼우",
+    "wxGzh": "위챗 공식 계정"
+  },
+  "error": {
+    "network": "네트워크에 연결할 수 없습니다. 연결을 확인하고 다시 시도하세요.",
+    "unknown": "처리하지 못했습니다. 잠시 후 다시 시도하세요.",
+    "pairingCodeGenerateFailed": "연결 코드를 만들지 못했습니다. 잠시 후 다시 시도하세요.",
+    "deviceNotFound": "이 기기가 없습니다. 해지되었을 수 있습니다.",
+    "deviceRevoked": "이 기기는 해지되었습니다. 다시 연결해야 씁니다.",
+    "deviceOffline": "이 기기는 오프라인입니다.",
+    "deviceNameInvalid": "쓸 수 없는 기기 이름입니다. 바꾼 뒤 다시 시도하세요.",
+    "deviceLimitExceeded": "기기 수가 한도에 도달했습니다.",
+    "taskNotFound": "이 작업이 없습니다. 새로고침해 확인하세요.",
+    "taskStatusInvalid": "지금 상태에서는 할 수 없는 동작입니다.",
+    "taskTypeNotSupported": "지원하지 않는 작업 유형입니다.",
+    "taskPayloadInvalid": "작업 내용이 올바르지 않습니다.",
+    "taskCreateFailed": "작업을 만들지 못했습니다. 잠시 후 다시 시도하세요.",
+    "taskCancelNotAllowed": "이 작업은 지금 취소할 수 없습니다.",
+    "taskRetryNotAllowed": "이 작업은 지금 다시 시도할 수 없습니다.",
+    "taskMaxAttemptsExceeded": "다시 시도할 수 있는 횟수를 모두 썼습니다.",
+    "taskProjectMismatch": "이 작업은 다른 프로젝트의 것입니다.",
+    "projectNotFound": "이 프로젝트가 없습니다. 삭제되었을 수 있습니다.",
+    "projectArchived": "이 프로젝트는 보관되어 새 작업을 받을 수 없습니다."
+  }
+}

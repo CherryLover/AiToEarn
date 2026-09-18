@@ -16,6 +16,8 @@ const SKILL_DIRECTORIES = [
   'managing-content',
   'crawling-social-media',
   'extracting-thumbnails',
+  'extracting-angles',
+  'drafting-post',
 ] as const
 
 @Injectable()

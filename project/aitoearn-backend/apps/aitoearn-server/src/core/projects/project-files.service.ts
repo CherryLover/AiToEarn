@@ -62,6 +62,35 @@ export interface DownloadPayload {
   contentType: string
 }
 
+/**
+ * 修正 multipart 上传文件名的编码。
+ *
+ * multer 底下的 busboy 默认按 latin1 解 `Content-Disposition` 里的 `filename`，
+ * 而浏览器发的是 UTF-8 字节，于是中文 / 日文 / emoji 到了 `originalname` 就成了乱码。
+ * 这里把字符按 latin1 编回原始字节，再按 UTF-8 解一遍。
+ *
+ * 不无脑转：
+ * - 有字符超出单字节范围 → 说明已经是解好的 Unicode（例如客户端走 RFC 5987 的
+ *   `filename*=UTF-8''`，busboy 会正确解码），原样返回
+ * - 解出来的结果编不回同一串字节 → 说明这串字节不是合法 UTF-8，原样返回
+ *
+ * 因此重复调用是安全的，本来就正确的名字不会被转坏。
+ */
+export function normalizeUploadFileName(originalName: string): string {
+  if (!originalName)
+    return originalName
+
+  for (let i = 0; i < originalName.length; i++) {
+    if (originalName.charCodeAt(i) > 0xFF)
+      return originalName
+  }
+
+  const bytes = Buffer.from(originalName, 'latin1')
+  const decoded = bytes.toString('utf8')
+
+  return Buffer.from(decoded, 'utf8').equals(bytes) ? decoded : originalName
+}
+
 /** 上传图片时一起写下的名片文件，正文固定留空——描述交给能读图的模型或人来补 */
 const IMAGE_CARD_BODY = '（这张图是什么，上传时留空。以后由能读图的模型补上，或由你手写。）'
 

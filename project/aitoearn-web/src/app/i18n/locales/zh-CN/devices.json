@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "title": "设备",
+    "description": "管理执行端设备与执行工单：配对浏览器插件、盯工单状态、手动建 echo 工单验证链路。",
+    "keywords": "设备, 浏览器插件, 执行工单, 自动发布, AiToEarn"
+  },
+  "page": {
+    "title": "设备",
+    "subtitle": "浏览器插件装在你电脑上，连着后台领活干"
+  },
+  "tabs": {
+    "devices": "设备",
+    "tasks": "工单"
+  },
+  "action": {
+    "refresh": "刷新",
+    "addDevice": "添加设备",
+    "rename": "改名",
+    "revoke": "吊销",
+    "cancel": "取消",
+    "save": "保存",
+    "saving": "保存中",
+    "close": "关闭",
+    "copy": "复制",
+    "regenerate": "换一个",
+    "viewTasks": "最近工单",
+    "hideTasks": "收起工单",
+    "createEcho": "建 echo 工单",
+    "detail": "详情",
+    "retry": "重试",
+    "cancelTask": "取消工单"
+  },
+  "empty": {
+    "title": "还没有设备",
+    "desc": "设备就是装在你电脑上的浏览器插件。它连着后台领活，发布和数据采集都由它去平台上完成。",
+    "hint": "点「添加设备」拿一个配对码，填进插件里就完成配对。",
+    "action": "添加第一台设备"
+  },
+  "device": {
+    "status": {
+      "online": "在线",
+      "offline": "离线"
+    },
+    "lastSeen": "最后心跳 {{time}}",
+    "neverSeen": "还没收到过心跳",
+    "version": "插件版本 {{version}}",
+    "platform": "运行环境 {{platform}}",
+    "pairedAt": "配对于 {{time}}",
+    "unknown": "未知",
+    "capabilities": "能干哪些平台",
+    "noCapabilities": "插件还没上报能力",
+    "accounts": "登录了哪些号",
+    "noAccounts": "插件还没上报账号",
+    "loadFailed": "设备列表没加载出来，稍后再试一次",
+    "recentTasks": {
+      "empty": "这台设备还没领过活",
+      "loadFailed": "最近工单没加载出来，稍后再试一次"
+    }
+  },
+  "pair": {
+    "title": "添加设备",
+    "desc": "把这个配对码填进浏览器插件，配对成功后设备就会出现在列表里。",
+    "step1": "在电脑上打开 AiToEarn 浏览器插件",
+    "step2": "找到设备配对，填入上面的配对码",
+    "step3": "回到这里刷新，就能看到这台设备",
+    "expiresIn": "{{time}} 后过期",
+    "expired": "配对码已过期，换一个再试",
+    "copySuccess": "配对码已复制",
+    "copyFailed": "没复制成功，手动选中复制吧",
+    "generateFailed": "配对码没拿到，点下面再试一次",
+    "done": "完成"
+  },
+  "rename": {
+    "title": "改设备名",
+    "desc": "只改名字，能力和账号由插件上报。",
+    "label": "设备名",
+    "placeholder": "例如：家里的 Mac",
+    "emptyError": "设备名不能为空",
+    "success": "已改名"
+  },
+  "revoke": {
+    "title": "吊销这台设备？",
+    "desc": "吊销后「{{name}}」的令牌立即失效，它领不到活也回报不了结果，要再用得重新配对。",
+    "confirm": "吊销",
+    "revoking": "吊销中",
+    "success": "设备已吊销"
+  },
+  "tasks": {
+    "filter": {
+      "allStatus": "全部状态",
+      "allType": "全部类型",
+      "allDevice": "全部设备"
+    },
+    "column": {
+      "device": "设备：{{device}}",
+      "attempts": "尝试 {{attempts}}/{{maxAttempts}}"
+    },
+    "durationSeconds": "耗时 {{seconds}} 秒",
+    "durationPending": "还没跑完",
+    "unknownDevice": "未知设备",
+    "anyDevice": "任意合格设备",
+    "loadFailed": "工单列表没加载出来，稍后再试一次",
+    "retrySuccess": "已重新排队",
+    "cancelSuccess": "已取消",
+    "cancelConfirmTitle": "取消这个工单？",
+    "cancelConfirmDesc": "取消后设备领不到它。已经在跑的那次不会被打断，但结果不会被采纳。",
+    "empty": {
+      "title": "还没有工单",
+      "desc": "工单是派给设备的活。想验证链路，先建一个 echo 工单：设备领走后原样回传，回报成功就说明链路通了。"
+    }
+  },
+  "taskType": {
+    "publish": "发布",
+    "claim_link": "找链接",
+    "collect_metrics": "采数据",
+    "echo": "echo"
+  },
+  "taskStatus": {
+    "pending": "待领取",
+    "leased": "已领取",
+    "running": "执行中",
+    "succeeded": "成功",
+    "failed": "失败",
+    "cancelled": "已取消"
+  },
+  "taskMode": {
+    "auto": "设备自动执行",
+    "manual": "人工执行"
+  },
+  "detail": {
+    "title": "工单详情",
+    "desc": "载荷和结果按类型不同，这里原样展示。",
+    "loadFailed": "工单详情没加载出来，稍后再试一次",
+    "attempts": "尝试次数",
+    "duration": "耗时",
+    "durationValue": "{{seconds}} 秒",
+    "durationPending": "还没跑完",
+    "createdAt": "创建时间",
+    "availableAt": "可领取时间",
+    "device": "设备",
+    "capability": "需要能力",
+    "noCapability": "不限",
+    "error": "失败原因",
+    "payload": "载荷",
+    "result": "结果",
+    "noResult": "还没有结果"
+  },
+  "echo": {
+    "title": "建一个 echo 工单",
+    "desc": "设备领走后原样回传，用来验证网页下单、插件领活、回报结果这条链路。",
+    "project": "属于哪个项目",
+    "projectPlaceholder": "选一个项目",
+    "message": "回传内容",
+    "messagePlaceholder": "随便写一句，设备会原样返回",
+    "device": "指定设备",
+    "deviceAny": "任意合格设备",
+    "submit": "建工单",
+    "submitting": "创建中",
+    "success": "工单已创建",
+    "noProject": "还没有进行中的项目，先去项目页建一个",
+    "loadProjectFailed": "项目列表没加载出来，稍后再试一次"
+  },
+  "capability": {
+    "xhs": "小红书",
+    "douyin": "抖音",
+    "wechatChannels": "视频号",
+    "bilibili": "哔哩哔哩",
+    "kwai": "快手",
+    "wxGzh": "公众号"
+  },
+  "error": {
+    "network": "网络不通，检查一下再试",
+    "unknown": "没成功，稍后再试一次",
+    "pairingCodeGenerateFailed": "配对码没生成出来，稍后再试一次",
+    "deviceNotFound": "设备不在了，可能已经被吊销",
+    "deviceRevoked": "设备已被吊销，要重新配对",
+    "deviceOffline": "设备不在线",
+    "deviceNameInvalid": "设备名不合规，改一下再试",
+    "deviceLimitExceeded": "设备数量已经到上限了",
+    "taskNotFound": "工单不在了，刷新一下看看",
+    "taskStatusInvalid": "当前状态不允许这个操作",
+    "taskTypeNotSupported": "不支持这种工单类型",
+    "taskPayloadInvalid": "工单内容不合规",
+    "taskCreateFailed": "工单没建成功，稍后再试一次",
+    "taskCancelNotAllowed": "这个工单现在不能取消",
+    "taskRetryNotAllowed": "这个工单现在不能重试",
+    "taskMaxAttemptsExceeded": "重试次数已经用完了",
+    "taskProjectMismatch": "工单不属于这个项目",
+    "projectNotFound": "项目不存在，可能已经被删掉了",
+    "projectArchived": "项目已归档，不能再派活"
+  }
+}

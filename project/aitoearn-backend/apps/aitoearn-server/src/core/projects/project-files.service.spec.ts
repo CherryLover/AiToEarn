@@ -4,7 +4,7 @@ import * as path from 'node:path'
 import { ResponseCode } from '@yikart/common'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ProjectDirService } from './project-dir.service'
-import { ProjectFilesService } from './project-files.service'
+import { normalizeUploadFileName, ProjectFilesService } from './project-files.service'
 
 const mocks = vi.hoisted(() => ({
   config: { projects: { root: '' } },
@@ -343,6 +343,93 @@ describe('项目物料文件接口', () => {
       await expect(service.upload(PROJECT_ID, USER_ID, '../..', {
         originalname: 'a.md',
         mimetype: 'text/plain',
+        size: 1,
+        buffer: Buffer.from('x'),
+      })).rejects.toMatchObject({ code: ResponseCode.ProjectFilePathInvalid })
+    })
+  })
+
+  describe('上传文件名的编码', () => {
+    /** 模拟 busboy 的默认行为：UTF-8 的文件名字节被按 latin1 解出来，也就是后台看到的那串乱码 */
+    const asBusboyName = (name: string) => Buffer.from(name, 'utf8').toString('latin1')
+
+    /** 照控制器的入口做法先修一遍文件名，再交给 service */
+    const uploadLikeController = (dirPath: string, file: { originalname: string, mimetype: string, size: number, buffer: Buffer }) =>
+      service.upload(PROJECT_ID, USER_ID, dirPath, { ...file, originalname: normalizeUploadFileName(file.originalname) })
+
+    it.each([
+      ['中文', '产品介绍.md'],
+      ['日文', '製品紹介.md'],
+      ['emoji', '开心😀.md'],
+      ['带空格', 'user feedback 2026.md'],
+      ['纯英文', 'plain-ascii.md'],
+    ])('被 busboy 解坏的%s名字能原样落盘', async (_label, fileName) => {
+      const node = await uploadLikeController('background/feedback', {
+        originalname: asBusboyName(fileName),
+        mimetype: 'text/markdown',
+        size: 3,
+        buffer: Buffer.from('abc'),
+      })
+
+      expect(node.name).toBe(fileName)
+      expect(node.path).toBe(`background/feedback/${fileName}`)
+      expect(await readdir(path.join(projectDir, 'background/feedback'))).toContain(fileName)
+    })
+
+    it('客户端本来就编码正确的名字不会被转坏', async () => {
+      // RFC 5987 的 filename*=UTF-8'' 会被 busboy 正确解码，到这里已经是好名字
+      const node = await uploadLikeController('background/feedback', {
+        originalname: '用户反馈汇总.md',
+        mimetype: 'text/markdown',
+        size: 3,
+        buffer: Buffer.from('abc'),
+      })
+
+      expect(node.name).toBe('用户反馈汇总.md')
+      expect(await readdir(path.join(projectDir, 'background/feedback'))).toContain('用户反馈汇总.md')
+    })
+
+    it('不是合法 UTF-8 的字节序列保持原样，不硬转', () => {
+      // 单独一个 0xE9（latin1 的 é）不是合法的 UTF-8 起始字节
+      expect(normalizeUploadFileName('café.md')).toBe('café.md')
+    })
+
+    it('图片名片和传 OSS 用的都是修正后的名字', async () => {
+      await uploadLikeController('media', {
+        originalname: asBusboyName('首页截图.png'),
+        mimetype: 'image/png',
+        size: ONE_PIXEL_PNG.length,
+        buffer: ONE_PIXEL_PNG,
+      })
+
+      const files = await readdir(path.join(projectDir, 'media'))
+      expect(files).toContain('首页截图.png')
+      expect(files).toContain('首页截图.png.md')
+
+      expect(uploadFromBuffer).toHaveBeenCalledWith(USER_ID, ONE_PIXEL_PNG, expect.objectContaining({
+        filename: '首页截图.png',
+      }))
+
+      const card = await readFile(path.join(projectDir, 'media', '首页截图.png.md'), 'utf8')
+      expect(card).toContain('file: 首页截图.png')
+    })
+
+    it('修正文件名不会绕过路径校验，仍然只取最后一段', async () => {
+      const node = await uploadLikeController('media', {
+        originalname: asBusboyName('../../机密资料.md'),
+        mimetype: 'text/markdown',
+        size: 1,
+        buffer: Buffer.from('x'),
+      })
+
+      expect(node.path).toBe('media/机密资料.md')
+      expect(await readdir(path.join(projectDir, 'media'))).toContain('机密资料.md')
+    })
+
+    it('修正后仍然带控制字符的名字会被路径校验挡掉', async () => {
+      await expect(uploadLikeController('media', {
+        originalname: asBusboyName('坏名字.md'),
+        mimetype: 'text/markdown',
         size: 1,
         buffer: Buffer.from('x'),
       })).rejects.toMatchObject({ code: ResponseCode.ProjectFilePathInvalid })

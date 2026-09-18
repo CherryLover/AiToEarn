@@ -741,4 +741,246 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'en-US': 'Failed to upload file',
     'zh-CN': '文件上传失败',
   },
+
+  // 20200 (angles)
+  [ResponseCode.AngleNotFound]: {
+    'en-US': 'Angle not found',
+    'zh-CN': '发布方向不存在',
+  },
+  [ResponseCode.AngleSlugInvalid]: {
+    'en-US': 'Invalid angle slug: 3-40 characters, must start with a lowercase letter, only lowercase letters, digits and single hyphens, cannot end with a hyphen',
+    'zh-CN': '方向 slug 不合法：3~40 个字符，小写字母开头，只能包含小写字母、数字和连字符，不能以连字符结尾，也不能出现连续连字符',
+  },
+  [ResponseCode.AngleSlugTaken]: {
+    'en-US': 'Angle slug already taken in this project',
+    'zh-CN': '该项目里已有同名 slug 的方向',
+  },
+  [ResponseCode.AngleSlugReserved]: {
+    'en-US': 'Angle slug is reserved',
+    'zh-CN': '方向 slug 是保留字，请换一个',
+  },
+  [ResponseCode.AngleParentNotFound]: {
+    'en-US': 'Parent angle not found',
+    'zh-CN': '父方向不存在',
+  },
+  [ResponseCode.AngleParentSelf]: {
+    'en-US': 'An angle cannot be its own parent',
+    'zh-CN': '不能把方向自己设成自己的父方向',
+  },
+  [ResponseCode.AngleParentCycle]: {
+    'en-US': 'This would create a cycle in the angle lineage',
+    'zh-CN': '这样会让方向血统成环',
+  },
+  [ResponseCode.AngleParentProjectMismatch]: {
+    'en-US': 'Parent angle belongs to another project',
+    'zh-CN': '父方向不属于同一个项目',
+  },
+  [ResponseCode.AngleRetired]: {
+    'en-US': 'Angle is retired',
+    'zh-CN': '方向已淘汰，不能操作',
+  },
+  [ResponseCode.AngleStatusInvalid]: {
+    'en-US': 'Invalid angle status transition',
+    'zh-CN': '方向状态不合法或不允许这样流转',
+  },
+  [ResponseCode.AngleDepthExceeded]: {
+    'en-US': 'Angle lineage is too deep',
+    'zh-CN': '方向派生层级过深',
+  },
+  [ResponseCode.AngleHasChildren]: {
+    'en-US': 'This angle still has derived angles, handle them first',
+    'zh-CN': '该方向名下还有派生方向，请先处理',
+  },
+  [ResponseCode.AngleProjectMismatch]: {
+    'en-US': 'Angle does not belong to this project',
+    'zh-CN': '方向不属于该项目',
+  },
+  [ResponseCode.AngleFileNotFound]: {
+    'en-US': 'Angle guide file not found',
+    'zh-CN': '方向指引文件不存在',
+  },
+  [ResponseCode.AngleFileWriteFailed]: {
+    'en-US': 'Failed to write angle guide file',
+    'zh-CN': '方向指引文件写入失败',
+  },
+  [ResponseCode.AngleFileRenameFailed]: {
+    'en-US': 'Failed to rename angle guide file',
+    'zh-CN': '方向指引文件改名失败',
+  },
+  [ResponseCode.AngleFileDeleteFailed]: {
+    'en-US': 'Failed to delete angle guide file',
+    'zh-CN': '方向指引文件删除失败',
+  },
+  [ResponseCode.AngleFileInvalid]: {
+    'en-US': 'Angle guide file is malformed',
+    'zh-CN': '方向指引文件格式不合法',
+  },
+  [ResponseCode.AngleExtractionFailed]: {
+    'en-US': 'Failed to extract candidate angles',
+    'zh-CN': '提炼候选方向失败',
+  },
+  [ResponseCode.AngleDraftNotFound]: {
+    'en-US': 'Draft not found',
+    'zh-CN': '草稿不存在',
+  },
+  [ResponseCode.AngleDraftGenerateFailed]: {
+    'en-US': 'Failed to generate draft content',
+    'zh-CN': '按方向生成内容失败',
+  },
+  [ResponseCode.AngleDraftWriteFailed]: {
+    'en-US': 'Failed to write draft',
+    'zh-CN': '草稿写入失败',
+  },
+  [ResponseCode.AngleDraftMetaInvalid]: {
+    'en-US': 'Draft lineage file is malformed',
+    'zh-CN': '草稿血缘文件格式不合法',
+  },
+  [ResponseCode.AnglePlatformNotSupported]: {
+    'en-US': 'Target platform is not supported',
+    'zh-CN': '目标平台暂不支持',
+  },
+
+  // 20300 (devices)
+  [ResponseCode.DevicePairingCodeInvalid]: {
+    'en-US': 'Pairing code is invalid or expired',
+    'zh-CN': '配对码无效或已过期',
+  },
+  [ResponseCode.DevicePairingCodeUsed]: {
+    'en-US': 'Pairing code has already been used',
+    'zh-CN': '配对码已经用过了',
+  },
+  [ResponseCode.DevicePairingCodeGenerateFailed]: {
+    'en-US': 'Failed to generate pairing code',
+    'zh-CN': '配对码生成失败',
+  },
+  [ResponseCode.DeviceNotFound]: {
+    'en-US': 'Device not found',
+    'zh-CN': '设备不存在',
+  },
+  [ResponseCode.DeviceTokenInvalid]: {
+    'en-US': 'Invalid device token',
+    'zh-CN': '设备令牌无效',
+  },
+  [ResponseCode.DeviceTokenMissing]: {
+    'en-US': 'Device token is missing',
+    'zh-CN': '请求没有携带设备令牌',
+  },
+  [ResponseCode.DeviceRevoked]: {
+    'en-US': 'Device has been revoked',
+    'zh-CN': '设备已吊销',
+  },
+  [ResponseCode.DeviceOffline]: {
+    'en-US': 'Device is offline',
+    'zh-CN': '设备不在线',
+  },
+  [ResponseCode.DeviceNameInvalid]: {
+    'en-US': 'Invalid device name',
+    'zh-CN': '设备名不合法',
+  },
+  [ResponseCode.DeviceLimitExceeded]: {
+    'en-US': 'Device limit exceeded',
+    'zh-CN': '设备数量已达上限',
+  },
+  [ResponseCode.DeviceCapabilityInvalid]: {
+    'en-US': 'Invalid device capabilities',
+    'zh-CN': '上报的设备能力不合法',
+  },
+  [ResponseCode.DeviceHeartbeatInvalid]: {
+    'en-US': 'Invalid heartbeat payload',
+    'zh-CN': '心跳内容不合法',
+  },
+  [ResponseCode.DeviceAlreadyPaired]: {
+    'en-US': 'Device is already paired',
+    'zh-CN': '该设备已经配对过了',
+  },
+  [ResponseCode.DeviceWsUnauthorized]: {
+    'en-US': 'WebSocket authentication failed',
+    'zh-CN': 'WebSocket 鉴权失败',
+  },
+  [ResponseCode.DeviceWsHelloTimeout]: {
+    'en-US': 'No hello message received in time',
+    'zh-CN': '连接后未在限定时间内发送 hello',
+  },
+  [ResponseCode.DeviceWsMessageInvalid]: {
+    'en-US': 'Invalid WebSocket message',
+    'zh-CN': 'WebSocket 报文不合法',
+  },
+
+  // 20400 (execution-tasks)
+  [ResponseCode.ExecutionTaskNotFound]: {
+    'en-US': 'Execution task not found',
+    'zh-CN': '执行工单不存在',
+  },
+  [ResponseCode.ExecutionTaskLeaseInvalid]: {
+    'en-US': 'Invalid lease id',
+    'zh-CN': '租约 id 对不上',
+  },
+  [ResponseCode.ExecutionTaskLeaseExpired]: {
+    'en-US': 'Lease has expired',
+    'zh-CN': '租约已过期',
+  },
+  [ResponseCode.ExecutionTaskStatusInvalid]: {
+    'en-US': 'Current task status does not allow this operation',
+    'zh-CN': '工单当前状态不允许这个操作',
+  },
+  [ResponseCode.ExecutionTaskNoneAvailable]: {
+    'en-US': 'No claimable task available',
+    'zh-CN': '当前没有可领取的工单',
+  },
+  [ResponseCode.ExecutionTaskManualNotClaimable]: {
+    'en-US': 'Manual tasks cannot be claimed by devices',
+    'zh-CN': '手动模式的工单不能被设备领取',
+  },
+  [ResponseCode.ExecutionTaskCapabilityMismatch]: {
+    'en-US': 'Device capabilities do not match this task',
+    'zh-CN': '设备能力不满足这个工单',
+  },
+  [ResponseCode.ExecutionTaskDeviceMismatch]: {
+    'en-US': 'Task is assigned to another device',
+    'zh-CN': '工单指定给了别的设备',
+  },
+  [ResponseCode.ExecutionTaskAlreadyClaimed]: {
+    'en-US': 'Task has already been claimed by another device',
+    'zh-CN': '工单已被其他设备领走',
+  },
+  [ResponseCode.ExecutionTaskNotLeasedByDevice]: {
+    'en-US': 'Current device does not hold the lease of this task',
+    'zh-CN': '当前设备不是这个工单的租约持有者',
+  },
+  [ResponseCode.ExecutionTaskTypeNotSupported]: {
+    'en-US': 'Execution task type is not supported',
+    'zh-CN': '不支持的工单类型',
+  },
+  [ResponseCode.ExecutionTaskPayloadInvalid]: {
+    'en-US': 'Task payload does not match the task type',
+    'zh-CN': '工单载荷与类型不匹配',
+  },
+  [ResponseCode.ExecutionTaskResultInvalid]: {
+    'en-US': 'Invalid task result',
+    'zh-CN': '回报的执行结果不合法',
+  },
+  [ResponseCode.ExecutionTaskCreateFailed]: {
+    'en-US': 'Failed to create execution task',
+    'zh-CN': '执行工单创建失败',
+  },
+  [ResponseCode.ExecutionTaskCancelNotAllowed]: {
+    'en-US': 'Task is already finished and cannot be cancelled',
+    'zh-CN': '工单已是终态，不能取消',
+  },
+  [ResponseCode.ExecutionTaskRetryNotAllowed]: {
+    'en-US': 'Only failed tasks can be retried',
+    'zh-CN': '只有失败的工单可以重试',
+  },
+  [ResponseCode.ExecutionTaskMaxAttemptsExceeded]: {
+    'en-US': 'Max attempts exceeded',
+    'zh-CN': '重试次数已经用尽',
+  },
+  [ResponseCode.ExecutionTaskManualCompleteNotAllowed]: {
+    'en-US': 'Only manual tasks can be completed by hand',
+    'zh-CN': '只有手动模式的工单可以人工回填结果',
+  },
+  [ResponseCode.ExecutionTaskProjectMismatch]: {
+    'en-US': 'Task does not belong to this project',
+    'zh-CN': '工单不属于该项目',
+  },
 }

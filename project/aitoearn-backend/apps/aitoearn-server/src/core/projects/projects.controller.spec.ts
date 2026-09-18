@@ -115,6 +115,29 @@ describe('项目接口的路由装配', () => {
     expect(vo.path).toBe('media/a.png')
   })
 
+  it('上传把 busboy 解坏的中文名字修回 UTF-8 再交给 service', async () => {
+    filesService.upload!.mockResolvedValue({
+      name: '首页截图.png',
+      path: 'media/首页截图.png',
+      type: 'file',
+      size: 3,
+      updatedAt: NOW,
+      children: null,
+    })
+
+    await controller.fileUpload(TOKEN, PROJECT_ID, { path: 'media' }, {
+      // busboy 默认按 latin1 解文件名，控制器拿到的就是这串乱码
+      originalname: Buffer.from('首页截图.png', 'utf8').toString('latin1'),
+      mimetype: 'image/png',
+      size: 3,
+      buffer: Buffer.from('abc'),
+    })
+
+    expect(filesService.upload).toHaveBeenCalledWith(PROJECT_ID, 'user-1', 'media', expect.objectContaining({
+      originalname: '首页截图.png',
+    }))
+  })
+
   it('下载接口设好响应头，中文文件名两种写法都给', async () => {
     filesService.download!.mockResolvedValue({
       stream: Readable.from([Buffer.from('x')]),

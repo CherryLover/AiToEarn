@@ -1,12 +1,15 @@
 import { AccountGroup, AccountGroupSchema } from './account-group.schema'
 import { Account, AccountSchema } from './account.schema'
 import { AiLog, AiLogSchema } from './ai-log.schema'
+import { Angle, AngleSchema } from './angle.schema'
 import { ApiKey, ApiKeySchema } from './api-key.schema'
 import { AppConfig, AppConfigSchema } from './app-config.schema'
 import { Asset, AssetSchema } from './asset.schema'
 import { Blog, BlogSchema } from './blog.schema'
 import { ContentGenerationTask, ContentGenerationTaskSchema } from './content-generation-task.schema'
+import { Device, DeviceSchema } from './device.schema'
 import { DraftGenerationMemory, DraftGenerationMemorySchema } from './draft-generation-memory.schema'
+import { ExecutionTask, ExecutionTaskSchema } from './execution-task.schema'
 import { MaterialGroup, MaterialGroupSchema } from './material-group.schema'
 import { Material, MaterialSchema } from './material.schema'
 import { MediaGroup, MediaGroupSchema } from './media-group.schema'
@@ -24,12 +27,15 @@ import {
 export * from './account-group.schema'
 export * from './account.schema'
 export * from './ai-log.schema'
+export * from './angle.schema'
 export * from './api-key.schema'
 export * from './app-config.schema'
 export * from './asset.schema'
 export * from './blog.schema'
 export * from './content-generation-task.schema'
+export * from './device.schema'
 export * from './draft-generation-memory.schema'
+export * from './execution-task.schema'
 export * from './material-group.schema'
 export * from './material.schema'
 export * from './media-group.schema'
@@ -61,4 +67,7 @@ export const schemas = [
   { name: DraftGenerationMemory.name, schema: DraftGenerationMemorySchema },
   { name: Asset.name, schema: AssetSchema },
   { name: Project.name, schema: ProjectSchema },
+  { name: Angle.name, schema: AngleSchema },
+  { name: Device.name, schema: DeviceSchema },
+  { name: ExecutionTask.name, schema: ExecutionTaskSchema },
 ] as const

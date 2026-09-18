@@ -5,7 +5,7 @@ import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger'
 import { GetToken, TokenInfo } from '@yikart/aitoearn-auth'
 import { ApiDoc, AppException, ParseObjectIdPipe, ResponseCode } from '@yikart/common'
 import { Project } from '@yikart/mongodb'
-import { ProjectFilesService, UploadedFileInput } from './project-files.service'
+import { normalizeUploadFileName, ProjectFilesService, UploadedFileInput } from './project-files.service'
 import { MAX_UPLOAD_BYTES } from './project-path.util'
 import {
   CreateProjectDto,
@@ -267,7 +267,8 @@ export class ProjectsController {
       throw new AppException(ResponseCode.ProjectFileUploadFailed)
 
     const node = await this.projectFilesService.upload(id, token.id, dto.path, {
-      originalname: file.originalname,
+      // busboy 默认按 latin1 解 multipart 里的文件名，中文到这里已经是乱码，进后面的逻辑之前先修回 UTF-8
+      originalname: normalizeUploadFileName(file.originalname),
       mimetype: file.mimetype,
       size: file.size,
       buffer: file.buffer,

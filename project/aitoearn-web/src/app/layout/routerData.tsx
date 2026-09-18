@@ -8,6 +8,7 @@ import {
   FolderKanban,
   History,
   Home,
+  MonitorSmartphone,
   Sparkles,
   Upload,
 } from 'lucide-react'
@@ -61,6 +62,12 @@ export const routerData: IRouterDataItem[] = [
     translationKey: 'header.agentAssets',
     path: '/agent-assets',
     icon: <Bot size={20} />,
+  },
+  {
+    name: 'Devices',
+    translationKey: 'devices',
+    path: '/devices',
+    icon: <MonitorSmartphone size={20} />,
   },
 ]
 

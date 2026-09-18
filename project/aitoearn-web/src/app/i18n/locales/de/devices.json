@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "title": "Geräte",
+    "description": "Geräte und Aufträge verwalten: Browser-Erweiterung koppeln, Auftragsstatus verfolgen und mit einem Echo-Auftrag die Kette prüfen.",
+    "keywords": "Geräte, Browser-Erweiterung, Aufträge, automatisches Veröffentlichen, AiToEarn"
+  },
+  "page": {
+    "title": "Geräte",
+    "subtitle": "Die Browser-Erweiterung läuft auf deinem Rechner und holt sich Aufträge vom Server"
+  },
+  "tabs": {
+    "devices": "Geräte",
+    "tasks": "Aufträge"
+  },
+  "action": {
+    "refresh": "Aktualisieren",
+    "addDevice": "Gerät hinzufügen",
+    "rename": "Umbenennen",
+    "revoke": "Widerrufen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Wird gespeichert",
+    "close": "Schließen",
+    "copy": "Kopieren",
+    "regenerate": "Neuer Code",
+    "viewTasks": "Letzte Aufträge",
+    "hideTasks": "Aufträge ausblenden",
+    "createEcho": "Echo-Auftrag anlegen",
+    "detail": "Details",
+    "retry": "Erneut versuchen",
+    "cancelTask": "Auftrag abbrechen"
+  },
+  "empty": {
+    "title": "Noch keine Geräte",
+    "desc": "Ein Gerät ist die Browser-Erweiterung auf deinem Rechner. Sie bleibt mit dem Server verbunden, holt sich Aufträge und erledigt Veröffentlichung und Datenerfassung auf den Plattformen.",
+    "hint": "Klicke auf „Gerät hinzufügen“, um einen Kopplungscode zu erhalten, und gib ihn in der Erweiterung ein.",
+    "action": "Erstes Gerät hinzufügen"
+  },
+  "device": {
+    "status": {
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "lastSeen": "Letztes Lebenszeichen {{time}}",
+    "neverSeen": "Noch kein Lebenszeichen",
+    "version": "Erweiterung {{version}}",
+    "platform": "Läuft auf {{platform}}",
+    "pairedAt": "Gekoppelt {{time}}",
+    "unknown": "Unbekannt",
+    "capabilities": "Unterstützte Plattformen",
+    "noCapabilities": "Die Erweiterung hat noch nichts gemeldet",
+    "accounts": "Angemeldete Konten",
+    "noAccounts": "Die Erweiterung hat noch keine Konten gemeldet",
+    "loadFailed": "Die Geräteliste konnte nicht geladen werden. Bitte versuche es erneut.",
+    "recentTasks": {
+      "empty": "Dieses Gerät hat noch keinen Auftrag übernommen",
+      "loadFailed": "Die letzten Aufträge konnten nicht geladen werden. Bitte versuche es erneut."
+    }
+  },
+  "pair": {
+    "title": "Gerät hinzufügen",
+    "desc": "Gib diesen Kopplungscode in der Browser-Erweiterung ein. Danach erscheint das Gerät in der Liste.",
+    "step1": "Öffne die AiToEarn-Browser-Erweiterung auf deinem Rechner",
+    "step2": "Gehe zur Gerätekopplung und gib den Code oben ein",
+    "step3": "Komm hierher zurück und aktualisiere, dann siehst du das Gerät",
+    "expiresIn": "Läuft ab in {{time}}",
+    "expired": "Der Code ist abgelaufen. Hole dir einen neuen.",
+    "copySuccess": "Kopplungscode kopiert",
+    "copyFailed": "Kopieren hat nicht geklappt. Markiere den Code und kopiere ihn von Hand.",
+    "generateFailed": "Kein Kopplungscode erhalten. Versuche es unten noch einmal.",
+    "done": "Fertig"
+  },
+  "rename": {
+    "title": "Gerät umbenennen",
+    "desc": "Nur der Name ändert sich. Plattformen und Konten meldet die Erweiterung.",
+    "label": "Gerätename",
+    "placeholder": "Zum Beispiel: Mac zu Hause",
+    "emptyError": "Der Gerätename darf nicht leer sein",
+    "success": "Umbenannt"
+  },
+  "revoke": {
+    "title": "Dieses Gerät widerrufen?",
+    "desc": "Nach dem Widerruf ist das Token von „{{name}}“ sofort ungültig. Es kann keine Aufträge mehr übernehmen und keine Ergebnisse melden; für eine weitere Nutzung muss es neu gekoppelt werden.",
+    "confirm": "Widerrufen",
+    "revoking": "Wird widerrufen",
+    "success": "Gerät widerrufen"
+  },
+  "tasks": {
+    "filter": {
+      "allStatus": "Alle Status",
+      "allType": "Alle Typen",
+      "allDevice": "Alle Geräte"
+    },
+    "column": {
+      "device": "Gerät: {{device}}",
+      "attempts": "Versuche {{attempts}}/{{maxAttempts}}"
+    },
+    "durationSeconds": "Dauer {{seconds}} s",
+    "durationPending": "Noch nicht fertig",
+    "unknownDevice": "Unbekanntes Gerät",
+    "anyDevice": "Beliebiges passendes Gerät",
+    "loadFailed": "Die Auftragsliste konnte nicht geladen werden. Bitte versuche es erneut.",
+    "retrySuccess": "Wieder eingereiht",
+    "cancelSuccess": "Abgebrochen",
+    "cancelConfirmTitle": "Diesen Auftrag abbrechen?",
+    "cancelConfirmDesc": "Nach dem Abbruch kann kein Gerät ihn mehr übernehmen. Ein bereits laufender Durchlauf wird nicht unterbrochen, sein Ergebnis wird aber nicht übernommen.",
+    "empty": {
+      "title": "Noch keine Aufträge",
+      "desc": "Ein Auftrag ist Arbeit für ein Gerät. Zum Prüfen der Kette legst du am besten einen Echo-Auftrag an: Das Gerät übernimmt ihn und schickt die Nachricht unverändert zurück. Kommt eine Erfolgsmeldung, steht die Kette."
+    }
+  },
+  "taskType": {
+    "publish": "Veröffentlichen",
+    "claim_link": "Link holen",
+    "collect_metrics": "Daten erfassen",
+    "echo": "Echo"
+  },
+  "taskStatus": {
+    "pending": "Wartet",
+    "leased": "Übernommen",
+    "running": "Läuft",
+    "succeeded": "Erfolgreich",
+    "failed": "Fehlgeschlagen",
+    "cancelled": "Abgebrochen"
+  },
+  "taskMode": {
+    "auto": "Vom Gerät erledigt",
+    "manual": "Von Hand erledigt"
+  },
+  "detail": {
+    "title": "Auftragsdetails",
+    "desc": "Nutzlast und Ergebnis sehen je nach Typ anders aus und werden unverändert angezeigt.",
+    "loadFailed": "Die Auftragsdetails konnten nicht geladen werden. Bitte versuche es erneut.",
+    "attempts": "Versuche",
+    "duration": "Dauer",
+    "durationValue": "{{seconds}} s",
+    "durationPending": "Noch nicht fertig",
+    "createdAt": "Erstellt",
+    "availableAt": "Abrufbar ab",
+    "device": "Gerät",
+    "capability": "Benötigte Fähigkeit",
+    "noCapability": "Beliebig",
+    "error": "Grund des Fehlschlags",
+    "payload": "Nutzlast",
+    "result": "Ergebnis",
+    "noResult": "Noch kein Ergebnis"
+  },
+  "echo": {
+    "title": "Echo-Auftrag anlegen",
+    "desc": "Das Gerät übernimmt ihn und schickt die Nachricht unverändert zurück. Damit prüfst du die Kette: Web legt an, Erweiterung übernimmt, Ergebnis kommt zurück.",
+    "project": "Projekt",
+    "projectPlaceholder": "Projekt auswählen",
+    "message": "Zurückzusendender Text",
+    "messagePlaceholder": "Beliebiger Text. Das Gerät schickt ihn unverändert zurück.",
+    "device": "Zielgerät",
+    "deviceAny": "Beliebiges passendes Gerät",
+    "submit": "Auftrag anlegen",
+    "submitting": "Wird angelegt",
+    "success": "Auftrag angelegt",
+    "noProject": "Noch kein laufendes Projekt. Lege zuerst eines auf der Projektseite an.",
+    "loadProjectFailed": "Die Projektliste konnte nicht geladen werden. Bitte versuche es erneut."
+  },
+  "capability": {
+    "xhs": "Xiaohongshu",
+    "douyin": "Douyin",
+    "wechatChannels": "WeChat Channels",
+    "bilibili": "Bilibili",
+    "kwai": "Kuaishou",
+    "wxGzh": "WeChat Official Account"
+  },
+  "error": {
+    "network": "Keine Netzwerkverbindung. Prüfe die Verbindung und versuche es erneut.",
+    "unknown": "Das hat nicht geklappt. Bitte versuche es erneut.",
+    "pairingCodeGenerateFailed": "Der Kopplungscode konnte nicht erstellt werden. Bitte versuche es erneut.",
+    "deviceNotFound": "Dieses Gerät gibt es nicht mehr. Möglicherweise wurde es widerrufen.",
+    "deviceRevoked": "Dieses Gerät wurde widerrufen. Koppele es erneut, um es zu nutzen.",
+    "deviceOffline": "Dieses Gerät ist offline.",
+    "deviceNameInvalid": "Dieser Gerätename ist nicht erlaubt. Ändere ihn und versuche es erneut.",
+    "deviceLimitExceeded": "Du hast die maximale Anzahl an Geräten erreicht.",
+    "taskNotFound": "Diesen Auftrag gibt es nicht mehr. Aktualisiere die Liste.",
+    "taskStatusInvalid": "Im aktuellen Status ist diese Aktion nicht möglich.",
+    "taskTypeNotSupported": "Dieser Auftragstyp wird nicht unterstützt.",
+    "taskPayloadInvalid": "Die Nutzlast des Auftrags ist ungültig.",
+    "taskCreateFailed": "Der Auftrag konnte nicht angelegt werden. Bitte versuche es erneut.",
+    "taskCancelNotAllowed": "Dieser Auftrag lässt sich gerade nicht abbrechen.",
+    "taskRetryNotAllowed": "Dieser Auftrag lässt sich gerade nicht wiederholen.",
+    "taskMaxAttemptsExceeded": "Alle Versuche sind aufgebraucht.",
+    "taskProjectMismatch": "Dieser Auftrag gehört zu einem anderen Projekt.",
+    "projectNotFound": "Dieses Projekt existiert nicht. Möglicherweise wurde es entfernt.",
+    "projectArchived": "Dieses Projekt ist archiviert und nimmt keine neuen Aufträge an."
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "title": "デバイス",
+    "description": "実行デバイスとタスクの管理：ブラウザ拡張機能のペアリング、タスク状態の確認、echo タスクによる疎通確認。",
+    "keywords": "デバイス, ブラウザ拡張機能, 実行タスク, 自動投稿, AiToEarn"
+  },
+  "page": {
+    "title": "デバイス",
+    "subtitle": "ブラウザ拡張機能がパソコン上で動き、サーバーから仕事を受け取ります"
+  },
+  "tabs": {
+    "devices": "デバイス",
+    "tasks": "タスク"
+  },
+  "action": {
+    "refresh": "更新",
+    "addDevice": "デバイスを追加",
+    "rename": "名前を変更",
+    "revoke": "失効させる",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "saving": "保存中",
+    "close": "閉じる",
+    "copy": "コピー",
+    "regenerate": "再発行",
+    "viewTasks": "最近のタスク",
+    "hideTasks": "タスクを閉じる",
+    "createEcho": "echo タスクを作成",
+    "detail": "詳細",
+    "retry": "再試行",
+    "cancelTask": "タスクを取り消す"
+  },
+  "empty": {
+    "title": "デバイスがまだありません",
+    "desc": "デバイスとは、パソコンに入れるブラウザ拡張機能のことです。サーバーにつながって仕事を受け取り、各プラットフォームでの投稿やデータ収集を行います。",
+    "hint": "「デバイスを追加」でペアリングコードを取得し、拡張機能に入力してください。",
+    "action": "最初のデバイスを追加"
+  },
+  "device": {
+    "status": {
+      "online": "オンライン",
+      "offline": "オフライン"
+    },
+    "lastSeen": "最終ハートビート {{time}}",
+    "neverSeen": "ハートビートはまだありません",
+    "version": "拡張機能 {{version}}",
+    "platform": "実行環境 {{platform}}",
+    "pairedAt": "ペアリング {{time}}",
+    "unknown": "不明",
+    "capabilities": "対応プラットフォーム",
+    "noCapabilities": "拡張機能からの報告はまだありません",
+    "accounts": "ログイン中のアカウント",
+    "noAccounts": "拡張機能からの報告はまだありません",
+    "loadFailed": "デバイス一覧を読み込めませんでした。しばらくしてからお試しください。",
+    "recentTasks": {
+      "empty": "このデバイスはまだタスクを受け取っていません",
+      "loadFailed": "最近のタスクを読み込めませんでした。しばらくしてからお試しください。"
+    }
+  },
+  "pair": {
+    "title": "デバイスを追加",
+    "desc": "このペアリングコードをブラウザ拡張機能に入力してください。完了するとデバイスが一覧に表示されます。",
+    "step1": "パソコンで AiToEarn のブラウザ拡張機能を開く",
+    "step2": "デバイスのペアリング画面で上のコードを入力する",
+    "step3": "ここに戻って更新すると、このデバイスが表示されます",
+    "expiresIn": "{{time}} 後に期限切れ",
+    "expired": "コードの有効期限が切れました。再発行してください。",
+    "copySuccess": "ペアリングコードをコピーしました",
+    "copyFailed": "コピーできませんでした。手動で選択してコピーしてください。",
+    "generateFailed": "ペアリングコードを取得できませんでした。下のボタンでもう一度お試しください。",
+    "done": "完了"
+  },
+  "rename": {
+    "title": "デバイス名を変更",
+    "desc": "変更できるのは名前だけです。対応プラットフォームとアカウントは拡張機能が報告します。",
+    "label": "デバイス名",
+    "placeholder": "例：自宅の Mac",
+    "emptyError": "デバイス名は空にできません",
+    "success": "名前を変更しました"
+  },
+  "revoke": {
+    "title": "このデバイスを失効させますか？",
+    "desc": "失効させると「{{name}}」のトークンはすぐ無効になります。仕事を受け取ることも結果を返すこともできなくなり、再び使うにはペアリングし直しが必要です。",
+    "confirm": "失効させる",
+    "revoking": "処理中",
+    "success": "デバイスを失効させました"
+  },
+  "tasks": {
+    "filter": {
+      "allStatus": "すべての状態",
+      "allType": "すべての種類",
+      "allDevice": "すべてのデバイス"
+    },
+    "column": {
+      "device": "デバイス：{{device}}",
+      "attempts": "試行 {{attempts}}/{{maxAttempts}}"
+    },
+    "durationSeconds": "所要 {{seconds}} 秒",
+    "durationPending": "まだ完了していません",
+    "unknownDevice": "不明なデバイス",
+    "anyDevice": "条件を満たす任意のデバイス",
+    "loadFailed": "タスク一覧を読み込めませんでした。しばらくしてからお試しください。",
+    "retrySuccess": "キューに戻しました",
+    "cancelSuccess": "取り消しました",
+    "cancelConfirmTitle": "このタスクを取り消しますか？",
+    "cancelConfirmDesc": "取り消すとデバイスは受け取れなくなります。実行中の処理は中断されませんが、その結果は採用されません。",
+    "empty": {
+      "title": "タスクがまだありません",
+      "desc": "タスクはデバイスに渡す仕事です。疎通を確認するには echo タスクを作ってください。デバイスが受け取って内容をそのまま返し、成功が返れば経路はつながっています。"
+    }
+  },
+  "taskType": {
+    "publish": "投稿",
+    "claim_link": "リンク取得",
+    "collect_metrics": "データ収集",
+    "echo": "echo"
+  },
+  "taskStatus": {
+    "pending": "待機中",
+    "leased": "受け取り済み",
+    "running": "実行中",
+    "succeeded": "成功",
+    "failed": "失敗",
+    "cancelled": "取り消し済み"
+  },
+  "taskMode": {
+    "auto": "デバイスが自動実行",
+    "manual": "手動で実行"
+  },
+  "detail": {
+    "title": "タスクの詳細",
+    "desc": "ペイロードと結果は種類ごとに形が違うため、そのまま表示します。",
+    "loadFailed": "タスクの詳細を読み込めませんでした。しばらくしてからお試しください。",
+    "attempts": "試行回数",
+    "duration": "所要時間",
+    "durationValue": "{{seconds}} 秒",
+    "durationPending": "まだ完了していません",
+    "createdAt": "作成日時",
+    "availableAt": "受け取り可能時刻",
+    "device": "デバイス",
+    "capability": "必要な能力",
+    "noCapability": "指定なし",
+    "error": "失敗の理由",
+    "payload": "ペイロード",
+    "result": "結果",
+    "noResult": "結果はまだありません"
+  },
+  "echo": {
+    "title": "echo タスクを作成",
+    "desc": "デバイスが受け取って内容をそのまま返します。ウェブで作成 → 拡張機能が受け取る → 結果が返る、という経路の確認に使います。",
+    "project": "プロジェクト",
+    "projectPlaceholder": "プロジェクトを選択",
+    "message": "返す内容",
+    "messagePlaceholder": "何でも構いません。そのまま返されます。",
+    "device": "対象デバイス",
+    "deviceAny": "条件を満たす任意のデバイス",
+    "submit": "タスクを作成",
+    "submitting": "作成中",
+    "success": "タスクを作成しました",
+    "noProject": "進行中のプロジェクトがありません。先にプロジェクトページで作成してください。",
+    "loadProjectFailed": "プロジェクト一覧を読み込めませんでした。しばらくしてからお試しください。"
+  },
+  "capability": {
+    "xhs": "小紅書",
+    "douyin": "Douyin",
+    "wechatChannels": "WeChat チャンネル",
+    "bilibili": "ビリビリ",
+    "kwai": "快手",
+    "wxGzh": "WeChat 公式アカウント"
+  },
+  "error": {
+    "network": "ネットワークにつながりません。接続を確認してからお試しください。",
+    "unknown": "うまくいきませんでした。しばらくしてからお試しください。",
+    "pairingCodeGenerateFailed": "ペアリングコードを作成できませんでした。しばらくしてからお試しください。",
+    "deviceNotFound": "このデバイスは存在しません。失効している可能性があります。",
+    "deviceRevoked": "このデバイスは失効しています。使うにはペアリングし直してください。",
+    "deviceOffline": "このデバイスはオフラインです。",
+    "deviceNameInvalid": "デバイス名が使えません。変更してからお試しください。",
+    "deviceLimitExceeded": "デバイス数が上限に達しています。",
+    "taskNotFound": "このタスクは存在しません。更新して確認してください。",
+    "taskStatusInvalid": "現在の状態ではこの操作はできません。",
+    "taskTypeNotSupported": "この種類のタスクには対応していません。",
+    "taskPayloadInvalid": "タスクの内容が正しくありません。",
+    "taskCreateFailed": "タスクを作成できませんでした。しばらくしてからお試しください。",
+    "taskCancelNotAllowed": "このタスクは今は取り消せません。",
+    "taskRetryNotAllowed": "このタスクは今は再試行できません。",
+    "taskMaxAttemptsExceeded": "再試行の回数を使い切りました。",
+    "taskProjectMismatch": "このタスクは別のプロジェクトのものです。",
+    "projectNotFound": "このプロジェクトは存在しません。削除された可能性があります。",
+    "projectArchived": "このプロジェクトはアーカイブ済みのため、新しいタスクを受け付けません。"
+  }
+}

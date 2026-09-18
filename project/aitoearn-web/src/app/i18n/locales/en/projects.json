@@ -126,6 +126,7 @@
   },
   "tabs": {
     "materials": "Material",
+    "angles": "Angles",
     "generate": "Generate",
     "publish": "Publish",
     "data": "Data",
@@ -231,6 +232,220 @@
       "canceled": "Canceled",
       "tooLarge": "A single file cannot be larger than 100 MB",
       "dropHint": "Drop files here to upload. They land in {{dir}}."
+    }
+  },
+  "angles": {
+    "title": "Publishing angles",
+    "subtitle": "An angle is a hypothesis to test, not a category. Push the ones that work deeper, retire the ones that stall.",
+    "archived": "This project is archived, so angles are closed. Restore the project to view or change them.",
+    "loadFailed": "Could not load the angles",
+    "loadFailedDesc": "It may be the network, or the server may not be ready yet. Try again.",
+    "view": {
+      "tree": "Lineage tree",
+      "status": "By status"
+    },
+    "action": {
+      "extract": "Let AI distill angles",
+      "create": "New angle",
+      "derive": "Go deeper",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "empty": {
+      "title": "No angles yet",
+      "desc": "Angles are meant to be tested, not locked in up front: start with a few candidates, publish, read the numbers, push the good line deeper and drop the rest.",
+      "hint": "Let AI distill a few from the material under background/, or write the first one yourself.",
+      "extract": "Let AI distill angles",
+      "create": "Write one myself"
+    },
+    "status": {
+      "candidate": "Candidate",
+      "testing": "Testing",
+      "effective": "Working",
+      "retired": "Retired"
+    },
+    "statusDesc": {
+      "candidate": "Just proposed, nothing published to test it yet.",
+      "testing": "Being tested with real posts, waiting on the numbers.",
+      "effective": "The numbers back it up. Worth going deeper along this line.",
+      "retired": "Tried, did not work. Kept as a record, not taken further."
+    },
+    "source": {
+      "ai": "From AI",
+      "user": "Hand-written",
+      "derived": "Derived"
+    },
+    "card": {
+      "childCount": "{{num}} branch(es) below",
+      "noDesc": "No notes yet on what this angle actually cuts at",
+      "sources": "Built from {{num}} source file(s):"
+    },
+    "group": {
+      "count": "{{num}}",
+      "empty": "Nothing in this column yet"
+    },
+    "statusChange": {
+      "success": "Moved to “{{status}}”"
+    },
+    "form": {
+      "createTitle": "New angle",
+      "createDesc": "Say what pain it cuts at and who it is for. Every draft later follows it.",
+      "deriveTitle": "Go deeper from this angle",
+      "deriveDesc": "The new angle records which line it grew out of, so the lineage shows up on the tree.",
+      "editTitle": "Edit angle",
+      "editDesc": "Name, notes and status can change any time. The slug is the file name and stays put.",
+      "parent": "Parent angle: {{name}} ({{slug}})",
+      "slugLabel": "Slug",
+      "slugHint": "Used as the file name and unique inside the project: starts with a lowercase letter, only lowercase letters, digits and hyphens.",
+      "slugFixed": "The slug is the file name under angles/ and is not edited here.",
+      "slugPlaceholder": "e.g. pain-point",
+      "nameLabel": "Display name",
+      "namePlaceholder": "e.g. Pain point first",
+      "descLabel": "What this angle cuts at",
+      "descPlaceholder": "e.g. the anxiety of missing the fertile window, hooked on “log it once, argue less”",
+      "descHint": "The more concrete this is, the less the drafts drift.",
+      "statusLabel": "Status",
+      "cancel": "Cancel",
+      "submitCreate": "Create",
+      "submitDerive": "Derive",
+      "submitSave": "Save",
+      "createSuccess": "Angle created",
+      "deriveSuccess": "Child angle created",
+      "saveSuccess": "Saved"
+    },
+    "slugError": {
+      "required": "The slug cannot be empty",
+      "charset": "Only lowercase letters, digits and hyphens",
+      "start": "Must start with a lowercase letter",
+      "end": "Cannot end with a hyphen",
+      "length": "Must be 3 to 40 characters",
+      "doubleHyphen": "No two hyphens in a row",
+      "reserved": "That name is reserved by the system. Pick another one.",
+      "taken": "That slug is already used in this project. Pick another one."
+    },
+    "nameError": {
+      "required": "The display name cannot be empty",
+      "tooLong": "The display name can be at most 60 characters"
+    },
+    "descError": {
+      "tooLong": "The notes can be at most 500 characters"
+    },
+    "delete": {
+      "title": "Delete this angle?",
+      "desc": "This removes “{{name}}” and its file angles/{{slug}}.md for good. Drafts already generated are untouched.",
+      "confirm": "Delete",
+      "cancel": "Keep it",
+      "deleting": "Deleting…",
+      "success": "Angle deleted"
+    },
+    "extract": {
+      "title": "Let AI distill angles",
+      "desc": "AI reads the material under background/ in this project, distills 3 to 6 candidate angles and writes them into angles/.",
+      "rule": "Facts can only come from the material you put in. If there is not enough, it says so instead of making things up.",
+      "start": "Start",
+      "again": "Run it again",
+      "running": "Working…",
+      "stop": "Stop",
+      "waiting": "Sent. Waiting for it to start reading the material…",
+      "noLog": "No trace from this run.",
+      "done": "Done. The angle list has been refreshed.",
+      "doneHint": "AI writes angle files under angles/. If nothing new shows up here, check the angles folder in the Material tab.",
+      "failed": "Could not distill the angles",
+      "close": "Close"
+    },
+    "error": {
+      "notFound": "This angle is gone. Refresh and see.",
+      "slugInvalid": "The slug breaks the naming rules. Fix it and try again.",
+      "slugTaken": "That slug is already taken. Pick another one.",
+      "slugReserved": "That name is reserved by the system. Pick another one.",
+      "parentNotFound": "The parent angle is gone. Refresh and see.",
+      "parentSelf": "An angle cannot be its own parent.",
+      "parentCycle": "That would close a loop. Pick a different parent.",
+      "parentProjectMismatch": "The parent angle belongs to another project.",
+      "retired": "This angle is retired and cannot be changed.",
+      "statusInvalid": "That status is not valid. Refresh and try again.",
+      "depthExceeded": "The lineage is too deep to stay readable.",
+      "hasChildren": "It still has child angles. Deal with those first.",
+      "projectMismatch": "This angle does not belong to this project.",
+      "fileNotFound": "The angle file is gone. Refresh and see.",
+      "fileWriteFailed": "The angle file could not be written. Try again.",
+      "fileRenameFailed": "The angle file could not be renamed. Try again.",
+      "fileDeleteFailed": "The angle file could not be deleted. Try again.",
+      "fileInvalid": "The angle file has bad content. Open it in the Material tab.",
+      "extractionFailed": "The AI run did not produce angles. Try again.",
+      "draftNotFound": "This draft is gone. Refresh and see.",
+      "draftGenerateFailed": "The content was not generated. Try again.",
+      "draftWriteFailed": "The draft could not be written. Try again.",
+      "draftMetaInvalid": "The draft lineage record is broken. Open the file and check.",
+      "platformNotSupported": "That platform is not supported yet."
+    }
+  },
+  "drafts": {
+    "archived": "This project is archived, so generating and drafts are closed. Restore the project to view or change them.",
+    "generate": {
+      "title": "Generate content",
+      "desc": "Pick an angle and a platform. AI follows the angle's writing notes and the material under background/, and drops the result into drafts/.",
+      "angleLabel": "Which angle",
+      "anglePlaceholder": "Pick an angle",
+      "platformLabel": "Which platform",
+      "recommended": "recommended",
+      "extraLabel": "Anything to add (optional)",
+      "extraPlaceholder": "e.g. lean on the users' own words this time, less on features",
+      "submit": "Generate",
+      "running": "Generating…",
+      "stop": "Stop",
+      "done": "Done. The draft list has been refreshed.",
+      "failed": "Could not generate it",
+      "waiting": "Sent. Waiting for it to start reading the material…",
+      "noLog": "No trace from this run.",
+      "noAngles": "No usable angle yet. Distill or create one in the Angles tab first, then come back."
+    },
+    "platform": {
+      "xhs": "Xiaohongshu",
+      "douyin": "Douyin",
+      "wxSph": "WeChat Channels",
+      "wxGzh": "WeChat Official Account"
+    },
+    "platformRule": {
+      "xhs": "Xiaohongshu: title up to 20 characters, body up to 1000, at most 10 topics.",
+      "douyin": "Douyin: a short title works best, keep the body tight, do not pile on topics.",
+      "wxSph": "WeChat Channels: one line that makes the hook clear, short description.",
+      "wxGzh": "WeChat Official Account: the title has to stand on its own, the body can run long, write in paragraphs."
+    },
+    "list": {
+      "title": "Drafts ({{num}})",
+      "loadFailed": "Could not load the drafts",
+      "loadFailedDesc": "It may be the network, or something may be wrong with the drafts folder. Try again.",
+      "pickTitle": "Pick a draft on the left",
+      "pickDesc": "Open one to read the body, see the images, and see where it came from: which angle, which source files, which prompt."
+    },
+    "empty": {
+      "title": "No drafts yet",
+      "desc": "Pick an angle and a platform above and generate one. The body and its lineage land together under drafts/."
+    },
+    "detail": {
+      "content": "Body",
+      "media": "Images",
+      "lineage": "Lineage",
+      "noContent": "No body file found in this draft.",
+      "noMedia": "This draft has no images",
+      "noMediaHint": "Images come from media/. Reference the path in the body or in meta.json and they show up here.",
+      "mediaFailed": "Could not load this image",
+      "meta": "Updated {{time}}",
+      "unsaved": "unsaved changes",
+      "saveSuccess": "Saved"
+    },
+    "lineage": {
+      "angle": "Angle",
+      "platform": "Platform",
+      "project": "Project",
+      "model": "Model",
+      "createdAt": "Generated",
+      "sources": "Source material",
+      "prompt": "Prompt",
+      "none": "(not recorded)",
+      "missing": "This draft has no lineage record",
+      "missingHint": "The lineage lives in meta.json inside the draft folder. Hand-made drafts usually have none."
     }
   }
 }

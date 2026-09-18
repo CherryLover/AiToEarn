@@ -126,6 +126,7 @@
   },
   "tabs": {
     "materials": "Matériaux",
+    "angles": "Angles",
     "generate": "Génération",
     "publish": "Publication",
     "data": "Données",
@@ -231,6 +232,220 @@
       "canceled": "Annulé",
       "tooLarge": "Un fichier ne peut pas dépasser 100 Mo",
       "dropHint": "Dépose des fichiers ici pour les envoyer. Destination : {{dir}}"
+    }
+  },
+  "angles": {
+    "title": "Angles de publication",
+    "subtitle": "Un angle est une hypothèse à tester, pas une catégorie. On creuse ceux qui marchent, on retire ceux qui stagnent.",
+    "archived": "Ce projet est archivé, les angles ne sont plus accessibles. Restaurez le projet pour les consulter ou les modifier.",
+    "loadFailed": "Impossible de charger les angles",
+    "loadFailedDesc": "Cela peut venir du réseau ou du serveur qui n'est pas encore prêt. Réessayez.",
+    "view": {
+      "tree": "Arbre de filiation",
+      "status": "Par statut"
+    },
+    "action": {
+      "extract": "Laisser l'IA dégager des angles",
+      "create": "Nouvel angle",
+      "derive": "Creuser à partir d'ici",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "empty": {
+      "title": "Aucun angle pour l'instant",
+      "desc": "Un angle se teste, il ne se fige pas d'entrée : posez quelques candidats, publiez, regardez les chiffres, creusez la piste qui marche et remplacez les autres.",
+      "hint": "Vous pouvez laisser l'IA en dégager quelques-uns à partir des matériaux de background/, ou en écrire un vous-même.",
+      "extract": "Laisser l'IA dégager des angles",
+      "create": "En écrire un moi-même"
+    },
+    "status": {
+      "candidate": "Candidat",
+      "testing": "À l'essai",
+      "effective": "Efficace",
+      "retired": "Retiré"
+    },
+    "statusDesc": {
+      "candidate": "Tout juste posé, encore rien publié pour le vérifier.",
+      "testing": "En cours de test avec de vraies publications, en attente des chiffres.",
+      "effective": "Les chiffres le confirment. Cette piste mérite d'être creusée.",
+      "retired": "Essayé sans résultat. Gardé comme trace, on n'y revient pas."
+    },
+    "source": {
+      "ai": "Dégagé par l'IA",
+      "user": "Écrit à la main",
+      "derived": "Dérivé"
+    },
+    "card": {
+      "childCount": "{{num}} branche(s) en dessous",
+      "noDesc": "Rien n'est encore écrit sur ce que cet angle vise",
+      "sources": "À partir de {{num}} fichier(s) de matériau :"
+    },
+    "group": {
+      "count": "{{num}}",
+      "empty": "Rien dans cette colonne pour l'instant"
+    },
+    "statusChange": {
+      "success": "Passé en « {{status}} »"
+    },
+    "form": {
+      "createTitle": "Nouvel angle",
+      "createDesc": "Dites quel point de friction il vise et pour qui. Toutes les générations suivantes s'y tiendront.",
+      "deriveTitle": "Creuser à partir de cet angle",
+      "deriveDesc": "Le nouvel angle garde la trace de la piste dont il sort, et apparaît dans l'arbre de filiation.",
+      "editTitle": "Modifier l'angle",
+      "editDesc": "Le nom, la description et le statut se changent à tout moment. Le slug est le nom de fichier et ne bouge pas ici.",
+      "parent": "Angle parent : {{name}} ({{slug}})",
+      "slugLabel": "Slug",
+      "slugHint": "Sert de nom de fichier, unique dans le projet : commence par une minuscule, uniquement minuscules, chiffres et tirets.",
+      "slugFixed": "Le slug est le nom du fichier sous angles/ et ne se modifie pas ici.",
+      "slugPlaceholder": "par ex. pain-point",
+      "nameLabel": "Nom affiché",
+      "namePlaceholder": "par ex. Entrer par la douleur",
+      "descLabel": "Ce que cet angle vise",
+      "descPlaceholder": "par ex. l'angoisse d'oublier la fenêtre de fertilité, avec l'accroche « noté une fois, disputé une fois de moins »",
+      "descHint": "Plus c'est concret, moins les contenus générés dérivent.",
+      "statusLabel": "Statut",
+      "cancel": "Annuler",
+      "submitCreate": "Créer",
+      "submitDerive": "Dériver",
+      "submitSave": "Enregistrer",
+      "createSuccess": "Angle créé",
+      "deriveSuccess": "Angle dérivé créé",
+      "saveSuccess": "Enregistré"
+    },
+    "slugError": {
+      "required": "Le slug ne peut pas être vide",
+      "charset": "Uniquement minuscules, chiffres et tirets",
+      "start": "Doit commencer par une minuscule",
+      "end": "Ne peut pas finir par un tiret",
+      "length": "Entre 3 et 40 caractères",
+      "doubleHyphen": "Pas deux tirets de suite",
+      "reserved": "Ce nom est réservé par le système. Choisissez-en un autre.",
+      "taken": "Ce slug est déjà pris dans ce projet. Choisissez-en un autre."
+    },
+    "nameError": {
+      "required": "Le nom affiché ne peut pas être vide",
+      "tooLong": "Le nom affiché fait 60 caractères au maximum"
+    },
+    "descError": {
+      "tooLong": "La description fait 500 caractères au maximum"
+    },
+    "delete": {
+      "title": "Supprimer cet angle ?",
+      "desc": "Cela supprime « {{name}} » et son fichier angles/{{slug}}.md, définitivement. Les brouillons déjà générés ne bougent pas.",
+      "confirm": "Supprimer",
+      "cancel": "Laisser",
+      "deleting": "Suppression…",
+      "success": "Angle supprimé"
+    },
+    "extract": {
+      "title": "Laisser l'IA dégager des angles",
+      "desc": "L'IA lit les matériaux de background/ dans ce projet, en dégage 3 à 6 angles candidats et les écrit dans angles/.",
+      "rule": "Les faits ne viennent que des matériaux que vous avez déposés. S'il en manque, elle le dit au lieu d'inventer.",
+      "start": "Lancer",
+      "again": "Relancer",
+      "running": "En cours…",
+      "stop": "Arrêter",
+      "waiting": "Envoyé. En attente qu'elle commence à lire les matériaux…",
+      "noLog": "Aucune trace pour cette exécution.",
+      "done": "Terminé. La liste des angles a été rafraîchie.",
+      "doneHint": "L'IA écrit des fichiers d'angle sous angles/. Si rien de neuf n'apparaît ici, regardez le dossier angles dans l'onglet Matériaux.",
+      "failed": "Les angles n'ont pas pu être dégagés",
+      "close": "Fermer"
+    },
+    "error": {
+      "notFound": "Cet angle n'existe plus. Rafraîchissez pour voir.",
+      "slugInvalid": "Le slug ne respecte pas les règles. Corrigez et réessayez.",
+      "slugTaken": "Ce slug est déjà pris. Choisissez-en un autre.",
+      "slugReserved": "Ce nom est réservé par le système. Choisissez-en un autre.",
+      "parentNotFound": "L'angle parent n'existe plus. Rafraîchissez pour voir.",
+      "parentSelf": "Un angle ne peut pas être son propre parent.",
+      "parentCycle": "Cela formerait une boucle. Choisissez un autre parent.",
+      "parentProjectMismatch": "L'angle parent appartient à un autre projet.",
+      "retired": "Cet angle est retiré, il ne se modifie plus.",
+      "statusInvalid": "Ce statut n'est pas valide. Rafraîchissez et réessayez.",
+      "depthExceeded": "La filiation est trop profonde pour rester lisible.",
+      "hasChildren": "Il reste des angles dérivés en dessous. Traitez-les d'abord.",
+      "projectMismatch": "Cet angle n'appartient pas à ce projet.",
+      "fileNotFound": "Le fichier de l'angle n'existe plus. Rafraîchissez pour voir.",
+      "fileWriteFailed": "Le fichier de l'angle n'a pas pu être écrit. Réessayez.",
+      "fileRenameFailed": "Le fichier de l'angle n'a pas pu être renommé. Réessayez.",
+      "fileDeleteFailed": "Le fichier de l'angle n'a pas pu être supprimé. Réessayez.",
+      "fileInvalid": "Le contenu du fichier de l'angle est incorrect. Ouvrez-le dans l'onglet Matériaux.",
+      "extractionFailed": "L'IA n'a pas réussi à dégager des angles. Réessayez.",
+      "draftNotFound": "Ce brouillon n'existe plus. Rafraîchissez pour voir.",
+      "draftGenerateFailed": "Le contenu n'a pas été généré. Réessayez.",
+      "draftWriteFailed": "Le brouillon n'a pas pu être écrit. Réessayez.",
+      "draftMetaInvalid": "La fiche de filiation du brouillon est incorrecte. Ouvrez le fichier.",
+      "platformNotSupported": "Cette plateforme n'est pas encore prise en charge."
+    }
+  },
+  "drafts": {
+    "archived": "Ce projet est archivé : la génération et les brouillons ne sont plus accessibles. Restaurez le projet pour y revenir.",
+    "generate": {
+      "title": "Générer un contenu",
+      "desc": "Choisissez un angle et une plateforme. L'IA suit les consignes de l'angle et les matériaux de background/, puis dépose le résultat dans drafts/.",
+      "angleLabel": "Sur quel angle",
+      "anglePlaceholder": "Choisir un angle",
+      "platformLabel": "Pour quelle plateforme",
+      "recommended": "recommandé",
+      "extraLabel": "Consigne en plus (facultatif)",
+      "extraPlaceholder": "par ex. cette fois, plus de mots d'utilisateurs et moins de fonctionnalités",
+      "submit": "Générer",
+      "running": "Génération…",
+      "stop": "Arrêter",
+      "done": "Terminé. La liste des brouillons a été rafraîchie.",
+      "failed": "La génération a échoué",
+      "waiting": "Envoyé. En attente qu'elle commence à lire les matériaux…",
+      "noLog": "Aucune trace pour cette exécution.",
+      "noAngles": "Aucun angle utilisable. Dégagez-en ou créez-en un dans l'onglet Angles, puis revenez ici."
+    },
+    "platform": {
+      "xhs": "Xiaohongshu",
+      "douyin": "Douyin",
+      "wxSph": "WeChat Channels",
+      "wxGzh": "Compte officiel WeChat"
+    },
+    "platformRule": {
+      "xhs": "Xiaohongshu : titre de 20 caractères maximum, corps de 1000 maximum, 10 sujets au plus.",
+      "douyin": "Douyin : un titre court passe mieux, un corps serré, pas d'empilement de tags.",
+      "wxSph": "WeChat Channels : une phrase qui donne l'accroche, description courte.",
+      "wxGzh": "Compte officiel WeChat : le titre doit tenir seul, le corps peut être long mais découpé en paragraphes."
+    },
+    "list": {
+      "title": "Brouillons ({{num}})",
+      "loadFailed": "Impossible de charger les brouillons",
+      "loadFailedDesc": "Cela peut venir du réseau ou du dossier drafts. Réessayez.",
+      "pickTitle": "Choisissez un brouillon à gauche",
+      "pickDesc": "En l'ouvrant vous voyez le texte, les images, et d'où il vient : quel angle, quels matériaux, quelle consigne."
+    },
+    "empty": {
+      "title": "Aucun brouillon pour l'instant",
+      "desc": "Choisissez un angle et une plateforme ci-dessus et générez-en un : le texte et sa filiation atterrissent ensemble dans drafts/."
+    },
+    "detail": {
+      "content": "Texte",
+      "media": "Images",
+      "lineage": "Filiation",
+      "noContent": "Aucun fichier de texte trouvé dans ce brouillon.",
+      "noMedia": "Ce brouillon n'a pas d'image",
+      "noMediaHint": "Les images viennent de media/. Indiquez le chemin dans le texte ou dans meta.json et elles s'affichent ici.",
+      "mediaFailed": "Image introuvable",
+      "meta": "Modifié {{time}}",
+      "unsaved": "modifications non enregistrées",
+      "saveSuccess": "Enregistré"
+    },
+    "lineage": {
+      "angle": "Angle",
+      "platform": "Plateforme",
+      "project": "Projet",
+      "model": "Modèle",
+      "createdAt": "Généré le",
+      "sources": "Matériaux utilisés",
+      "prompt": "Consigne",
+      "none": "(non consigné)",
+      "missing": "Ce brouillon n'a pas de fiche de filiation",
+      "missingHint": "La filiation est dans meta.json, au sein du dossier du brouillon. Les brouillons faits à la main n'en ont généralement pas."
     }
   }
 }

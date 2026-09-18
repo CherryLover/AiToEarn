@@ -11,6 +11,7 @@ import { ApiKeyRepository, MongodbModule, UserRepository, UserStatus } from '@yi
 import { RedlockModule } from '@yikart/redlock'
 import { ServerRedisModule } from './common/redis'
 import { AppConfig, config } from './config'
+import { AnglesModule } from './core/angles/angles.module'
 import { ApiKeyModule } from './core/api-key/api-key.module'
 import { AssetsModule } from './core/assets/assets.module'
 import { ChannelsModule } from './core/channels/channels.module'
@@ -18,6 +19,8 @@ import { ChannelsMcpModule } from './core/channels/mcp/channels.mcp.module'
 import { RelayModule } from './core/channels/relay/relay.module'
 import { ContentMcpModule } from './core/content/content-mcp.module'
 import { ContentModule } from './core/content/content.module'
+import { DevicesModule } from './core/devices/devices.module'
+import { ExecutionTasksModule } from './core/execution-tasks/execution-tasks.module'
 import { OidcLoginModule } from './core/oidc-login/oidc-login.module'
 import { ProjectsModule } from './core/projects/projects.module'
 import { PublishModule } from './core/publish-record/publish-record.module'
@@ -76,6 +79,9 @@ import { UserModule } from './core/user/user.module'
     ShortLinkModule,
     ApiKeyModule,
     ProjectsModule,
+    AnglesModule,
+    DevicesModule,
+    ExecutionTasksModule,
     RelayModule,
     // MCP modules (after business modules to ensure @Global services are available)
     ChannelsMcpModule,

@@ -126,6 +126,7 @@
   },
   "tabs": {
     "materials": "Material",
+    "angles": "Blickwinkel",
     "generate": "Erzeugen",
     "publish": "Veröffentlichen",
     "data": "Daten",
@@ -231,6 +232,220 @@
       "canceled": "Abgebrochen",
       "tooLarge": "Eine einzelne Datei darf nicht größer als 100 MB sein",
       "dropHint": "Dateien hierher ziehen, um sie hochzuladen. Ziel: {{dir}}"
+    }
+  },
+  "angles": {
+    "title": "Blickwinkel fürs Veröffentlichen",
+    "subtitle": "Ein Blickwinkel ist eine Hypothese zum Ausprobieren, keine Kategorie. Was zieht, wird vertieft; was steht, wird ausrangiert.",
+    "archived": "Das Projekt ist archiviert, die Blickwinkel sind damit zu. Zum Ansehen oder Ändern zuerst wiederherstellen.",
+    "loadFailed": "Blickwinkel konnten nicht geladen werden",
+    "loadFailedDesc": "Kann am Netz liegen oder daran, dass der Server noch nicht bereit ist. Bitte erneut versuchen.",
+    "view": {
+      "tree": "Abstammungsbaum",
+      "status": "Nach Status"
+    },
+    "action": {
+      "extract": "KI Blickwinkel herausarbeiten lassen",
+      "create": "Neuer Blickwinkel",
+      "derive": "Hier vertiefen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen"
+    },
+    "empty": {
+      "title": "Noch keine Blickwinkel",
+      "desc": "Blickwinkel sind zum Ausprobieren da, nicht zum Festlegen: ein paar Kandidaten aufstellen, veröffentlichen, Zahlen ansehen, die tragfähige Linie vertiefen, den Rest austauschen.",
+      "hint": "Die KI kann welche aus dem Material unter background/ herausarbeiten, oder Sie schreiben den ersten selbst.",
+      "extract": "KI Blickwinkel herausarbeiten lassen",
+      "create": "Selbst einen schreiben"
+    },
+    "status": {
+      "candidate": "Kandidat",
+      "testing": "Im Test",
+      "effective": "Trägt",
+      "retired": "Ausrangiert"
+    },
+    "statusDesc": {
+      "candidate": "Gerade aufgestellt, noch nichts veröffentlicht, um ihn zu prüfen.",
+      "testing": "Wird mit echten Beiträgen geprüft, die Zahlen stehen noch aus.",
+      "effective": "Die Zahlen stützen ihn. Diese Linie lohnt sich zu vertiefen.",
+      "retired": "Probiert, hat nicht getragen. Bleibt als Notiz, wird nicht weiterverfolgt."
+    },
+    "source": {
+      "ai": "Von der KI",
+      "user": "Selbst angelegt",
+      "derived": "Abgeleitet"
+    },
+    "card": {
+      "childCount": "{{num}} Abzweigung(en) darunter",
+      "noDesc": "Noch nicht festgehalten, worauf dieser Blickwinkel zielt",
+      "sources": "Aus {{num}} Materialdatei(en):"
+    },
+    "group": {
+      "count": "{{num}}",
+      "empty": "In dieser Spalte steht noch nichts"
+    },
+    "statusChange": {
+      "success": "Auf „{{status}}“ gesetzt"
+    },
+    "form": {
+      "createTitle": "Neuer Blickwinkel",
+      "createDesc": "Halten Sie fest, welchen wunden Punkt er trifft und für wen er ist. Jede spätere Generierung hält sich daran.",
+      "deriveTitle": "Aus diesem Blickwinkel vertiefen",
+      "deriveDesc": "Der neue Blickwinkel merkt sich, aus welcher Linie er gewachsen ist, und taucht so im Abstammungsbaum auf.",
+      "editTitle": "Blickwinkel bearbeiten",
+      "editDesc": "Name, Beschreibung und Status lassen sich jederzeit ändern. Der Slug ist der Dateiname und bleibt hier unangetastet.",
+      "parent": "Übergeordnet: {{name}} ({{slug}})",
+      "slugLabel": "Slug",
+      "slugHint": "Dient als Dateiname und ist im Projekt eindeutig: beginnt mit einem Kleinbuchstaben, nur Kleinbuchstaben, Ziffern und Bindestriche.",
+      "slugFixed": "Der Slug ist der Dateiname unter angles/ und wird hier nicht geändert.",
+      "slugPlaceholder": "z. B. pain-point",
+      "nameLabel": "Anzeigename",
+      "namePlaceholder": "z. B. Über den wunden Punkt",
+      "descLabel": "Worauf dieser Blickwinkel zielt",
+      "descPlaceholder": "z. B. die Sorge, den Eisprung zu verpassen, mit dem Aufhänger „einmal notiert, einmal weniger gestritten“",
+      "descHint": "Je konkreter das steht, desto weniger driften die Entwürfe ab.",
+      "statusLabel": "Status",
+      "cancel": "Abbrechen",
+      "submitCreate": "Anlegen",
+      "submitDerive": "Ableiten",
+      "submitSave": "Speichern",
+      "createSuccess": "Blickwinkel angelegt",
+      "deriveSuccess": "Abgeleiteter Blickwinkel angelegt",
+      "saveSuccess": "Gespeichert"
+    },
+    "slugError": {
+      "required": "Der Slug darf nicht leer sein",
+      "charset": "Nur Kleinbuchstaben, Ziffern und Bindestriche",
+      "start": "Muss mit einem Kleinbuchstaben beginnen",
+      "end": "Darf nicht auf einen Bindestrich enden",
+      "length": "Muss 3 bis 40 Zeichen lang sein",
+      "doubleHyphen": "Keine zwei Bindestriche hintereinander",
+      "reserved": "Dieser Name ist vom System belegt. Bitte einen anderen wählen.",
+      "taken": "Dieser Slug ist im Projekt schon vergeben. Bitte einen anderen wählen."
+    },
+    "nameError": {
+      "required": "Der Anzeigename darf nicht leer sein",
+      "tooLong": "Der Anzeigename darf höchstens 60 Zeichen haben"
+    },
+    "descError": {
+      "tooLong": "Die Beschreibung darf höchstens 500 Zeichen haben"
+    },
+    "delete": {
+      "title": "Diesen Blickwinkel löschen?",
+      "desc": "Damit verschwinden „{{name}}“ und die Datei angles/{{slug}}.md endgültig. Bereits erzeugte Entwürfe bleiben unberührt.",
+      "confirm": "Löschen",
+      "cancel": "Behalten",
+      "deleting": "Wird gelöscht…",
+      "success": "Blickwinkel gelöscht"
+    },
+    "extract": {
+      "title": "KI Blickwinkel herausarbeiten lassen",
+      "desc": "Die KI liest das Material unter background/ in diesem Projekt, arbeitet 3 bis 6 Kandidaten heraus und schreibt sie nach angles/.",
+      "rule": "Fakten kommen ausschließlich aus dem hinterlegten Material. Fehlt etwas, sagt sie das, statt sich etwas auszudenken.",
+      "start": "Starten",
+      "again": "Noch einmal laufen lassen",
+      "running": "Läuft…",
+      "stop": "Anhalten",
+      "waiting": "Abgeschickt. Warten, bis sie anfängt, das Material zu lesen…",
+      "noLog": "Zu diesem Lauf gibt es keine Aufzeichnung.",
+      "done": "Fertig. Die Liste der Blickwinkel wurde aktualisiert.",
+      "doneHint": "Die KI schreibt Dateien unter angles/. Taucht hier nichts Neues auf, schauen Sie im Tab „Material“ in den Ordner angles.",
+      "failed": "Es konnten keine Blickwinkel herausgearbeitet werden",
+      "close": "Schließen"
+    },
+    "error": {
+      "notFound": "Diesen Blickwinkel gibt es nicht mehr. Bitte aktualisieren.",
+      "slugInvalid": "Der Slug verstößt gegen die Regeln. Bitte korrigieren und erneut versuchen.",
+      "slugTaken": "Dieser Slug ist schon vergeben. Bitte einen anderen wählen.",
+      "slugReserved": "Dieser Name ist vom System belegt. Bitte einen anderen wählen.",
+      "parentNotFound": "Den übergeordneten Blickwinkel gibt es nicht mehr. Bitte aktualisieren.",
+      "parentSelf": "Ein Blickwinkel kann nicht sich selbst übergeordnet sein.",
+      "parentCycle": "Das ergäbe einen Kreis. Bitte einen anderen übergeordneten wählen.",
+      "parentProjectMismatch": "Der übergeordnete Blickwinkel gehört zu einem anderen Projekt.",
+      "retired": "Dieser Blickwinkel ist ausrangiert und lässt sich nicht mehr ändern.",
+      "statusInvalid": "Dieser Status ist ungültig. Bitte aktualisieren und erneut versuchen.",
+      "depthExceeded": "Die Abstammung wird zu tief, um noch lesbar zu bleiben.",
+      "hasChildren": "Darunter hängen noch abgeleitete Blickwinkel. Die zuerst erledigen.",
+      "projectMismatch": "Dieser Blickwinkel gehört nicht zu diesem Projekt.",
+      "fileNotFound": "Die Datei zum Blickwinkel gibt es nicht mehr. Bitte aktualisieren.",
+      "fileWriteFailed": "Die Datei zum Blickwinkel ließ sich nicht schreiben. Bitte erneut versuchen.",
+      "fileRenameFailed": "Die Datei zum Blickwinkel ließ sich nicht umbenennen. Bitte erneut versuchen.",
+      "fileDeleteFailed": "Die Datei zum Blickwinkel ließ sich nicht löschen. Bitte erneut versuchen.",
+      "fileInvalid": "Der Inhalt der Datei stimmt nicht. Im Tab „Material“ nachsehen.",
+      "extractionFailed": "Der KI-Lauf hat keine Blickwinkel geliefert. Bitte erneut versuchen.",
+      "draftNotFound": "Diesen Entwurf gibt es nicht mehr. Bitte aktualisieren.",
+      "draftGenerateFailed": "Der Inhalt wurde nicht erzeugt. Bitte erneut versuchen.",
+      "draftWriteFailed": "Der Entwurf ließ sich nicht schreiben. Bitte erneut versuchen.",
+      "draftMetaInvalid": "Der Herkunftseintrag des Entwurfs stimmt nicht. Bitte die Datei ansehen.",
+      "platformNotSupported": "Diese Plattform wird noch nicht unterstützt."
+    }
+  },
+  "drafts": {
+    "archived": "Das Projekt ist archiviert, Generieren und Entwürfe sind damit zu. Zum Ansehen oder Ändern zuerst wiederherstellen.",
+    "generate": {
+      "title": "Inhalt erzeugen",
+      "desc": "Blickwinkel und Plattform wählen: die KI folgt den Schreibhinweisen des Blickwinkels und dem Material unter background/ und legt das Ergebnis in drafts/ ab.",
+      "angleLabel": "Nach welchem Blickwinkel",
+      "anglePlaceholder": "Blickwinkel wählen",
+      "platformLabel": "Für welche Plattform",
+      "recommended": "empfohlen",
+      "extraLabel": "Zusätzlicher Wunsch (optional)",
+      "extraPlaceholder": "z. B. diesmal mehr Originalzitate der Nutzer, weniger Funktionen",
+      "submit": "Erzeugen",
+      "running": "Wird erzeugt…",
+      "stop": "Anhalten",
+      "done": "Fertig. Die Entwurfsliste wurde aktualisiert.",
+      "failed": "Der Inhalt ließ sich nicht erzeugen",
+      "waiting": "Abgeschickt. Warten, bis sie anfängt, das Material zu lesen…",
+      "noLog": "Zu diesem Lauf gibt es keine Aufzeichnung.",
+      "noAngles": "Es gibt noch keinen brauchbaren Blickwinkel. Erst im Tab „Blickwinkel“ einen herausarbeiten oder anlegen, dann hierher zurück."
+    },
+    "platform": {
+      "xhs": "Xiaohongshu",
+      "douyin": "Douyin",
+      "wxSph": "WeChat Channels",
+      "wxGzh": "WeChat Offizieller Account"
+    },
+    "platformRule": {
+      "xhs": "Xiaohongshu: Titel höchstens 20 Zeichen, Text höchstens 1000, maximal 10 Themen.",
+      "douyin": "Douyin: ein kurzer Titel wirkt besser, knapper Text, keine Tag-Halden.",
+      "wxSph": "WeChat Channels: ein Satz, der den Reiz klarmacht, kurze Beschreibung.",
+      "wxGzh": "WeChat Offizieller Account: der Titel muss für sich stehen, der Text darf lang sein, aber in Absätzen."
+    },
+    "list": {
+      "title": "Entwürfe ({{num}})",
+      "loadFailed": "Entwürfe konnten nicht geladen werden",
+      "loadFailedDesc": "Kann am Netz liegen oder am Ordner drafts. Bitte erneut versuchen.",
+      "pickTitle": "Links einen Entwurf auswählen",
+      "pickDesc": "Beim Öffnen sehen Sie Text und Bilder und woher er kommt: welcher Blickwinkel, welches Material, welche Anweisung."
+    },
+    "empty": {
+      "title": "Noch keine Entwürfe",
+      "desc": "Oben Blickwinkel und Plattform wählen und einen erzeugen: Text und Herkunft landen zusammen unter drafts/."
+    },
+    "detail": {
+      "content": "Text",
+      "media": "Bilder",
+      "lineage": "Herkunft",
+      "noContent": "In diesem Entwurf wurde keine Textdatei gefunden.",
+      "noMedia": "Dieser Entwurf hat keine Bilder",
+      "noMediaHint": "Bilder kommen aus media/. Den Pfad im Text oder in meta.json angeben, dann erscheinen sie hier.",
+      "mediaFailed": "Dieses Bild ließ sich nicht laden",
+      "meta": "Geändert {{time}}",
+      "unsaved": "nicht gespeicherte Änderungen",
+      "saveSuccess": "Gespeichert"
+    },
+    "lineage": {
+      "angle": "Blickwinkel",
+      "platform": "Plattform",
+      "project": "Projekt",
+      "model": "Modell",
+      "createdAt": "Erzeugt am",
+      "sources": "Verwendetes Material",
+      "prompt": "Anweisung",
+      "none": "(nicht festgehalten)",
+      "missing": "Zu diesem Entwurf gibt es keinen Herkunftseintrag",
+      "missingHint": "Die Herkunft steht in der meta.json im Entwurfsordner. Von Hand angelegte Entwürfe haben meist keine."
     }
   }
 }

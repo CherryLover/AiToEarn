@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "title": "Devices",
+    "description": "Manage the devices that do the work: pair the browser extension, watch task status, and fire a test echo task.",
+    "keywords": "devices, browser extension, execution tasks, auto publishing, AiToEarn"
+  },
+  "page": {
+    "title": "Devices",
+    "subtitle": "The browser extension runs on your computer and picks up work from the server"
+  },
+  "tabs": {
+    "devices": "Devices",
+    "tasks": "Tasks"
+  },
+  "action": {
+    "refresh": "Refresh",
+    "addDevice": "Add device",
+    "rename": "Rename",
+    "revoke": "Revoke",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving",
+    "close": "Close",
+    "copy": "Copy",
+    "regenerate": "New code",
+    "viewTasks": "Recent tasks",
+    "hideTasks": "Hide tasks",
+    "createEcho": "New echo task",
+    "detail": "Details",
+    "retry": "Retry",
+    "cancelTask": "Cancel task"
+  },
+  "empty": {
+    "title": "No devices yet",
+    "desc": "A device is the browser extension installed on your computer. It stays connected to the server, picks up work, and does the publishing and data collection on the platforms.",
+    "hint": "Click Add device to get a pairing code, then enter it in the extension.",
+    "action": "Add your first device"
+  },
+  "device": {
+    "status": {
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "lastSeen": "Last heartbeat {{time}}",
+    "neverSeen": "No heartbeat yet",
+    "version": "Extension {{version}}",
+    "platform": "Runs on {{platform}}",
+    "pairedAt": "Paired {{time}}",
+    "unknown": "Unknown",
+    "capabilities": "Platforms it can handle",
+    "noCapabilities": "The extension has not reported any capability yet",
+    "accounts": "Accounts signed in",
+    "noAccounts": "The extension has not reported any account yet",
+    "loadFailed": "The device list did not load. Please try again.",
+    "recentTasks": {
+      "empty": "This device has not picked up any task yet",
+      "loadFailed": "Recent tasks did not load. Please try again."
+    }
+  },
+  "pair": {
+    "title": "Add device",
+    "desc": "Enter this pairing code in the browser extension. Once paired, the device shows up in the list.",
+    "step1": "Open the AiToEarn browser extension on your computer",
+    "step2": "Find device pairing and enter the code above",
+    "step3": "Come back here and refresh to see the device",
+    "expiresIn": "Expires in {{time}}",
+    "expired": "This code has expired. Get a new one.",
+    "copySuccess": "Pairing code copied",
+    "copyFailed": "Could not copy. Select the code and copy it manually.",
+    "generateFailed": "No pairing code yet. Try again below.",
+    "done": "Done"
+  },
+  "rename": {
+    "title": "Rename device",
+    "desc": "Only the name changes. Capabilities and accounts are reported by the extension.",
+    "label": "Device name",
+    "placeholder": "For example: Mac at home",
+    "emptyError": "The device name cannot be empty",
+    "success": "Renamed"
+  },
+  "revoke": {
+    "title": "Revoke this device?",
+    "desc": "Revoking kills the token of \"{{name}}\" right away. It can no longer pick up work or report results, and it has to be paired again to come back.",
+    "confirm": "Revoke",
+    "revoking": "Revoking",
+    "success": "Device revoked"
+  },
+  "tasks": {
+    "filter": {
+      "allStatus": "All statuses",
+      "allType": "All types",
+      "allDevice": "All devices"
+    },
+    "column": {
+      "device": "Device: {{device}}",
+      "attempts": "Attempts {{attempts}}/{{maxAttempts}}"
+    },
+    "durationSeconds": "Took {{seconds}}s",
+    "durationPending": "Not finished yet",
+    "unknownDevice": "Unknown device",
+    "anyDevice": "Any matching device",
+    "loadFailed": "The task list did not load. Please try again.",
+    "retrySuccess": "Queued again",
+    "cancelSuccess": "Cancelled",
+    "cancelConfirmTitle": "Cancel this task?",
+    "cancelConfirmDesc": "Once cancelled, no device can pick it up. A run already in progress is not interrupted, but its result will not be accepted.",
+    "empty": {
+      "title": "No tasks yet",
+      "desc": "A task is a job handed to a device. To check the chain end to end, create an echo task: the device picks it up and sends the message straight back. A successful report means the chain works."
+    }
+  },
+  "taskType": {
+    "publish": "Publish",
+    "claim_link": "Find link",
+    "collect_metrics": "Collect metrics",
+    "echo": "Echo"
+  },
+  "taskStatus": {
+    "pending": "Pending",
+    "leased": "Leased",
+    "running": "Running",
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "cancelled": "Cancelled"
+  },
+  "taskMode": {
+    "auto": "Run by a device",
+    "manual": "Done by hand"
+  },
+  "detail": {
+    "title": "Task details",
+    "desc": "Payload and result differ by task type and are shown as they are.",
+    "loadFailed": "The task details did not load. Please try again.",
+    "attempts": "Attempts",
+    "duration": "Took",
+    "durationValue": "{{seconds}}s",
+    "durationPending": "Not finished yet",
+    "createdAt": "Created",
+    "availableAt": "Available at",
+    "device": "Device",
+    "capability": "Capability needed",
+    "noCapability": "Any",
+    "error": "Failure reason",
+    "payload": "Payload",
+    "result": "Result",
+    "noResult": "No result yet"
+  },
+  "echo": {
+    "title": "New echo task",
+    "desc": "The device picks it up and sends the message straight back. Use it to check the chain: the web app creates the task, the extension picks it up, the result comes back.",
+    "project": "Project",
+    "projectPlaceholder": "Pick a project",
+    "message": "Message to echo",
+    "messagePlaceholder": "Anything. The device sends it back unchanged.",
+    "device": "Target device",
+    "deviceAny": "Any matching device",
+    "submit": "Create task",
+    "submitting": "Creating",
+    "success": "Task created",
+    "noProject": "No active project yet. Create one on the Projects page first.",
+    "loadProjectFailed": "The project list did not load. Please try again."
+  },
+  "capability": {
+    "xhs": "Xiaohongshu",
+    "douyin": "Douyin",
+    "wechatChannels": "WeChat Channels",
+    "bilibili": "Bilibili",
+    "kwai": "Kuaishou",
+    "wxGzh": "WeChat Official Account"
+  },
+  "error": {
+    "network": "Network unavailable. Check your connection and try again.",
+    "unknown": "That did not work. Please try again.",
+    "pairingCodeGenerateFailed": "The pairing code could not be created. Please try again.",
+    "deviceNotFound": "This device is gone. It may have been revoked.",
+    "deviceRevoked": "This device was revoked. Pair it again to use it.",
+    "deviceOffline": "This device is offline.",
+    "deviceNameInvalid": "The device name is not allowed. Adjust it and try again.",
+    "deviceLimitExceeded": "You have reached the device limit.",
+    "taskNotFound": "This task is gone. Refresh to see the current list.",
+    "taskStatusInvalid": "The current status does not allow this action.",
+    "taskTypeNotSupported": "This task type is not supported.",
+    "taskPayloadInvalid": "The task payload is not valid.",
+    "taskCreateFailed": "The task could not be created. Please try again.",
+    "taskCancelNotAllowed": "This task cannot be cancelled right now.",
+    "taskRetryNotAllowed": "This task cannot be retried right now.",
+    "taskMaxAttemptsExceeded": "All retries have been used up.",
+    "taskProjectMismatch": "This task belongs to a different project.",
+    "projectNotFound": "This project does not exist. It may have been removed.",
+    "projectArchived": "This project is archived and cannot take new tasks."
+  }
+}
