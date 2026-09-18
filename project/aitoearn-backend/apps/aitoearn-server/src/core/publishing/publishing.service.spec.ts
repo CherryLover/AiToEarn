@@ -237,6 +237,8 @@ function createService(options: {
       angleSlug: 'export-friction',
       draftPlatform: 'xhs',
       skippedMedia: [{ path: 'media/broken.png', reason: 'oss_missing' }],
+      bodyFallback: false,
+      mediaDeclared: true,
       ...options.draft,
     })),
   }

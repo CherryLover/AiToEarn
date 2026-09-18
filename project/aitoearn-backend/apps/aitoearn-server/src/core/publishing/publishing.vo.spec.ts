@@ -85,10 +85,26 @@ describe('发布记录 VO', () => {
   })
 
   it('建单返回里带着被跳过的图片，让人知道少了什么', () => {
-    const vo = toPublishJobCreatedVo(postDoc(), [{ path: 'media/broken.png', reason: 'oss_missing' }])
+    const vo = toPublishJobCreatedVo(postDoc(), {
+      skippedMedia: [{ path: 'media/broken.png', reason: 'oss_missing' }],
+      mediaDeclared: true,
+      bodyFallback: false,
+    })
 
     expect(vo.post.title).toBe('导出藏得太深，四步变一步')
     expect(vo.skippedMedia).toEqual([{ path: 'media/broken.png', reason: 'oss_missing' }])
+  })
+
+  it('一张图都没声明、正文是整篇原文兜出来的，两件事都如实出给网页', () => {
+    const vo = toPublishJobCreatedVo(postDoc(), {
+      skippedMedia: [],
+      mediaDeclared: false,
+      bodyFallback: true,
+    })
+
+    expect(vo.mediaDeclared).toBe(false)
+    expect(vo.bodyFallback).toBe(true)
+    expect(vo.skippedMedia).toEqual([])
   })
 
   it('删除返回记录 id 和一并删掉的工单 id', () => {

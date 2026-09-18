@@ -6,6 +6,7 @@
 'use client'
 
 import type { DraftItem } from '../DraftsTab/drafts.utils'
+import type { PublishDraftNotes } from './publish.utils'
 import type { PublishedPostDetail } from '@/api/publishing/publishing.types'
 import { Loader2, PackageCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -32,8 +33,12 @@ interface PreparePublishPanelProps {
   isDraftsLoading: boolean
   /** 归档项目只读 */
   readOnly: boolean
-  /** 建好之后把新记录交给上层，顺带刷新列表 */
-  onCreated: (post: PublishedPostDetail) => void
+  /**
+   * 建好之后把新记录交给上层，顺带刷新列表。
+   * `notes` 是这一刻服务端从草稿里读出来的提示（没声明配图、正文是整篇原文），
+   * 它不落库，错过这一次就没有了，所以要一路带到卡片上。
+   */
+  onCreated: (post: PublishedPostDetail, notes: PublishDraftNotes) => void
 }
 
 export function PreparePublishPanel(props: PreparePublishPanelProps) {
@@ -79,7 +84,11 @@ export function PreparePublishPanel(props: PreparePublishPanelProps) {
         if (Array.isArray(skipped) && skipped.length > 0)
           toast.warning(t('publish.prepare.skippedMedia', { num: skipped.length }))
 
-        onCreated(res.data.post)
+        onCreated(res.data.post, {
+          postId: res.data.post.id,
+          mediaDeclared: res.data.mediaDeclared !== false,
+          bodyFallback: res.data.bodyFallback === true,
+        })
         return
       }
 

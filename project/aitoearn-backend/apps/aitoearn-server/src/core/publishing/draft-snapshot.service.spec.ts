@@ -577,3 +577,312 @@ describe('草稿快照 · 没有 frontmatter 的手写草稿按小节拆', () =>
     expect(result.snapshot.topics).toEqual([])
   })
 })
+
+/**
+ * 线上那三份手写草稿的记账里都写着「配图：N 张」，图也确实躺在项目的 `media/` 里、名片上 OSS 地址齐全，
+ * 可快照出来 `mediaUrls` 全是空的——单文件草稿既没有 frontmatter 的 `images`，也没有 meta.json，
+ * 快照无从知道该带哪几张。小红书是图文平台，没图等于没法发，所以两种声明方式都得认。
+ */
+describe('草稿快照 · 手写草稿的配图', () => {
+  const HAND_DRAFT = 'drafts/2026-09-18-结婚4年生出来个这.md'
+
+  /** 照抄线上那份的结构，`## 配图` 里的行由调用方给 */
+  function handContent(mediaLines: string[]): string {
+    return [
+      '# 结婚 4 年生出来个这……',
+      '',
+      '- 状态：已发布（这条是本人手写手发的，不是生成的）',
+      '- 配图：2 张（1080×2348）',
+      '',
+      '## 标题',
+      '',
+      '结婚 4 年生出来个这……',
+      '',
+      '## 正文',
+      '',
+      '我们结婚已经 4 年了，一直在佛系备孕。',
+      '',
+      ...(mediaLines.length > 0 ? ['## 配图', '', ...mediaLines, ''] : []),
+      '## 话题',
+      '',
+      '#怀孕 #备孕',
+      '',
+    ].join('\n')
+  }
+
+  it('`## 配图` 小节里的图进快照，顺序就是写的顺序', async () => {
+    mountFiles({
+      [HAND_DRAFT]: handContent(['- 帖1-01.jpg', '- 帖1-02.jpg', '- 帖1-03.jpg']),
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+      'media/帖1-02.jpg.md': card('https://oss.example.com/k/02.jpg'),
+      'media/帖1-03.jpg.md': card('https://oss.example.com/k/03.jpg'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([
+      'https://oss.example.com/k/01.jpg',
+      'https://oss.example.com/k/02.jpg',
+      'https://oss.example.com/k/03.jpg',
+    ])
+    expect(result.mediaDeclared).toBe(true)
+    expect(result.skippedMedia).toEqual([])
+  })
+
+  it('写的顺序换一下，发布顺序就跟着换，不重排', async () => {
+    mountFiles({
+      [HAND_DRAFT]: handContent(['- 帖1-03.jpg', '- 帖1-01.jpg', '- 帖1-02.jpg']),
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+      'media/帖1-02.jpg.md': card('https://oss.example.com/k/02.jpg'),
+      'media/帖1-03.jpg.md': card('https://oss.example.com/k/03.jpg'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([
+      'https://oss.example.com/k/03.jpg',
+      'https://oss.example.com/k/01.jpg',
+      'https://oss.example.com/k/02.jpg',
+    ])
+  })
+
+  it('裸文件名、`media/` 开头的相对路径、有没有 `- ` 前缀，四种写法都认', async () => {
+    mountFiles({
+      [HAND_DRAFT]: handContent([
+        '帖1-01.jpg',
+        '- media/帖1-02.jpg',
+        '* 帖1-03.jpg',
+        '1. media/帖1-04.jpg',
+      ]),
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+      'media/帖1-02.jpg.md': card('https://oss.example.com/k/02.jpg'),
+      'media/帖1-03.jpg.md': card('https://oss.example.com/k/03.jpg'),
+      'media/帖1-04.jpg.md': card('https://oss.example.com/k/04.jpg'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([
+      'https://oss.example.com/k/01.jpg',
+      'https://oss.example.com/k/02.jpg',
+      'https://oss.example.com/k/03.jpg',
+      'https://oss.example.com/k/04.jpg',
+    ])
+  })
+
+  it('名片找不到的那张跳过并说明原因，剩下的照进，不整份报废', async () => {
+    mountFiles({
+      [HAND_DRAFT]: handContent(['- 帖1-01.jpg', '- 名字写错了.jpg', '- 帖1-02.jpg']),
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+      'media/帖1-02.jpg.md': card('https://oss.example.com/k/02.jpg'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([
+      'https://oss.example.com/k/01.jpg',
+      'https://oss.example.com/k/02.jpg',
+    ])
+    expect(result.skippedMedia).toEqual([{ path: 'media/名字写错了.jpg', reason: 'card_missing' }])
+    expect(result.mediaDeclared).toBe(true)
+  })
+
+  it('名片在、但当初没传上 OSS 的那张，理由跟找不到分开', async () => {
+    mountFiles({
+      [HAND_DRAFT]: handContent(['- 帖1-01.jpg', '- 帖1-02.jpg']),
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+      'media/帖1-02.jpg.md': card(''),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/01.jpg'])
+    expect(result.skippedMedia).toEqual([{ path: 'media/帖1-02.jpg', reason: 'oss_missing' }])
+  })
+
+  it('frontmatter 里的 images 也认，而且比 `## 配图` 小节优先', async () => {
+    const withFront = [
+      '---',
+      'title: 备孕刷到太多攻略',
+      'images:',
+      '  - 帖1-01.jpg',
+      '  - media/帖1-02.jpg',
+      '---',
+      '',
+      '手写的正文。',
+      '',
+      '## 配图',
+      '',
+      '- 帖1-03.jpg',
+      '',
+    ].join('\n')
+
+    mountFiles({
+      [HAND_DRAFT]: withFront,
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+      'media/帖1-02.jpg.md': card('https://oss.example.com/k/02.jpg'),
+      'media/帖1-03.jpg.md': card('https://oss.example.com/k/03.jpg'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([
+      'https://oss.example.com/k/01.jpg',
+      'https://oss.example.com/k/02.jpg',
+    ])
+    expect(result.mediaDeclared).toBe(true)
+  })
+
+  it('两种都没声明：图是空的，但不报错，而且明确标出「这份草稿没声明配图」', async () => {
+    mountFiles({ [HAND_DRAFT]: handContent([]) })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([])
+    expect(result.skippedMedia).toEqual([])
+    expect(result.mediaDeclared).toBe(false)
+    // 正文照旧读得出来，没图不影响发布工单本身建得出来
+    expect(result.snapshot.body).toBe('我们结婚已经 4 年了，一直在佛系备孕。')
+  })
+
+  it('声明了却一张都没带上，算「声明过」，跟一张都没声明分开', async () => {
+    mountFiles({ [HAND_DRAFT]: handContent(['- 帖1-01.jpg']) })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual([])
+    expect(result.mediaDeclared).toBe(true)
+    expect(result.skippedMedia).toEqual([{ path: 'media/帖1-01.jpg', reason: 'card_missing' }])
+  })
+
+  it('`## 配图` 里的空行、分隔线、嵌进去的小标题不当文件名', async () => {
+    mountFiles({
+      [HAND_DRAFT]: handContent(['- 帖1-01.jpg', '', '---', '### 备注', '- 帖1-01.jpg']),
+      'media/帖1-01.jpg.md': card('https://oss.example.com/k/01.jpg'),
+    })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    // 同一张写两遍也只进一次
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/01.jpg'])
+    expect(result.skippedMedia).toEqual([])
+  })
+
+  it('目录版照旧走 frontmatter 和血缘，`## 配图` 这条路不插手', async () => {
+    mountFiles({
+      [`${DRAFT}/content.md`]: CONTENT_MD,
+      [`${DRAFT}/meta.json`]: META_JSON,
+      'media/home.png.md': card('https://oss.example.com/k/home.png'),
+    })
+
+    const result = await createService().read(DIR, DRAFT)
+
+    expect(result.snapshot.mediaUrls).toEqual(['https://oss.example.com/k/home.png'])
+    expect(result.mediaDeclared).toBe(true)
+  })
+})
+
+/**
+ * 以前 `parseDraftSections` 是「正文为空就返回 undefined」，调用方于是退回「整篇原文当正文」。
+ * 草稿只要少写 `## 正文`（或者写成 `## 内容`），正文就会变回连记账清单带 `##` 小标题的整篇，
+ * 而且悄无声息。现在「这一节存不存在」和「这一节是不是空的」分开，退回整篇也要标出来。
+ */
+describe('草稿快照 · 正文兜底不能再悄悄发生', () => {
+  const HAND_DRAFT = 'drafts/2026-09-18-结婚4年生出来个这.md'
+
+  const NO_BODY_SECTION = [
+    '# 结婚 4 年生出来个这……',
+    '',
+    '- 状态：已发布',
+    '- 数据：814 看 · 1 赞',
+    '',
+    '## 标题',
+    '',
+    '结婚 4 年生出来个这……',
+    '',
+    '## 内容',
+    '',
+    '我们结婚已经 4 年了，一直在佛系备孕。',
+    '',
+  ].join('\n')
+
+  it('把 `## 正文` 写成 `## 内容`：正文退回整篇，但标记出来了', async () => {
+    mountFiles({ [HAND_DRAFT]: NO_BODY_SECTION })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.bodyFallback).toBe(true)
+    // 退回的整篇里确实带着记账清单，这正是要提示人自己删一遍的东西
+    expect(result.snapshot.body).toContain('状态：已发布')
+    expect(result.snapshot.body).toContain('## 内容')
+  })
+
+  it('一节都没写的大白话草稿也标记出来', async () => {
+    mountFiles({ [HAND_DRAFT]: '就一段话，什么标记都没有。' })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.body).toBe('就一段话，什么标记都没有。')
+    expect(result.bodyFallback).toBe(true)
+  })
+
+  it('写了 `## 正文` 就以它为准，不标记', async () => {
+    const withBody = ['## 标题', '', '手写的标题', '', '## 正文', '', '要发出去的正文。', ''].join('\n')
+    mountFiles({ [HAND_DRAFT]: withBody })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.body).toBe('要发出去的正文。')
+    expect(result.bodyFallback).toBe(false)
+  })
+
+  it('`## 正文` 写了但里面是空的：正文就是空的，不许偷偷退回整篇', async () => {
+    const emptyBody = [
+      '# 结婚 4 年生出来个这……',
+      '',
+      '- 状态：待发布',
+      '',
+      '## 标题',
+      '',
+      '手写的标题',
+      '',
+      '## 正文',
+      '',
+      '## 话题',
+      '',
+      '#怀孕',
+      '',
+    ].join('\n')
+
+    mountFiles({ [HAND_DRAFT]: emptyBody })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.body).toBe('')
+    expect(result.bodyFallback).toBe(false)
+    expect(result.snapshot.title).toBe('手写的标题')
+    expect(result.snapshot.topics).toEqual(['怀孕'])
+  })
+
+  it('目录版不走小节那套，正文本来就是 content.md 的正文，不算兜底', async () => {
+    mountFiles({
+      [`${DRAFT}/content.md`]: CONTENT_MD,
+      [`${DRAFT}/meta.json`]: META_JSON,
+    })
+
+    const result = await createService().read(DIR, DRAFT)
+
+    expect(result.bodyFallback).toBe(false)
+  })
+})
+
+describe('草稿快照 · 物料那一段的错误码不许漏出去', () => {
+  it('drafts/ 下有一级是软链时，翻成草稿自己的码，不漏 20106', async () => {
+    mountFiles({})
+    safeLstat.mockRejectedValue(new AppException(ResponseCode.ProjectFileIsSymlink))
+
+    await expect(createService().read(DIR, SINGLE_DRAFT)).rejects.toMatchObject({
+      code: ResponseCode.PublishedPostDraftInvalid,
+    })
+  })
+})

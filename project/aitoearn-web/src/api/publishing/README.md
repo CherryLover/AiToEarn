@@ -34,7 +34,7 @@
 | `FailPublishedPostParams`     | `interface` | 标记发失败请求参数。                           |
 | `GetPublishedPostListParams`  | `interface` | 列表筛选与分页参数。                           |
 | `LinkStatus`                  | `enum`      | 链接状态：没有 / 已拿到 / 找链接失败。         |
-| `PublishJobCreated`           | `interface` | 建工单返回：记录本体 + 被跳过的图片。          |
+| `PublishJobCreated`           | `interface` | 建工单返回：记录本体 + 被跳过的图片 + 两个草稿解析标记。 |
 | `PublishSnapshot`             | `interface` | 点「准备发布」那一刻的内容快照。               |
 | `PublishStatus`               | `enum`      | 发布状态：待发 / 发布中 / 已发 / 失败。        |
 | `PublishedPostDeleted`        | `interface` | 删除接口返回，含一并删掉的工单 id。            |
@@ -61,5 +61,7 @@
 - 卡片上给人复制的内容一律来自 `snapshot`，不要回头去读草稿文件：草稿在这之后可能已经被改过。
 - 一条帖子由 `platform` + `platformPostId` 唯一确定，重复登记由服务端唯一索引兜底，前端只负责把错误翻成人话。
 - 列表项自带 `title` 和 `mediaCount`，列表页不要为了显示标题再去拉详情。
+- `mediaDeclared` 和 `bodyFallback` 只在建工单的返回里出现，**服务端不落库**：列表和详情里都没有，刷新页面就拿不到了。要用就在拿到返回的那一刻存下来跟着这条记录走，不要反过来去详情里找。
+- `mediaDeclared === false`（草稿压根没声明配图）和 `skippedMedia` 不为空（声明了但没打包进来）是两件事，给人的话不一样，不要合并成一句。
 - 平台创作后台地址是给人点开用的链接常量，放在页面侧 `PublishTab/publish.constants.ts`，不属于接口封装。
 - 通用规则见 `src/api/README.md`。

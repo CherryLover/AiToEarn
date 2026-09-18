@@ -33,7 +33,8 @@ export class PublishingController {
   @ApiDoc({
     summary: '从草稿建发布工单',
     description: '读草稿文件抄下内容快照，建一条发布记录和一张手动工单。'
-      + 'mode 这一轮只接受 manual，传 auto 直接拒绝——自动发布要执行端插件，还没有',
+      + 'mode 这一轮只接受 manual，传 auto 直接拒绝——自动发布要执行端插件，还没有。'
+      + '返回里带着这份草稿的三条提示：哪些图没能带进快照、有没有声明配图、正文是不是整篇原文兜出来的',
     body: CreateFromDraftDto.schema,
     response: PublishJobCreatedVo,
   })
@@ -43,8 +44,8 @@ export class PublishingController {
     @Param('projectId', ParseObjectIdPipe) projectId: string,
     @Body() dto: CreateFromDraftDto,
   ): Promise<PublishJobCreatedVo> {
-    const { post, skippedMedia } = await this.publishingService.createFromDraft(projectId, token.id, dto)
-    return toPublishJobCreatedVo(post, skippedMedia)
+    const { post, ...notes } = await this.publishingService.createFromDraft(projectId, token.id, dto)
+    return toPublishJobCreatedVo(post, notes)
   }
 
   @ApiDoc({

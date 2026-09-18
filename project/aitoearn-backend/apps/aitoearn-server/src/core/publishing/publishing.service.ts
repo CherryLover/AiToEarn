@@ -11,14 +11,14 @@ import {
 } from '@yikart/mongodb'
 import { ExecutionTasksService } from '../execution-tasks/execution-tasks.service'
 import { ProjectsService } from '../projects/projects.service'
-import { DraftSnapshotService, SkippedMedia } from './draft-snapshot.service'
+import { DraftSnapshotService } from './draft-snapshot.service'
 import {
   CompletePublishedPostDto,
   CreateFromDraftDto,
   FailPublishedPostDto,
   PublishedPostListQueryDto,
 } from './publishing.dto'
-import { PublishedPostDoc } from './publishing.vo'
+import { PublishedPostDoc, PublishJobDraftNotes } from './publishing.vo'
 
 const MONGO_DUPLICATE_KEY_ERROR = 11000
 
@@ -37,9 +37,8 @@ function isDuplicateKeyError(error: unknown): boolean {
   return (error as { code?: number } | null)?.code === MONGO_DUPLICATE_KEY_ERROR
 }
 
-export interface PublishJobCreated {
+export interface PublishJobCreated extends PublishJobDraftNotes {
   post: PublishedPostDoc
-  skippedMedia: SkippedMedia[]
 }
 
 /**
@@ -112,7 +111,13 @@ export class PublishingService {
       if (!updated)
         throw new AppException(ResponseCode.PublishedPostCreateFailed)
 
-      return { post: updated, skippedMedia: draft.skippedMedia }
+      return {
+        post: updated,
+        skippedMedia: draft.skippedMedia,
+        // 草稿读出来才知道的两件事，只在这一刻说得清：一张图都没声明、正文是整篇原文兜出来的
+        mediaDeclared: draft.mediaDeclared,
+        bodyFallback: draft.bodyFallback,
+      }
     }
     catch (error) {
       await this.rollbackCreate(post.id, taskId)

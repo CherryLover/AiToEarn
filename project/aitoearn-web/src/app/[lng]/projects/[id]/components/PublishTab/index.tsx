@@ -7,6 +7,7 @@
  */
 'use client'
 
+import type { PublishDraftNotes } from './publish.utils'
 import type { PublishedPostDetail } from '@/api/publishing/publishing.types'
 import { Hand } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -45,6 +46,10 @@ export function PublishTab({ projectId, readOnly }: PublishTabProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detail, setDetail] = useState<PublishedPostDetail | null>(null)
   const [isDetailLoading, setIsDetailLoading] = useState(false)
+
+  // 打包那一刻服务端给的草稿提示（没声明配图、正文是整篇原文）。
+  // 它不落库，只在建工单的返回里出现一次，所以留在这儿，跟着那条记录走。
+  const [draftNotes, setDraftNotes] = useState<PublishDraftNotes | null>(null)
 
   // 切记录时旧请求的回包要丢掉
   const detailTokenRef = useRef(0)
@@ -91,9 +96,10 @@ export function PublishTab({ projectId, readOnly }: PublishTabProps) {
     loadDetail(selectedId)
   }, [detail?.id, loadDetail, selectedId])
 
-  const handleCreated = (post: PublishedPostDetail) => {
+  const handleCreated = (post: PublishedPostDetail, notes: PublishDraftNotes) => {
     setDetail(post)
     setSelectedId(post.id)
+    setDraftNotes(notes)
     refresh()
   }
 
@@ -106,6 +112,7 @@ export function PublishTab({ projectId, readOnly }: PublishTabProps) {
   const handleDeleted = () => {
     setDetail(null)
     setSelectedId(null)
+    setDraftNotes(null)
     refresh()
   }
 
@@ -131,6 +138,7 @@ export function PublishTab({ projectId, readOnly }: PublishTabProps) {
                   key={detail.id}
                   projectId={projectId}
                   post={detail}
+                  draftNotes={draftNotes?.postId === detail.id ? draftNotes : null}
                   readOnly={readOnly}
                   onUpdated={handleUpdated}
                   onDeleted={handleDeleted}

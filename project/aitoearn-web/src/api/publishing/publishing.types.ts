@@ -97,11 +97,26 @@ export interface SkippedMedia {
 }
 
 /**
- * 从草稿建工单的返回，对应 PublishJobCreatedVo：建出来的记录 + 哪些图没带进来。
+ * 从草稿建工单的返回，对应 PublishJobCreatedVo：
+ * 建出来的记录 + 三条「这份草稿要人再看一眼」的提示。
+ *
+ * 后两个标记是读草稿那一刻才说得清的，服务端不落库：
+ * 列表和详情里都没有，只有刚打包完的这一次返回里有。
  */
 export interface PublishJobCreated {
   post: PublishedPostDetail
+  /** 找不到名片、或名片里没有 OSS 地址，没进快照的图片 */
   skippedMedia: SkippedMedia[]
+  /**
+   * 草稿里有没有声明配图（frontmatter 的 `images`、`## 配图` 小节、血缘的 `mediaRefs`，有一处算一处）。
+   * false = 一张都没声明，和「声明了但没打包进来」（看 `skippedMedia`）不是一回事。
+   */
+  mediaDeclared: boolean
+  /**
+   * 正文是不是整篇原文兜出来的。true = 这份草稿没写 `## 正文` 小节，
+   * 正文里多半连记账清单带小标题全在，发之前得人工删一遍。
+   */
+  bodyFallback: boolean
 }
 
 /**

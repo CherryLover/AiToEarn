@@ -40,3 +40,15 @@ export const COPY_FEEDBACK_MS = 2000
 
 /** 批量下载图片时每张之间的间隔毫秒数，避免浏览器把连续下载当成弹窗拦掉 */
 export const BATCH_DOWNLOAD_GAP_MS = 400
+
+/**
+ * 物料里放图片的目录，「从物料里挑图」就在这儿翻。
+ * 挑图只是把图摆到卡片上给人复制 / 下载，不写回草稿，更不会替人发。
+ */
+export const MEDIA_LIBRARY_DIR = 'media'
+
+/** 挑图时展开 media/ 的层数，够看到按日期分的子目录 */
+export const MEDIA_LIBRARY_TREE_DEPTH = 3
+
+/** 挑图对话框最多列这么多张，超了只列前面这些，免得一次把整个图库拉出来 */
+export const MEDIA_LIBRARY_MAX_FILES = 200

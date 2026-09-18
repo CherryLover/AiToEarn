@@ -8,15 +8,18 @@
  */
 'use client'
 
+import type { PickedMedia, PublishDraftNotes } from './publish.utils'
 import type { PublishedPostDetail } from '@/api/publishing/publishing.types'
 import {
   CheckCircle2,
   Download,
   ExternalLink,
   ImageOff,
+  ImagePlus,
   Loader2,
   Trash2,
   TriangleAlert,
+  X,
 } from 'lucide-react'
 import { useState } from 'react'
 import {
@@ -56,6 +59,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { formatDate } from '@/utils/format'
 import { toast } from '@/utils/ui/toast'
 import { CopyButton } from './CopyButton'
+import { MediaPickerDialog } from './MediaPickerDialog'
 import {
   BATCH_DOWNLOAD_GAP_MS,
   BODY_COLLAPSE_MIN_LENGTH,
@@ -63,18 +67,24 @@ import {
 } from './publish.constants'
 import {
   buildFullCopyText,
-  buildImageFileName,
   downloadImage,
   formatTopics,
   getPlatformLabelKey,
   getPublishErrorKey,
+  mergeCardMedia,
   validatePostUrl,
 } from './publish.utils'
 import { LinkStatusBadge, PublishStatusBadge } from './PublishStatusBadges'
+import { useProjectMedia } from './useProjectMedia'
 
 interface PublishCardProps {
   projectId: string
   post: PublishedPostDetail
+  /**
+   * 刚打包那一刻服务端给的草稿提示（没声明配图、正文是整篇原文）。
+   * 服务端不落库，所以只有刚建出来的这条才有；从列表里点开的老记录拿不到，传 null。
+   */
+  draftNotes: PublishDraftNotes | null
   /** 归档项目只读 */
   readOnly: boolean
   /** 回填 / 标失败之后把最新记录交回上层 */
@@ -83,7 +93,8 @@ interface PublishCardProps {
   onDeleted: (id: string) => void
 }
 
-export function PublishCard({ projectId, post, readOnly, onUpdated, onDeleted }: PublishCardProps) {
+export function PublishCard(props: PublishCardProps) {
+  const { projectId, post, draftNotes, readOnly, onUpdated, onDeleted } = props
   const { t } = useTransClient('projects')
 
   const [bodyExpanded, setBodyExpanded] = useState(false)
@@ -97,11 +108,21 @@ export function PublishCard({ projectId, post, readOnly, onUpdated, onDeleted }:
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [downloadingAll, setDownloadingAll] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [pickedMedia, setPickedMedia] = useState<PickedMedia[]>([])
+
+  // media/ 里有哪些图：只有人真去挑的时候才列，卡片本身不碰物料文件
+  const mediaLibrary = useProjectMedia(projectId)
 
   const snapshot = post.snapshot
   const topicsText = formatTopics(snapshot?.topics ?? [])
   const bodyText = snapshot?.body ?? ''
   const mediaUrls = snapshot?.mediaUrls ?? []
+  // 快照里的图 + 人刚从物料里挑的图，复制、下载都按这一列来
+  const mediaItems = mergeCardMedia(mediaUrls, pickedMedia)
+  // 「草稿压根没写配图」和「写了但一张都没打包进来」给人的话不一样，只有服务端说得清
+  const mediaUndeclared = draftNotes?.mediaDeclared === false
+  const bodyFallback = draftNotes?.bodyFallback === true
   const fullText = snapshot ? buildFullCopyText(snapshot) : ''
   const canCollapseBody = bodyText.length > BODY_COLLAPSE_MIN_LENGTH
 
@@ -110,26 +131,26 @@ export function PublishCard({ projectId, post, readOnly, onUpdated, onDeleted }:
   const creatorUrl = PLATFORM_CREATOR_URL[post.platform] ?? ''
   const isPublished = post.publishStatus === PublishStatus.Published
 
-  const handleDownloadOne = async (url: string, index: number) => {
-    const ok = await downloadImage(url, buildImageFileName(url, index))
+  const handleDownloadOne = async (url: string, fileName: string) => {
+    const ok = await downloadImage(url, fileName)
     if (!ok)
       toast.warning(t('publish.card.downloadFallback'))
   }
 
   const handleDownloadAll = async () => {
-    if (downloadingAll || mediaUrls.length === 0)
+    if (downloadingAll || mediaItems.length === 0)
       return
 
     setDownloadingAll(true)
     try {
       let fallbackCount = 0
-      for (let index = 0; index < mediaUrls.length; index += 1) {
-        const ok = await downloadImage(mediaUrls[index], buildImageFileName(mediaUrls[index], index))
+      for (let index = 0; index < mediaItems.length; index += 1) {
+        const ok = await downloadImage(mediaItems[index].url, mediaItems[index].fileName)
         if (!ok)
           fallbackCount += 1
 
         // 连着触发下载会被浏览器拦，隔一小会儿再来下一张
-        if (index < mediaUrls.length - 1)
+        if (index < mediaItems.length - 1)
           await new Promise(resolve => setTimeout(resolve, BATCH_DOWNLOAD_GAP_MS))
       }
 
@@ -141,6 +162,33 @@ export function PublishCard({ projectId, post, readOnly, onUpdated, onDeleted }:
     finally {
       setDownloadingAll(false)
     }
+  }
+
+  /**
+   * 挑好的图并进这次发布的配图。
+   * 只落在这张卡片上：草稿文件不动，快照也不改——快照是点「准备发布」那一刻定下来的，
+   * 回头改它就等于把「发出去的是哪一版」搅浑了。
+   */
+  const handleMediaPicked = (picks: PickedMedia[]) => {
+    const pickedPaths = new Set(pickedMedia.map(item => item.path))
+    const existingUrls = new Set([...mediaUrls, ...pickedMedia.map(item => item.url)])
+
+    const added = picks.filter(
+      pick => !pickedPaths.has(pick.path) && !(pick.ossUrl && existingUrls.has(pick.ossUrl)),
+    )
+    const duplicated = picks.length - added.length
+
+    if (added.length > 0) {
+      setPickedMedia(prev => [...prev, ...added])
+      toast.success(t('publish.mediaPicker.added', { num: added.length }))
+    }
+
+    if (duplicated > 0)
+      toast.warning(t('publish.mediaPicker.alreadyIn', { num: duplicated }))
+  }
+
+  const handleRemovePicked = (path: string) => {
+    setPickedMedia(prev => prev.filter(item => item.path !== path))
   }
 
   const handleComplete = async () => {
@@ -294,6 +342,21 @@ export function PublishCard({ projectId, post, readOnly, onUpdated, onDeleted }:
           </p>
         </section>
 
+        {/* 草稿没按小节写，正文是整篇原文：发之前得人工删一刀 */}
+        {bodyFallback && (
+          <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2">
+            <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground">
+                {t('publish.card.bodyFallbackTitle')}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {t('publish.card.bodyFallbackHint')}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* 正文 */}
         <section className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between gap-2">
@@ -358,66 +421,111 @@ export function PublishCard({ projectId, post, readOnly, onUpdated, onDeleted }:
 
         {/* 配图 */}
         <section className="flex flex-col gap-2">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Label className="text-xs text-muted-foreground">
               {t('publish.card.mediaLabel')}
-              {mediaUrls.length > 0 ? ` (${mediaUrls.length})` : ''}
+              {mediaItems.length > 0 ? ` (${mediaItems.length})` : ''}
             </Label>
-            {mediaUrls.length > 1 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={downloadingAll}
-                onClick={handleDownloadAll}
-              >
-                {downloadingAll
-                  ? <Loader2 className="size-4 animate-spin" />
-                  : <Download className="size-4" />}
-                {t('publish.card.downloadAll')}
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {!readOnly && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPickerOpen(true)}
+                >
+                  <ImagePlus className="size-4" />
+                  {t('publish.card.pickMedia')}
+                </Button>
+              )}
+              {mediaItems.length > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={downloadingAll}
+                  onClick={handleDownloadAll}
+                >
+                  {downloadingAll
+                    ? <Loader2 className="size-4 animate-spin" />
+                    : <Download className="size-4" />}
+                  {t('publish.card.downloadAll')}
+                </Button>
+              )}
+            </div>
           </div>
 
-          {mediaUrls.length === 0
+          {mediaItems.length === 0
             ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border px-6 py-8 text-center">
                   <ImageOff className="mb-2 size-5 text-muted-foreground" />
-                  <p className="text-sm text-foreground">{t('publish.card.noMedia')}</p>
+                  {/* 草稿压根没写配图，和「写了但没打包进来」不是一回事，说法也不一样 */}
+                  <p className="text-sm text-foreground">
+                    {mediaUndeclared ? t('publish.card.mediaUndeclared') : t('publish.card.noMedia')}
+                  </p>
                   <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-                    {t('publish.card.noMediaHint')}
+                    {mediaUndeclared
+                      ? t('publish.card.mediaUndeclaredHint')
+                      : t('publish.card.noMediaHint')}
                   </p>
                 </div>
               )
             : (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {mediaUrls.map((url, index) => (
-                    <figure
-                      key={url}
-                      className="overflow-hidden rounded-lg border border-border bg-muted/30"
-                    >
-                      {/* 快照里的图片是 OSS 外链，不走 next/image 的域名白名单那套 */}
-                      {/* eslint-disable-next-line next/no-img-element */}
-                      <img src={url} alt={buildImageFileName(url, index)} className="h-32 w-full object-cover" />
-                      <figcaption className="flex items-center justify-between gap-1 px-2 py-1.5">
-                        <span className="min-w-0 flex-1 truncate font-mono text-[0.7rem] text-muted-foreground">
-                          {buildImageFileName(url, index)}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="size-7 shrink-0"
-                          aria-label={t('publish.card.download')}
-                          onClick={() => handleDownloadOne(url, index)}
-                        >
-                          <Download className="size-4" />
-                        </Button>
-                      </figcaption>
-                    </figure>
-                  ))}
+                  {mediaItems.map((item) => {
+                    // 只有挑来的图能移掉，快照里的那几张是发布那一刻定死的
+                    const removablePath = item.picked ? item.path : undefined
+
+                    return (
+                      <figure
+                        key={item.key}
+                        className="relative overflow-hidden rounded-lg border border-border bg-muted/30"
+                      >
+                        {/* 图片是 OSS 外链或本地 blob，不走 next/image 的域名白名单那套 */}
+                        {/* eslint-disable-next-line next/no-img-element */}
+                        <img src={item.url} alt={item.fileName} className="h-32 w-full object-cover" />
+                        {item.picked && (
+                          <span className="absolute left-1.5 top-1.5 rounded bg-background/90 px-1.5 py-0.5 text-[0.65rem] text-muted-foreground">
+                            {t('publish.card.pickedLabel')}
+                          </span>
+                        )}
+                        <figcaption className="flex items-center justify-between gap-1 px-2 py-1.5">
+                          <span className="min-w-0 flex-1 truncate font-mono text-[0.7rem] text-muted-foreground">
+                            {item.fileName}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 shrink-0"
+                            aria-label={t('publish.card.download')}
+                            onClick={() => handleDownloadOne(item.url, item.fileName)}
+                          >
+                            <Download className="size-4" />
+                          </Button>
+                          {removablePath && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 shrink-0"
+                              aria-label={t('publish.card.removePicked')}
+                              onClick={() => handleRemovePicked(removablePath)}
+                            >
+                              <X className="size-4" />
+                            </Button>
+                          )}
+                        </figcaption>
+                      </figure>
+                    )
+                  })}
                 </div>
               )}
+
+          {/* 挑来的图只活在这张卡片上，说清楚免得人以为草稿被改了 */}
+          {pickedMedia.length > 0 && (
+            <p className="text-xs text-muted-foreground">{t('publish.card.pickedHint')}</p>
+          )}
         </section>
 
         {/* 发完回来登记 */}
@@ -497,6 +605,18 @@ export function PublishCard({ projectId, post, readOnly, onUpdated, onDeleted }:
               )}
         </section>
       </div>
+
+      {/* 从物料里挑图：纯粹是翻项目 media/ 给人选，选完摆在卡片上，不发任何东西 */}
+      {!readOnly && (
+        <MediaPickerDialog
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
+          library={mediaLibrary}
+          existingUrls={[...mediaUrls, ...pickedMedia.map(item => item.ossUrl).filter(Boolean)]}
+          pickedPaths={pickedMedia.map(item => item.path)}
+          onConfirm={handleMediaPicked}
+        />
+      )}
 
       {/* 发失败了：填个原因 */}
       <Dialog open={failOpen} onOpenChange={setFailOpen}>

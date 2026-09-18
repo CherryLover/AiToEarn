@@ -15,11 +15,12 @@ import {
   readString,
   readStringList,
   toImageCardSegments,
+  toMediaPath,
 } from './draft-files.util'
 
 /** 图片没进快照的原因，给人看的时候翻译成人话 */
 export type SkippedMediaReason
-  /** 找不到名片文件，或者名片读不了 */
+  /** 找不到这张图的名片文件（图本身不在 `media/` 里、名字写错了，或者名片读不了） */
   = | 'card_missing'
   /** 名片在，但 `oss` 是空的——当初传 OSS 失败了 */
     | 'oss_missing'
@@ -48,6 +49,21 @@ export interface DraftSnapshotResult {
   draftPlatform?: string
   /** 名片里没有 OSS 地址、没进快照的图片 */
   skippedMedia: SkippedMedia[]
+  /**
+   * 正文是「整篇原文」兜出来的，不是 `## 正文` 小节里的内容。
+   *
+   * 走到这条路，正文里多半连记账清单带 `##` 小标题全在。以前它是悄悄发生的，
+   * 现在标出来，网页好提示人「这份草稿没按小节写，发之前自己删一下」。
+   */
+  bodyFallback: boolean
+  /**
+   * 这份草稿到底有没有声明配图（frontmatter 的 `images`、`## 配图` 小节、血缘的 `mediaRefs`，
+   * 有一处算一处）。
+   *
+   * false 表示一张都没声明——不是错误，但小红书这种图文平台没图等于发不了，网页要提示。
+   * 声明了却一张都没进快照是另一回事，看 `skippedMedia`。
+   */
+  mediaDeclared: boolean
 }
 
 /**
@@ -101,22 +117,29 @@ export class DraftSnapshotService {
 
     const { meta: front, body: rawBody } = parseFrontMatter(content)
 
-    // 人手工放的单文件草稿没有 frontmatter，内容靠 `## 标题` / `## 正文` / `## 话题` 分段，
+    // 人手工放的单文件草稿没有 frontmatter，内容靠 `## 标题` / `## 正文` / `## 话题` / `## 配图` 分段，
     // 前面还压着一段自己记账用的清单。整篇当正文抄下来，复制出去的就是没法直接发的东西。
     // 目录版的 content.md 是生成出来的、一直带 frontmatter，不走这条兜底。
     const sections = layout.metaSegments ? null : parseDraftSections(rawBody)
 
     const frontTopics = readStringList(pick(front, 'topics'))
+    const frontImages = readStringList(pick(front, 'images'))
 
     const title = readString(pick(front, 'title')) ?? sections?.title ?? ''
     const topics = frontTopics.length > 0 ? frontTopics : sections?.topics ?? []
+
+    // 「这一节没写」和「这一节是空的」是两件事：写了 `## 正文` 就以它为准，哪怕是空串；
+    // 只有压根没有这一节才退回整篇原文，而且退回这一步要标出来，不能再像以前那样悄悄发生
+    const bodyFallback = sections !== null && sections.body === undefined
     const body = sections?.body ?? rawBody
 
     // 标题和正文都空的草稿没东西可发，早点拦住比发出去一条空帖子强
     if (title.length === 0 && body.length === 0)
       throw new AppException(ResponseCode.PublishedPostDraftEmpty)
 
-    const { mediaUrls, skippedMedia } = await this.resolveMediaUrls(dirName, pick(front, 'images'), meta)
+    // 配图两种声明方式都认：frontmatter 的 `images` 更明确，优先；没写才看 `## 配图` 小节
+    const declaredImages = frontImages.length > 0 ? frontImages : sections?.media ?? []
+    const { mediaUrls, skippedMedia, mediaDeclared } = await this.resolveMediaUrls(dirName, declaredImages, meta)
 
     return {
       draftPath: segments.join('/'),
@@ -124,6 +147,8 @@ export class DraftSnapshotService {
       angleSlug: readString(pick(meta, 'angleSlug')) ?? readString(pick(front, 'angle')),
       draftPlatform: readString(pick(meta, 'platform')) ?? readString(pick(front, 'platform')),
       skippedMedia,
+      bodyFallback,
+      mediaDeclared,
     }
   }
 
@@ -163,6 +188,12 @@ export class DraftSnapshotService {
       // 「路径不合法」。原样漏出去网页认不出来，只能显示通用文案，翻成草稿自己的码
       if (isAppExceptionWith(error, ResponseCode.ProjectFilePathInvalid))
         throw new AppException(ResponseCode.PublishedPostDraftPathInvalid)
+
+      // `drafts/` 下面某一级是软链时 safe-fs 报 20106，也是物料那一段的码，一样要翻。
+      // 翻成「草稿格式不对」而不是「路径不合法」：最后一段自己是软链时走的就是下面 resolveLayout
+      // 那条「既不是文件也不是目录」的路，同一件事（这不是一份能读的草稿）给同一个码
+      if (isAppExceptionWith(error, ResponseCode.ProjectFileIsSymlink))
+        throw new AppException(ResponseCode.PublishedPostDraftInvalid)
 
       if (error instanceof AppException)
         throw error
@@ -236,10 +267,10 @@ export class DraftSnapshotService {
    */
   private async resolveMediaUrls(
     dirName: string,
-    rawImages: unknown,
+    declaredImages: string[],
     meta: Record<string, unknown> | null,
-  ): Promise<{ mediaUrls: string[], skippedMedia: SkippedMedia[] }> {
-    const candidates = this.collectCandidates(rawImages, meta)
+  ): Promise<{ mediaUrls: string[], skippedMedia: SkippedMedia[], mediaDeclared: boolean }> {
+    const candidates = this.collectCandidates(declaredImages, meta)
     const mediaUrls: string[] = []
     const skippedMedia: SkippedMedia[] = []
     const seenUrls = new Set<string>()
@@ -272,16 +303,17 @@ export class DraftSnapshotService {
       }
     }
 
-    return { mediaUrls, skippedMedia }
+    // 一条候选都没有 = 这份草稿压根没声明配图，和「声明了但都没进快照」要分开说
+    return { mediaUrls, skippedMedia, mediaDeclared: candidates.length > 0 }
   }
 
   /**
-   * 收集候选图片，按展示顺序。
+   * 收集候选图片，**按用户写的顺序**——写的顺序就是发布顺序，不许重排。
    *
-   * `content.md` 的 `images` 是展示顺序，优先；`meta.json` 的 `mediaRefs` 带本地路径，
-   * 用来把地址反查回本地文件，也补上正文里漏写的图。
+   * 草稿里声明的（frontmatter `images` 或 `## 配图` 小节）是展示顺序，优先；
+   * `meta.json` 的 `mediaRefs` 带本地路径，用来把地址反查回本地文件，也补上正文里漏写的图。
    */
-  private collectCandidates(rawImages: unknown, meta: Record<string, unknown> | null): MediaCandidate[] {
+  private collectCandidates(declaredImages: string[], meta: Record<string, unknown> | null): MediaCandidate[] {
     const rawRefs = pick(meta, 'mediaRefs')
     const refs = Array.isArray(rawRefs) ? rawRefs : []
     const urlToLocal = new Map<string, string>()
@@ -311,13 +343,15 @@ export class DraftSnapshotService {
       candidates.push(candidate)
     }
 
-    for (const entry of readStringList(rawImages)) {
+    for (const entry of declaredImages) {
       if (isHttpUrl(entry)) {
         const localPath = urlToLocal.get(entry)
         push({ key: localPath ?? entry, localPath, url: entry })
       }
       else {
-        push({ key: entry, localPath: entry })
+        // 只写了文件名的按项目的 `media/` 目录去找，写成 `media/xxx` 的原样用
+        const localPath = toMediaPath(entry)
+        push({ key: localPath, localPath })
       }
     }
 

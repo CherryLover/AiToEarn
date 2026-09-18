@@ -120,16 +120,17 @@ export function parseFrontMatter(text: string): { meta: Record<string, unknown>,
 /**
  * 小节式草稿的兜底解析。
  *
- * 人手工写的草稿没有 frontmatter，内容是用 `## 标题` / `## 正文` / `## 话题` 分的段，
+ * 人手工写的草稿没有 frontmatter，内容是用 `## 标题` / `## 正文` / `## 话题` / `## 配图` 分的段，
  * 前面还压着一段自己记账用的清单（状态、发布时间、数据、配图……）。
  * 整篇当正文发出去就是把这段记账一起发了，所以这里按小节把能发的那部分挑出来。
  *
- * **只认这三个词**，别的小节一概不猜、不动。
+ * **只认这四个词**，别的小节一概不猜、不动。
  */
 const SECTION_TITLE = '标题'
 const SECTION_BODY = '正文'
 const SECTION_TOPICS = '话题'
-const SECTION_NAMES = new Set([SECTION_TITLE, SECTION_BODY, SECTION_TOPICS])
+const SECTION_MEDIA = '配图'
+const SECTION_NAMES = new Set([SECTION_TITLE, SECTION_BODY, SECTION_TOPICS, SECTION_MEDIA])
 
 const HEADING_PATTERN = /^(#{1,6})([ \t]*)(\S.*)?$/
 /** 话题写成 `#怀孕 #备孕`，存进快照的要的是词，不是原文 */
@@ -138,10 +139,18 @@ const TOPIC_PATTERN = /#([^\s#]+)/g
 export interface DraftSections {
   /** `## 标题` 小节的内容，没有这一节就退到首个一级标题 */
   title?: string
-  /** `## 正文` 小节的内容；没有这一节就是 undefined，调用方保留原来的整篇正文 */
+  /**
+   * `## 正文` 小节的内容。
+   *
+   * **`undefined` 只表示「压根没有这一节」**，写了这一节但里面是空的会给空串。
+   * 两件事必须分开：混成一个，草稿少写一节（或者写成 `## 内容`）就会悄没声息地
+   * 退回「整篇原文当正文」，把上面那段记账清单一起发出去。
+   */
   body?: string
   /** `## 话题` 小节里的 `#xxx`，井号已经去掉 */
   topics: string[]
+  /** `## 配图` 小节里一行一个的文件名，顺序就是用户写的发布顺序 */
+  media: string[]
 }
 
 interface Heading {
@@ -189,7 +198,8 @@ function readTopics(lines: string[]): string[] {
 
 /**
  * 按 `##` 小节拆一份没有 frontmatter 的草稿。
- * 三个小节一个都没有时 `body` 是 undefined，调用方照旧把整篇当正文，不报错。
+ * 没有 `## 正文` 这一节时 `body` 是 undefined，调用方照旧把整篇当正文，不报错——
+ * 但那条路得让人知道，见 `DraftSnapshotResult.bodyFallback`。
  */
 export function parseDraftSections(text: string): DraftSections {
   const lines = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').split('\n')
@@ -221,17 +231,61 @@ export function parseDraftSections(text: string): DraftSections {
   const titleLines = sections.get(SECTION_TITLE)
   const bodyLines = sections.get(SECTION_BODY)
   const topicLines = sections.get(SECTION_TOPICS)
+  const mediaLines = sections.get(SECTION_MEDIA)
 
   const title = titleLines
     ? titleLines.map(line => line.trim()).find(line => line.length > 0)
     : undefined
-  const body = bodyLines ? joinSection(bodyLines) : ''
 
   return {
     title: title ?? firstHeading,
-    body: body.length > 0 ? body : undefined,
+    // 有这一节就以它为准，哪怕内容是空的；没有这一节才交给调用方去兜底
+    body: bodyLines ? joinSection(bodyLines) : undefined,
     topics: topicLines ? readTopics(topicLines) : [],
+    media: mediaLines ? readMediaNames(mediaLines) : [],
   }
+}
+
+/** 图片一律放在项目的 `media/` 目录下（contract-core 第四节） */
+export const MEDIA_DIR = 'media'
+
+/**
+ * 把 `## 配图` 或 frontmatter 里写的一条声明，换算成相对项目根的图片路径。
+ *
+ * 只写文件名（`帖1-01.jpg`）的按 `media/` 目录去找；
+ * 已经带了目录的（`media/帖1-01.jpg`）原样用，地址（`https://...`）也原样用——
+ * 它本来就带着斜杠，不会被当成裸文件名。
+ */
+export function toMediaPath(entry: string): string {
+  const cleaned = entry.replace(/^\.\/+/, '').trim()
+  return cleaned.includes('/') ? cleaned : `${MEDIA_DIR}/${cleaned}`
+}
+
+/** `- 帖1-01.jpg` / `1. 帖1-01.jpg` 这类列表前缀，写不写都认 */
+const LIST_MARKER_PATTERN = /^(?:[-*+]|\d+[.)])\s+/
+/** `---` 这类分隔线不是文件名 */
+const THEMATIC_BREAK_PATTERN = /^(?:-{3,}|\*{3,}|_{3,})$/
+
+/**
+ * 读 `## 配图` 小节：一行一个文件名，顺序保留。
+ *
+ * 认不出来的行不在这里丢掉——一路带到快照那一步，
+ * 找不到对应文件时进 `skippedMedia` 并说明原因，人才知道自己写的那一行为什么没生效。
+ */
+function readMediaNames(lines: string[]): string[] {
+  const names: string[] = []
+
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (line.length === 0 || line.startsWith('#') || THEMATIC_BREAK_PATTERN.test(line))
+      continue
+
+    const name = line.replace(LIST_MARKER_PATTERN, '').trim()
+    if (name.length > 0 && !names.includes(name))
+      names.push(name)
+  }
+
+  return names
 }
 
 /** 图片名片文件名：原件名后面直接加 `.md`（`media/a.png` -> `media/a.png.md`） */

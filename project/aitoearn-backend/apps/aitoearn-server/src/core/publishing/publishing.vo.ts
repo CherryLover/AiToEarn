@@ -45,10 +45,12 @@ const SkippedMediaVoSchema = z.object({
   reason: z.enum(['card_missing', 'oss_missing']).describe('card_missing 名片读不到；oss_missing 名片在但没有 OSS 地址'),
 })
 
-/** 建完工单返回：记录本身 + 哪些图没能带进快照 */
+/** 建完工单返回：记录本身 + 这份草稿有哪些地方要人再看一眼 */
 const PublishJobCreatedVoSchema = z.object({
   post: PublishedPostDetailVoSchema.describe('建出来的发布记录'),
-  skippedMedia: z.array(SkippedMediaVoSchema).describe('名片里没有 OSS 地址、没进快照的图片'),
+  skippedMedia: z.array(SkippedMediaVoSchema).describe('找不到名片、或名片里没有 OSS 地址，没进快照的图片'),
+  mediaDeclared: z.boolean().describe('草稿里有没有声明配图；false 表示一张都没声明，图文平台要提示人补上再发'),
+  bodyFallback: z.boolean().describe('正文是不是整篇原文兜出来的（草稿没写 `## 正文` 小节）；true 时要提示人发之前自己删一遍'),
 })
 export class PublishJobCreatedVo extends createZodDto(PublishJobCreatedVoSchema, 'PublishJobCreatedVo') {}
 
@@ -98,9 +100,18 @@ export function toPublishedPostDetailVo(post: PublishedPostDoc): PublishedPostDe
   })
 }
 
-export function toPublishJobCreatedVo(post: PublishedPostDoc, skippedMedia: SkippedMedia[]): PublishJobCreatedVo {
+/** 建单时从草稿文件里读出来、但不落库的提示：只有这一刻说得清，列表里再看就没有了 */
+export interface PublishJobDraftNotes {
+  skippedMedia: SkippedMedia[]
+  mediaDeclared: boolean
+  bodyFallback: boolean
+}
+
+export function toPublishJobCreatedVo(post: PublishedPostDoc, notes: PublishJobDraftNotes): PublishJobCreatedVo {
   return PublishJobCreatedVo.create({
     post: toPublishedPostDetailVo(post),
-    skippedMedia,
+    skippedMedia: notes.skippedMedia,
+    mediaDeclared: notes.mediaDeclared,
+    bodyFallback: notes.bodyFallback,
   })
 }
