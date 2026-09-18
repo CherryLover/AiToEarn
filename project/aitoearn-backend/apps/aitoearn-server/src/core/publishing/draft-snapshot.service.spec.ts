@@ -90,6 +90,13 @@ function mountFiles(files: Record<string, string>) {
     if (Object.keys(files).some(key => key.startsWith(`${relPath}/`)))
       return entryStat('dir')
 
+    // 和 safe-fs 一样：路径中间有一级其实是个文件时，报的是「路径不合法」而不是「不存在」
+    const parts = relPath.split('/')
+    for (let i = 1; i < parts.length; i++) {
+      if (files[parts.slice(0, i).join('/')] !== undefined)
+        throw new AppException(ResponseCode.ProjectFilePathInvalid)
+    }
+
     throw new AppException(ResponseCode.ProjectFileNotFound)
   })
 }
@@ -374,6 +381,14 @@ describe('草稿快照 · 单文件草稿和目录版草稿都要认', () => {
     })
   })
 
+  it('拿单文件草稿当目录往下钻，报的是草稿自己的码，不漏物料那一段的 20101', async () => {
+    mountFiles({ [SINGLE_DRAFT]: SINGLE_CONTENT_MD })
+
+    await expect(createService().read(DIR, `${SINGLE_DRAFT}/content.md`)).rejects.toMatchObject({
+      code: ResponseCode.PublishedPostDraftPathInvalid,
+    })
+  })
+
   it('借单文件草稿的路径往 drafts/ 外面读，照样被拒', async () => {
     mountFiles({ 'background/product/intro.md': '机密' })
     const service = createService()
@@ -389,5 +404,176 @@ describe('草稿快照 · 单文件草稿和目录版草稿都要认', () => {
       code: ResponseCode.PublishedPostDraftNotFound,
     })
     expect(safeReadFile).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * 线上那三份手写草稿的真实摆法：**没有 frontmatter**，内容靠 `## 标题` / `## 正文` / `## 话题`
+ * 分段，最上面还压着一段自己记账用的清单（状态、发布时间、数据、配图、备注）。
+ *
+ * 整篇当正文抄下来，卡片上点「全部复制」复制出去的就是连记账带小标题的一坨，粘到小红书没法直接发。
+ */
+describe('草稿快照 · 没有 frontmatter 的手写草稿按小节拆', () => {
+  const HAND_DRAFT = 'drafts/2026-09-18-结婚4年生出来个这.md'
+
+  /** 照抄线上其中一份的结构 */
+  const HAND_CONTENT = [
+    '# 结婚 4 年生出来个这……',
+    '',
+    '- 状态：已发布（这条是本人手写手发的，不是生成的）',
+    '- 平台 / 账号：小红书「程序杂念」',
+    '- 发布时间：2026-09-18 08:28',
+    '- 数据：814 看 · 1 赞 · 9 评论 · 0 收藏 · 0 分享（2026-09-18 查）',
+    '- 配图：2 张（1080×2348）',
+    '- 备注：三条里数据最好的一条，靠的是个人故事和反差感的标题',
+    '',
+    '## 标题',
+    '',
+    '结婚 4 年生出来个这……',
+    '',
+    '## 正文',
+    '',
+    '我们结婚已经 4 年了，一直在佛系备孕。',
+    '',
+    '结果小孩没生出来，先生出来个 APP！！！',
+    '',
+    '## 话题',
+    '',
+    '#怀孕 #备孕 #怀孕日记 #孕期 #生娃',
+    '',
+  ].join('\n')
+
+  it('标题、正文、话题各就各位，记账那段绝不进正文', async () => {
+    mountFiles({ [HAND_DRAFT]: HAND_CONTENT })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.title).toBe('结婚 4 年生出来个这……')
+    expect(result.snapshot.topics).toEqual(['怀孕', '备孕', '怀孕日记', '孕期', '生娃'])
+    expect(result.snapshot.body).toBe(
+      '我们结婚已经 4 年了，一直在佛系备孕。\n\n结果小孩没生出来，先生出来个 APP！！！',
+    )
+
+    // 复制出去直接就能发：不带记账清单，也不带小标题
+    expect(result.snapshot.body).not.toContain('状态：')
+    expect(result.snapshot.body).not.toContain('数据：')
+    expect(result.snapshot.body).not.toContain('配图：')
+    expect(result.snapshot.body).not.toContain('## ')
+    expect(result.snapshot.body).not.toContain('#怀孕')
+  })
+
+  it('话题存进快照的是词，不是带井号的原文', async () => {
+    mountFiles({ [HAND_DRAFT]: HAND_CONTENT })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.topics).toHaveLength(5)
+    for (const topic of result.snapshot.topics)
+      expect(topic.startsWith('#')).toBe(false)
+  })
+
+  it('小节标题贴着写、后面拖个空格都要认', async () => {
+    const loose = HAND_CONTENT
+      .replace('## 标题', '##标题')
+      .replace('## 正文', '## 正文 ')
+      .replace('## 话题', '##话题 ')
+
+    mountFiles({ [HAND_DRAFT]: loose })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.title).toBe('结婚 4 年生出来个这……')
+    expect(result.snapshot.body).toBe(
+      '我们结婚已经 4 年了，一直在佛系备孕。\n\n结果小孩没生出来，先生出来个 APP！！！',
+    )
+    expect(result.snapshot.topics).toEqual(['怀孕', '备孕', '怀孕日记', '孕期', '生娃'])
+  })
+
+  it('只认标题 / 正文 / 话题三个词，别的小节一律不处理', async () => {
+    const withExtra = [
+      '## 标题',
+      '',
+      '手写的标题',
+      '',
+      '## 正文',
+      '',
+      '要发出去的正文。',
+      '',
+      '## 复盘',
+      '',
+      '这条为什么数据好：反差感。',
+      '',
+      '## 话题',
+      '',
+      '#怀孕',
+      '',
+    ].join('\n')
+
+    mountFiles({ [HAND_DRAFT]: withExtra })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.title).toBe('手写的标题')
+    expect(result.snapshot.body).toBe('要发出去的正文。')
+    expect(result.snapshot.topics).toEqual(['怀孕'])
+  })
+
+  it('只有一级标题、没有小节时，标题取那一行，正文照旧是整篇', async () => {
+    const onlyHeading = ['# 结婚 4 年生出来个这……', '', '就是一段大白话，没有分小节。', ''].join('\n')
+
+    mountFiles({ [HAND_DRAFT]: onlyHeading })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.title).toBe('结婚 4 年生出来个这……')
+    expect(result.snapshot.body).toBe('# 结婚 4 年生出来个这……\n\n就是一段大白话，没有分小节。')
+    expect(result.snapshot.topics).toEqual([])
+  })
+
+  it('标题和小节都没有的草稿退回原来的行为：整篇当正文，不报错', async () => {
+    mountFiles({ [HAND_DRAFT]: '就一段话，什么标记都没有。' })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.title).toBe('')
+    expect(result.snapshot.body).toBe('就一段话，什么标记都没有。')
+    expect(result.snapshot.topics).toEqual([])
+  })
+
+  it('有 frontmatter 的单文件草稿走原路，兜底不插手', async () => {
+    const withFront = [
+      '---',
+      'title: frontmatter 里写的标题',
+      'topics: 备孕, 孕期记录',
+      '---',
+      '',
+      '# 正文里的一级标题',
+      '',
+      '## 标题',
+      '',
+      '小节里写的标题',
+      '',
+      '## 正文',
+      '',
+      '小节里写的正文。',
+      '',
+    ].join('\n')
+
+    mountFiles({ [HAND_DRAFT]: withFront })
+
+    const result = await createService().read(DIR, HAND_DRAFT)
+
+    expect(result.snapshot.title).toBe('frontmatter 里写的标题')
+    expect(result.snapshot.topics).toEqual(['备孕', '孕期记录'])
+  })
+
+  it('目录版一个字都不变：content.md 写成小节的样子也照旧整篇当正文', async () => {
+    mountFiles({ [`${DRAFT}/content.md`]: HAND_CONTENT })
+
+    const result = await createService().read(DIR, DRAFT)
+
+    expect(result.snapshot.title).toBe('')
+    expect(result.snapshot.body).toBe(HAND_CONTENT.trim())
+    expect(result.snapshot.topics).toEqual([])
   })
 })

@@ -9,6 +9,7 @@ import {
   DRAFT_META_FILE,
   isHttpUrl,
   parseDraftPath,
+  parseDraftSections,
   parseFrontMatter,
   pick,
   readString,
@@ -98,10 +99,18 @@ export class DraftSnapshotService {
     const content = await this.readContent(dirName, layout.contentSegments)
     const meta = layout.metaSegments ? await this.readMeta(dirName, layout.metaSegments) : null
 
-    const { meta: front, body } = parseFrontMatter(content)
+    const { meta: front, body: rawBody } = parseFrontMatter(content)
 
-    const title = readString(pick(front, 'title')) ?? ''
-    const topics = readStringList(pick(front, 'topics'))
+    // 人手工放的单文件草稿没有 frontmatter，内容靠 `## 标题` / `## 正文` / `## 话题` 分段，
+    // 前面还压着一段自己记账用的清单。整篇当正文抄下来，复制出去的就是没法直接发的东西。
+    // 目录版的 content.md 是生成出来的、一直带 frontmatter，不走这条兜底。
+    const sections = layout.metaSegments ? null : parseDraftSections(rawBody)
+
+    const frontTopics = readStringList(pick(front, 'topics'))
+
+    const title = readString(pick(front, 'title')) ?? sections?.title ?? ''
+    const topics = frontTopics.length > 0 ? frontTopics : sections?.topics ?? []
+    const body = sections?.body ?? rawBody
 
     // 标题和正文都空的草稿没东西可发，早点拦住比发出去一条空帖子强
     if (title.length === 0 && body.length === 0)
@@ -149,6 +158,11 @@ export class DraftSnapshotService {
     catch (error) {
       if (isAppExceptionWith(error, ResponseCode.ProjectFileNotFound))
         throw new AppException(ResponseCode.PublishedPostDraftNotFound)
+
+      // 拿单文件草稿当目录往下钻（`drafts/x.md/content.md`）时，safe-fs 报的是物料那一段的
+      // 「路径不合法」。原样漏出去网页认不出来，只能显示通用文案，翻成草稿自己的码
+      if (isAppExceptionWith(error, ResponseCode.ProjectFilePathInvalid))
+        throw new AppException(ResponseCode.PublishedPostDraftPathInvalid)
 
       if (error instanceof AppException)
         throw error

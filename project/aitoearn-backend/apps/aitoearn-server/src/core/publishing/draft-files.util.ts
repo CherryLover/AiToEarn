@@ -117,6 +117,123 @@ export function parseFrontMatter(text: string): { meta: Record<string, unknown>,
   return { meta: parsed as Record<string, unknown>, body }
 }
 
+/**
+ * 小节式草稿的兜底解析。
+ *
+ * 人手工写的草稿没有 frontmatter，内容是用 `## 标题` / `## 正文` / `## 话题` 分的段，
+ * 前面还压着一段自己记账用的清单（状态、发布时间、数据、配图……）。
+ * 整篇当正文发出去就是把这段记账一起发了，所以这里按小节把能发的那部分挑出来。
+ *
+ * **只认这三个词**，别的小节一概不猜、不动。
+ */
+const SECTION_TITLE = '标题'
+const SECTION_BODY = '正文'
+const SECTION_TOPICS = '话题'
+const SECTION_NAMES = new Set([SECTION_TITLE, SECTION_BODY, SECTION_TOPICS])
+
+const HEADING_PATTERN = /^(#{1,6})([ \t]*)(\S.*)?$/
+/** 话题写成 `#怀孕 #备孕`，存进快照的要的是词，不是原文 */
+const TOPIC_PATTERN = /#([^\s#]+)/g
+
+export interface DraftSections {
+  /** `## 标题` 小节的内容，没有这一节就退到首个一级标题 */
+  title?: string
+  /** `## 正文` 小节的内容；没有这一节就是 undefined，调用方保留原来的整篇正文 */
+  body?: string
+  /** `## 话题` 小节里的 `#xxx`，井号已经去掉 */
+  topics: string[]
+}
+
+interface Heading {
+  level: number
+  text: string
+}
+
+/**
+ * 认一行是不是小节标题。
+ *
+ * 井号后面要有空格才算标题，只有「标题 / 正文 / 话题」这三个词允许贴着写（`##标题`）。
+ * 放宽到「任何井号开头都算标题」会把话题那一行 `#怀孕 #备孕` 当成一级标题，
+ * 话题小节当场变成空的。
+ */
+function readHeading(line: string): Heading | null {
+  const match = HEADING_PATTERN.exec(line)
+  if (!match)
+    return null
+
+  const text = (match[3] ?? '').trim()
+  if (text.length === 0)
+    return null
+
+  if (match[2]!.length === 0 && !SECTION_NAMES.has(text))
+    return null
+
+  return { level: match[1]!.length, text }
+}
+
+function joinSection(lines: string[]): string {
+  return lines.join('\n').trim()
+}
+
+function readTopics(lines: string[]): string[] {
+  const topics: string[] = []
+
+  for (const match of lines.join('\n').matchAll(TOPIC_PATTERN)) {
+    const topic = match[1]!.trim()
+    if (topic.length > 0 && !topics.includes(topic))
+      topics.push(topic)
+  }
+
+  return topics
+}
+
+/**
+ * 按 `##` 小节拆一份没有 frontmatter 的草稿。
+ * 三个小节一个都没有时 `body` 是 undefined，调用方照旧把整篇当正文，不报错。
+ */
+export function parseDraftSections(text: string): DraftSections {
+  const lines = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').split('\n')
+  const sections = new Map<string, string[]>()
+  let firstHeading: string | undefined
+  let current: string[] | undefined
+
+  for (const line of lines) {
+    const heading = readHeading(line)
+
+    // 三级以下是小节内部的结构，照抄进内容里，不当成小节边界
+    if (!heading || heading.level > 2) {
+      current?.push(line)
+      continue
+    }
+
+    if (heading.level === 1 && firstHeading === undefined)
+      firstHeading = heading.text
+
+    // 认识的小节才开始收，别的小节（数据、配图、备注……）只起「上一节到此为止」的作用
+    current = heading.level === 2 && SECTION_NAMES.has(heading.text) && !sections.has(heading.text)
+      ? []
+      : undefined
+
+    if (current)
+      sections.set(heading.text, current)
+  }
+
+  const titleLines = sections.get(SECTION_TITLE)
+  const bodyLines = sections.get(SECTION_BODY)
+  const topicLines = sections.get(SECTION_TOPICS)
+
+  const title = titleLines
+    ? titleLines.map(line => line.trim()).find(line => line.length > 0)
+    : undefined
+  const body = bodyLines ? joinSection(bodyLines) : ''
+
+  return {
+    title: title ?? firstHeading,
+    body: body.length > 0 ? body : undefined,
+    topics: topicLines ? readTopics(topicLines) : [],
+  }
+}
+
 /** 图片名片文件名：原件名后面直接加 `.md`（`media/a.png` -> `media/a.png.md`） */
 export function toImageCardSegments(mediaPath: string): string[] {
   const segments = parseRelPathRequired(mediaPath)
