@@ -12,16 +12,17 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('../../config', () => ({ config: mocks.config }))
 
-vi.mock('node:fs/promises', async () => {
-  const actual = await vi.importActual<typeof import('node:fs/promises')>('node:fs/promises')
+// 写入是在已校验目录里用相对文件名同步打开的（safe-fs 的 withLockedCwd），造故障要从这一层下手
+vi.mock('node:fs', async () => {
+  const actual = await vi.importActual<typeof import('node:fs')>('node:fs')
   return {
     ...actual,
     default: actual,
-    writeFile: async (file: string, ...rest: unknown[]) => {
+    openSync: (file: string, ...rest: unknown[]) => {
       if (mocks.claudeMdWriteFails.value && String(file).endsWith('CLAUDE.md'))
         throw new Error('disk is on fire')
 
-      return await (actual.writeFile as (...args: unknown[]) => Promise<void>)(file, ...rest)
+      return (actual.openSync as (...args: unknown[]) => number)(file, ...rest)
     },
   }
 })

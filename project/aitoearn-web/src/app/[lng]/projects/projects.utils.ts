@@ -3,6 +3,7 @@
  * 只做纯计算：英文名前端校验、服务端错误码到人话文案的映射。
  */
 
+import { PROJECT_FILE_ERROR_CODE } from '@/api/projects/project-file.constants'
 import {
   PROJECT_DISPLAY_NAME_MAX_LENGTH,
   PROJECT_ERROR_CODE,
@@ -96,6 +97,22 @@ export function getProjectErrorKey(code?: string | number | null): string {
       return 'error.archived'
     case PROJECT_ERROR_CODE.PathEscape:
       return 'error.pathEscape'
+    case PROJECT_FILE_ERROR_CODE.NotFound:
+      return 'fileError.notFound'
+    case PROJECT_FILE_ERROR_CODE.PathInvalid:
+      return 'fileError.pathInvalid'
+    case PROJECT_FILE_ERROR_CODE.TooLarge:
+      return 'fileError.tooLarge'
+    case PROJECT_FILE_ERROR_CODE.NotText:
+      return 'fileError.notText'
+    case PROJECT_FILE_ERROR_CODE.Exists:
+      return 'fileError.exists'
+    case PROJECT_FILE_ERROR_CODE.WriteFailed:
+      return 'fileError.writeFailed'
+    case PROJECT_FILE_ERROR_CODE.IsSymlink:
+      return 'fileError.isSymlink'
+    case PROJECT_FILE_ERROR_CODE.UploadFailed:
+      return 'fileError.uploadFailed'
     default:
       return 'error.unknown'
   }

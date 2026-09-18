@@ -90,6 +90,7 @@ export const CreateContentGenerationTaskSchema = z.object({
   model: AllowedModelSchema.describe('使用的模型'),
   includePartialMessages: z.boolean().optional().default(false).describe('是否包含部分消息（流式）'),
   taskId: z.string().transform(val => val.trim() === '' ? undefined : val).optional().describe('任务ID（恢复对话时使用）'),
+  projectName: z.string().optional().describe('项目英文名（即目录名）。传了就在该项目的物料目录里工作'),
 })
 export class CreateContentGenerationTaskDto extends createZodDto(CreateContentGenerationTaskSchema, 'CreateContentGenerationTaskDto') { }
 

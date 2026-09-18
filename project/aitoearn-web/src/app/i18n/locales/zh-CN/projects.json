@@ -91,6 +91,16 @@
     "unknown": "没成功，稍后再试一次",
     "network": "网络不通，检查一下再试"
   },
+  "fileError": {
+    "notFound": "这个文件或目录不在了，刷新一下看看",
+    "pathInvalid": "路径不合法，换个名字再试",
+    "tooLarge": "文件太大，页面里打不开，下载下来看",
+    "notText": "这不是文本文件，页面里打不开，下载下来看",
+    "exists": "同名的已经有了，换个名字",
+    "writeFailed": "没写进去，稍后再试一次",
+    "isSymlink": "这是个软链接，出于安全考虑不处理",
+    "uploadFailed": "上传失败，稍后再试一次"
+  },
   "detail": {
     "loading": "加载中…",
     "loadFailed": "项目详情没加载出来，请稍后重试",
@@ -120,5 +130,107 @@
     "publish": "发布",
     "data": "数据",
     "placeholder": "这块还没做，等后面的阶段开出来。"
+  },
+  "materials": {
+    "archived": "项目已归档，物料目录不再开放。需要查看或修改，先把项目恢复。",
+    "rootLabel": "项目根目录",
+    "tree": {
+      "title": "目录",
+      "loading": "加载中…",
+      "emptyDir": "空目录",
+      "loadFailed": "目录没加载出来",
+      "loadFailedDesc": "可能是网络不通，也可能是服务器上的目录还没建好，重试一下。"
+    },
+    "menu": {
+      "more": "更多操作",
+      "newFolder": "新建文件夹",
+      "rename": "重命名",
+      "delete": "删除"
+    },
+    "action": {
+      "download": "下载",
+      "upload": "上传文件",
+      "uploadHere": "往这里传文件",
+      "uploadTo": "上传到 {{dir}}"
+    },
+    "editor": {
+      "saveSuccess": "已保存",
+      "meta": "{{size}} · 更新于 {{time}}",
+      "unsaved": "有改动没保存"
+    },
+    "preview": {
+      "cardOss": "名片里的图片地址：",
+      "cardMissing": "旁边还没有名片文件，这张图走的是下载接口。",
+      "binary": "这个文件页面里打不开，下载下来看。",
+      "imageFailed": "图片没取到，下载下来看。",
+      "downloadFailed": "下载失败，稍后再试一次"
+    },
+    "overview": {
+      "title": "物料概览",
+      "subtitle": "一共 {{total}} 份材料，点左边的目录看具体内容。",
+      "emptySubtitle": "还没有材料。先往下面的目录里丢几份真东西，AI 写内容时只认这里的事实。",
+      "count": "{{num}} 份",
+      "tip": "AI 写内容时只从这些目录里取事实，材料越真实越具体，写出来的东西越靠谱。"
+    },
+    "emptyDir": {
+      "title": "这个目录还是空的"
+    },
+    "list": {
+      "dir": "文件夹"
+    },
+    "guide": {
+      "root": "项目的物料总目录。背景材料放 background，发布方向放 angles，生成的内容放 drafts，图片放 media。",
+      "background": "背景材料放这里，都要是真实客观的东西，下面分产品介绍、网站文案、用户反馈、协议条款四类。",
+      "backgroundProduct": "放产品介绍、功能说明、定价、更新日志这类讲清楚产品是什么的材料。",
+      "backgroundWebsite": "放官网文案、落地页、帮助中心的页面抓取，一份页面一个文件。",
+      "backgroundFeedback": "放用户反馈、应用商店评论、差评、客服聊天记录，好话坏话都放，差评尤其有用。",
+      "backgroundLegal": "放隐私政策、用户协议、合规声明这类不能随便改写的条款原文。",
+      "angles": "放发布方向的定义，一个方向一个文件：面向谁、讲什么、用什么语气、在哪个平台发。",
+      "drafts": "放生成的待发内容，正文和它用了哪些材料、属于哪个方向记在一起。",
+      "media": "放图片原件。上传图片会自动在旁边生成一个名片文件，里面记着 OSS 地址和尺寸。",
+      "generic": "你自己建的目录，放什么由你定；AI 会把这里的内容当作这个项目的事实来源。"
+    },
+    "newFolder": {
+      "title": "新建文件夹",
+      "desc": "建在 {{dir}} 下面",
+      "label": "文件夹名",
+      "placeholder": "例如：competitor",
+      "submit": "创建",
+      "success": "文件夹已创建"
+    },
+    "rename": {
+      "title": "重命名",
+      "desc": "当前路径：{{path}}",
+      "label": "新名字",
+      "submit": "保存",
+      "success": "已重命名"
+    },
+    "delete": {
+      "title": "确定删除？",
+      "dirDesc": "会删掉目录 {{path}} 和它里面的全部内容，删了拿不回来。",
+      "fileDesc": "会删掉 {{path}}，删了拿不回来。",
+      "confirm": "删除",
+      "cancel": "再想想",
+      "deleting": "删除中…",
+      "success": "已删除"
+    },
+    "nameError": {
+      "required": "名字不能为空",
+      "dots": "不能用 . 或 .. 做名字",
+      "charset": "不能包含斜杠和不可见字符",
+      "tooLong": "名字最多 255 个字符"
+    },
+    "upload": {
+      "title": "上传（{{num}}）",
+      "cancelAll": "全部取消",
+      "clearFinished": "清除已完成",
+      "cancel": "取消",
+      "uploading": "上传中 {{progress}}%",
+      "pending": "排队中",
+      "done": "已传到 {{dir}}",
+      "canceled": "已取消",
+      "tooLarge": "单个文件不能超过 100 MB",
+      "dropHint": "把文件拖到这里就能上传，当前落点：{{dir}}"
+    }
   }
 }

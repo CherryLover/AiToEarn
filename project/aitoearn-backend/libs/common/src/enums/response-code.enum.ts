@@ -224,4 +224,16 @@ export enum ResponseCode {
   ProjectArchived = 20005, // 已归档，不能操作
   ProjectPathEscape = 20006, // 路径越界
   ProjectDirRenameFailed = 20007, // 目录改名失败（归档、归档回滚）
+
+  // ========================================
+  // 20100-20199: projects/files（项目物料文件）
+  // ========================================
+  ProjectFileNotFound = 20100, // 文件或目录不存在
+  ProjectFilePathInvalid = 20101, // 路径不合法
+  ProjectFileTooLarge = 20102, // 文件太大，走下载
+  ProjectFileNotText = 20103, // 不是文本文件，走下载
+  ProjectFileExists = 20104, // 目标已存在
+  ProjectFileWriteFailed = 20105, // 写入失败
+  ProjectFileIsSymlink = 20106, // 目标是软链，拒绝操作
+  ProjectFileUploadFailed = 20107, // 上传失败
 }

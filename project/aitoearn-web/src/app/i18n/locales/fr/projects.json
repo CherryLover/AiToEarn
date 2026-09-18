@@ -91,6 +91,16 @@
     "unknown": "Cela n'a pas fonctionné. Réessayez plus tard.",
     "network": "Réseau indisponible. Vérifiez votre connexion."
   },
+  "fileError": {
+    "notFound": "Ce fichier ou ce dossier n'existe plus. Actualise et regarde à nouveau.",
+    "pathInvalid": "Ce chemin n'est pas autorisé. Choisis un autre nom et réessaie.",
+    "tooLarge": "Ce fichier est trop volumineux pour être ouvert ici. Télécharge-le plutôt.",
+    "notText": "Ce n'est pas un fichier texte, il ne peut pas être ouvert ici. Télécharge-le plutôt.",
+    "exists": "Il existe déjà quelque chose portant ce nom. Choisis-en un autre.",
+    "writeFailed": "Le fichier n'a pas pu être écrit. Réessaie plus tard.",
+    "isSymlink": "C'est un lien symbolique, il n'est pas traité par sécurité.",
+    "uploadFailed": "L'envoi a échoué. Réessaie plus tard."
+  },
   "detail": {
     "loading": "Chargement…",
     "loadFailed": "Impossible de charger le projet. Réessayez plus tard.",
@@ -120,5 +130,107 @@
     "publish": "Publication",
     "data": "Données",
     "placeholder": "Pas encore développé. Prévu pour une étape ultérieure."
+  },
+  "materials": {
+    "archived": "Ce projet est archivé, son dossier de matériaux est fermé. Restaurez le projet pour le consulter ou le modifier.",
+    "rootLabel": "Racine du projet",
+    "tree": {
+      "title": "Dossiers",
+      "loading": "Chargement…",
+      "emptyDir": "Vide",
+      "loadFailed": "L'arborescence n'a pas pu être chargée",
+      "loadFailedDesc": "Le réseau est peut-être coupé, ou le répertoire n'existe pas encore sur le serveur. Réessaie."
+    },
+    "menu": {
+      "more": "Autres actions",
+      "newFolder": "Nouveau dossier",
+      "rename": "Renommer",
+      "delete": "Supprimer"
+    },
+    "action": {
+      "download": "Télécharger",
+      "upload": "Envoyer des fichiers",
+      "uploadHere": "Envoyer ici",
+      "uploadTo": "Envoyer vers {{dir}}"
+    },
+    "editor": {
+      "saveSuccess": "Enregistré",
+      "meta": "{{size}} · modifié {{time}}",
+      "unsaved": "modifications non enregistrées"
+    },
+    "preview": {
+      "cardOss": "URL de l'image indiquée dans la fiche :",
+      "cardMissing": "Il n'y a pas encore de fiche à côté de cette image, l'aperçu passe donc par le téléchargement.",
+      "binary": "Ce fichier ne peut pas être ouvert ici. Télécharge-le pour le consulter.",
+      "imageFailed": "L'image n'a pas pu être chargée. Télécharge-la pour la consulter.",
+      "downloadFailed": "Le téléchargement a échoué. Réessaie plus tard."
+    },
+    "overview": {
+      "title": "Aperçu des matériaux",
+      "subtitle": "{{total}} documents au total. Choisis un dossier à gauche pour voir ce qu'il contient.",
+      "emptySubtitle": "Aucun matériau pour l'instant. Dépose de vrais documents dans les dossiers ci-dessous : l'IA n'utilise que les faits qui s'y trouvent.",
+      "count": "{{num}} fichiers",
+      "tip": "L'IA tire tous ses faits de ces dossiers. Plus le matériau est réel et précis, meilleur est le résultat."
+    },
+    "emptyDir": {
+      "title": "Ce dossier est encore vide"
+    },
+    "list": {
+      "dir": "Dossier"
+    },
+    "guide": {
+      "root": "La racine des matériaux du projet. Le contexte va dans background, les axes de publication dans angles, les brouillons générés dans drafts, les images dans media.",
+      "background": "Le matériau de fond va ici, et tout doit être réel et factuel. Il se répartit en présentation produit, textes du site, retours utilisateurs et textes légaux.",
+      "backgroundProduct": "Présentations du produit, descriptions de fonctionnalités, tarifs et journaux de version : tout ce qui explique ce qu'est réellement le produit.",
+      "backgroundWebsite": "Textes du site, pages d'atterrissage et articles d'aide. Une page par fichier.",
+      "backgroundFeedback": "Retours utilisateurs, avis sur les stores, réclamations et échanges avec le support. Garde aussi les mauvais avis, ce sont les plus utiles.",
+      "backgroundLegal": "Politique de confidentialité, conditions d'utilisation et mentions de conformité, conservées mot pour mot.",
+      "angles": "Un fichier par axe de publication : pour qui, quoi, sur quel ton et sur quelle plateforme.",
+      "drafts": "Brouillons générés en attente de publication, avec le matériau utilisé et l'axe dont ils viennent.",
+      "media": "Images d'origine. Envoyer une image crée aussi à côté une fiche contenant l'URL OSS et les dimensions.",
+      "generic": "Un dossier que tu as créé toi-même. Son contenu est traité par l'IA comme des faits sur ce projet."
+    },
+    "newFolder": {
+      "title": "Nouveau dossier",
+      "desc": "Il sera créé sous {{dir}}",
+      "label": "Nom du dossier",
+      "placeholder": "par ex. competitor",
+      "submit": "Créer",
+      "success": "Dossier créé"
+    },
+    "rename": {
+      "title": "Renommer",
+      "desc": "Chemin actuel : {{path}}",
+      "label": "Nouveau nom",
+      "submit": "Enregistrer",
+      "success": "Renommé"
+    },
+    "delete": {
+      "title": "Supprimer ?",
+      "dirDesc": "Cela supprime le dossier {{path}} et tout ce qu'il contient. C'est irréversible.",
+      "fileDesc": "Cela supprime {{path}}. C'est irréversible.",
+      "confirm": "Supprimer",
+      "cancel": "Garder",
+      "deleting": "Suppression…",
+      "success": "Supprimé"
+    },
+    "nameError": {
+      "required": "Le nom ne peut pas être vide",
+      "dots": "« . » et « .. » ne peuvent pas servir de nom",
+      "charset": "Les barres obliques et les caractères invisibles sont interdits",
+      "tooLong": "Le nom ne peut pas dépasser 255 caractères"
+    },
+    "upload": {
+      "title": "Envois ({{num}})",
+      "cancelAll": "Tout annuler",
+      "clearFinished": "Effacer les terminés",
+      "cancel": "Annuler",
+      "uploading": "Envoi {{progress}}%",
+      "pending": "En attente",
+      "done": "Envoyé vers {{dir}}",
+      "canceled": "Annulé",
+      "tooLarge": "Un fichier ne peut pas dépasser 100 Mo",
+      "dropHint": "Dépose des fichiers ici pour les envoyer. Destination : {{dir}}"
+    }
   }
 }

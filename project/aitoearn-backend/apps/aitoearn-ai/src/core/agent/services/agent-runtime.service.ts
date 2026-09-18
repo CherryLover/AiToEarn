@@ -64,6 +64,20 @@ import { AideoMcp, AideoToolName } from '../mcp/volcengine/aideo.mcp'
 import { DramaRecapMcp, DramaRecapToolName } from '../mcp/volcengine/drama-recap.mcp'
 import { StyleTransferMcp, StyleTransferToolName } from '../mcp/volcengine/style-transfer.mcp'
 import { VideoEditMcp, VideoEditToolName } from '../mcp/volcengine/video-edit.mcp'
+import { PROJECT_EXTRA_TOOLS, ProjectWorkspaceService } from './project-workspace.service'
+
+/** 所有任务都开的内置工具，不带 projectName 的任务只有这些，一个都不能多 */
+const BASE_TOOLS = [
+  'Task',
+  'TaskOutput',
+  'Read',
+  'WebFetch',
+  'TodoWrite',
+  'TaskStop',
+  'Skill',
+  'ListMcpResourcesTool',
+  'ReadMcpResourceTool',
+] as const
 
 export interface ClaudeQueryOptions {
   includePartialMessages?: boolean
@@ -73,6 +87,7 @@ export interface ClaudeQueryOptions {
   outputFormat?: OutputFormat
   persistSession?: boolean
   availabilityOperation?: string
+  projectName?: string
 }
 
 type TaskResult = z.infer<typeof ContentGenerationTaskResultUnionSchema>
@@ -107,6 +122,7 @@ export class AgentRuntimeService {
     private readonly imageEditMcp: ImageEditMcp,
     private readonly subtitleMcp: SubtitleMcp,
     private readonly storageProvider: StorageProvider,
+    private readonly projectWorkspace: ProjectWorkspaceService,
     @Optional() private readonly relayMediaResolver?: RelayMediaResolverService,
   ) {}
 
@@ -114,8 +130,14 @@ export class AgentRuntimeService {
     return join(this.sessionDir, 'tasks', taskId)
   }
 
-  private getTaskProjectDir(taskId: string): string {
-    const taskCwd = this.getTaskCwd(taskId)
+  /**
+   * Claude Code 把会话文件放在 `$HOME/.claude/projects/<cwd 变形后的名字>/` 下，
+   * 所以这里必须跟着 cwd 走：带 projectName 的任务 cwd 是项目物料目录，不再是 tasks/<taskId>。
+   */
+  private getTaskProjectDir(taskId: string, projectName?: string): string {
+    const taskCwd = projectName
+      ? this.projectWorkspace.resolveProjectCwd(projectName)
+      : this.getTaskCwd(taskId)
     return taskCwd.replace(/\//g, '-').replace(/\./g, '-')
   }
 
@@ -200,11 +222,17 @@ export class AgentRuntimeService {
     mcpServers?: Record<string, McpServerConfig>,
     spawnClaudeCodeProcess?: (options: SpawnOptions) => SpawnedProcess,
   ) {
-    const taskCwd = options.taskId
-      ? this.getTaskCwd(options.taskId)
-      : this.sessionDir
+    // 带了 projectName 就在该项目的物料目录里干活；目录必须已经由 aitoearn-server 建好，这里绝不自己建
+    const projectCwd = options.projectName
+      ? this.projectWorkspace.resolveProjectCwd(options.projectName)
+      : undefined
 
-    if (options.taskId && !fs.existsSync(taskCwd)) {
+    const taskCwd = projectCwd
+      ?? (options.taskId
+        ? this.getTaskCwd(options.taskId)
+        : this.sessionDir)
+
+    if (!projectCwd && options.taskId && !fs.existsSync(taskCwd)) {
       fs.mkdirSync(taskCwd, { recursive: true })
     }
 
@@ -230,17 +258,10 @@ export class AgentRuntimeService {
       },
       mcpServers,
       allowedTools: this.generateAllowedTools(mcpServers ?? {}),
-      tools: [
-        'Task',
-        'TaskOutput',
-        'Read',
-        'WebFetch',
-        'TodoWrite',
-        'TaskStop',
-        'Skill',
-        'ListMcpResourcesTool',
-        'ReadMcpResourceTool',
-      ],
+      // 只有带 projectName 的任务才多开这四个；不带的一个都不加，老链路保持原样
+      tools: projectCwd
+        ? [...BASE_TOOLS, ...PROJECT_EXTRA_TOOLS]
+        : [...BASE_TOOLS],
       agents: {
         'polling-task': {
           description: 'AI task polling specialist for monitoring asynchronous video/media generation task status. Use when polling task status, checking completion, or handling timeouts.',
@@ -289,8 +310,17 @@ export class AgentRuntimeService {
           skills: [],
         },
       },
-      canUseTool: async (name, input, options) => {
-        this.logger.debug({ options, name, input }, 'Received tool request')
+      canUseTool: async (name, input, toolOptions) => {
+        this.logger.debug({ options: toolOptions, name, input }, 'Received tool request')
+
+        // 不带 projectName 的任务不加这层限制，行为与改动前完全一致
+        if (projectCwd) {
+          const denyReason = this.projectWorkspace.checkToolInput(projectCwd, name, input)
+          if (denyReason) {
+            return { behavior: 'deny', message: denyReason }
+          }
+        }
+
         return { behavior: 'allow', updatedInput: input }
       },
       hooks: {
@@ -509,6 +539,7 @@ export class AgentRuntimeService {
                 sessionId,
                 model: dto.model,
                 taskId,
+                projectName: dto.projectName,
               },
               {
                 [McpServerName.SessionTools]: sessionToolsMcp,
@@ -639,7 +670,7 @@ export class AgentRuntimeService {
             }
 
             if (sessionId) {
-              await this.uploadAgentSession(sessionId, taskId)
+              await this.uploadAgentSession(sessionId, taskId, dto.projectName)
             }
 
             completionResolver()
@@ -715,6 +746,11 @@ export class AgentRuntimeService {
     let sessionId: string | undefined
     let historicalMessages: Array<Record<string, unknown>> = []
 
+    // 名字和目录先校验掉，不合法就别建任务记录了；调用方传来的名字一律不信
+    if (dto.projectName) {
+      this.projectWorkspace.resolveProjectCwd(dto.projectName)
+    }
+
     if (dto.taskId) {
       const originalTaskId = dto.taskId
       this.logger.debug({ taskId: originalTaskId }, `Resuming conversation for task ${originalTaskId}`)
@@ -735,7 +771,7 @@ export class AgentRuntimeService {
       task = originalTask
       historicalMessages = originalTask.messages || []
 
-      await this.downloadAgentSession(originalTask)
+      await this.downloadAgentSession(originalTask, dto.projectName)
     }
     else {
       task = await this.contentGenerateRepository.create({
@@ -913,10 +949,10 @@ export class AgentRuntimeService {
     return await this.relayMediaResolver.resolveJson(value)
   }
 
-  private async uploadAgentSession(sessionId: string, taskId: string): Promise<void> {
+  private async uploadAgentSession(sessionId: string, taskId: string, projectName?: string): Promise<void> {
     try {
       this.logger.debug(`Uploading session ${sessionId} for task ${taskId}`)
-      const taskProjectDir = this.getTaskProjectDir(taskId)
+      const taskProjectDir = this.getTaskProjectDir(taskId, projectName)
       const projectsDir = join(this.sessionDir, '.claude/projects', taskProjectDir)
       const sessionFile = join(projectsDir, `${sessionId}.jsonl`)
 
@@ -942,7 +978,7 @@ export class AgentRuntimeService {
     }
   }
 
-  private async downloadAgentSession(task: ContentGenerationTask): Promise<void> {
+  private async downloadAgentSession(task: ContentGenerationTask, projectName?: string): Promise<void> {
     if (!task.sessionId) {
       return
     }
@@ -954,7 +990,7 @@ export class AgentRuntimeService {
       const s3Key = `claude-session/.claude/projects/${this.projectDir}/${task.sessionId}.jsonl`
       const response = await this.storageProvider.getObject(s3Key)
 
-      const taskProjectDir = this.getTaskProjectDir(task.id)
+      const taskProjectDir = this.getTaskProjectDir(task.id, projectName)
       const projectsDir = join(this.sessionDir, '.claude/projects', taskProjectDir)
 
       if (response.buffer) {

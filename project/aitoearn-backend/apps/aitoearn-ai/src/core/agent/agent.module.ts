@@ -19,6 +19,7 @@ import { DramaRecapMcp } from './mcp/volcengine/drama-recap.mcp'
 import { StyleTransferMcp } from './mcp/volcengine/style-transfer.mcp'
 import { VideoEditMcp } from './mcp/volcengine/video-edit.mcp'
 import { AgentRuntimeService } from './services/agent-runtime.service'
+import { ProjectWorkspaceService } from './services/project-workspace.service'
 import { SkillInitService } from './skill-init.service'
 
 @Module({
@@ -45,6 +46,7 @@ import { SkillInitService } from './skill-init.service'
     SubtitleMcp,
     SkillInitService,
     AgentRuntimeService,
+    ProjectWorkspaceService,
   ],
   exports: [AgentService],
 })

@@ -1,8 +1,9 @@
-import { lstat, mkdir, readlink, realpath, rename, rm, writeFile } from 'node:fs/promises'
+import { lstat, mkdir, readlink, realpath } from 'node:fs/promises'
 import * as path from 'node:path'
 import { Injectable, Logger } from '@nestjs/common'
 import { AppException, ResponseCode } from '@yikart/common'
 import { config } from '../../config'
+import { safeMkdir, safeMkdirp, safeRemove, safeRename, safeWriteFile } from './safe-fs'
 
 /** 项目物料目录里需要预先建出来的空目录，各放一个 .gitkeep 保证目录真实存在 */
 const PROJECT_SUB_DIRS = [
@@ -28,6 +29,10 @@ export interface ProjectDirInfo {
   goal?: string | null
 }
 
+function isAppExceptionWith(error: unknown, code: ResponseCode): boolean {
+  return error instanceof AppException && error.code === code
+}
+
 @Injectable()
 export class ProjectDirService {
   private readonly logger = new Logger(ProjectDirService.name)
@@ -38,12 +43,15 @@ export class ProjectDirService {
   }
 
   /**
-   * 解析项目目录的绝对路径，并确保它没有跑出根目录。
-   * 这是硬隔离的底线，两道校验缺一不可：
+   * 词法层的路径校验：确认某个路径不会跑出根目录，返回它的绝对路径。
+   *
+   * **它只用来算路径和判合法性，不是读写的安全边界。**
+   * 真正的读写必须走 `safe-fs`：那边是「拿句柄再动手」，
+   * 这里是「先查后用」，中间隔着一个可被并发换软链利用的窗口（contract-core.md 第四节）。
+   *
+   * 两道校验缺一不可：
    * 1. 先 resolve 再判前缀，拒绝 `..` 和绝对路径注入；
    * 2. 再拿真实路径（不存在的路径取最近的已存在父目录）判一次前缀，拒绝符号链接逃逸。
-   *
-   * 返回的仍是第一步解析出的路径，真实路径只用来校验，不改变对外的路径形态。
    */
   async resolveProjectPath(...segments: string[]): Promise<string> {
     const root = this.root
@@ -56,36 +64,48 @@ export class ProjectDirService {
 
   /**
    * 建出一个项目的完整物料目录。
-   * 中途任何一步失败，都把已经建出来的部分清理干净，不留半成品。
+   * 每一级都通过句柄创建和校验；中途任何一步失败，都把已经建出来的部分清理干净，不留半成品。
    */
   async createProjectDir(info: ProjectDirInfo): Promise<string> {
+    // 先做一遍词法校验，好把「名字指向根目录外」这类问题报成路径越界而不是「目录已存在」
     const projectDir = await this.resolveProjectPath(info.name)
+    const root = this.root
     let created = false
 
     try {
-      await mkdir(this.root, { recursive: true })
-      // 不用 recursive：目录已存在时直接失败，避免覆盖别人的物料
-      await mkdir(projectDir)
+      await mkdir(root, { recursive: true })
+      // 不允许已存在：磁盘上有同名目录时直接失败，避免覆盖别人的物料
+      await safeMkdir(root, [info.name])
       created = true
 
       for (const subDir of PROJECT_SUB_DIRS) {
-        const dir = await this.resolveProjectPath(info.name, subDir)
-        await mkdir(dir, { recursive: true })
-        await writeFile(path.join(dir, '.gitkeep'), '')
+        const segments = [info.name, ...subDir.split('/')]
+        await safeMkdirp(root, segments)
+        await safeWriteFile(root, [...segments, '.gitkeep'], Buffer.alloc(0), { exclusive: true })
       }
 
-      await writeFile(path.join(projectDir, 'CLAUDE.md'), this.buildClaudeMd(info), 'utf8')
+      await safeWriteFile(
+        root,
+        [info.name, 'CLAUDE.md'],
+        Buffer.from(this.buildClaudeMd(info), 'utf8'),
+        { exclusive: true },
+      )
     }
     catch (error) {
-      const code = (error as NodeJS.ErrnoException).code
       this.logger.error(`创建项目目录失败: ${projectDir}`, error instanceof Error ? error.stack : String(error))
       if (created)
-        await this.removeDir(projectDir)
+        await this.removeDir(info.name)
 
-      // 磁盘上已经有同名目录（例如上次部署留下的、数据库里没记录的孤儿目录）。
-      // 这里只把报错换成「名字被占用」，行为不变：已存在的目录一个字节都不动。
-      if (!created && code === 'EEXIST')
-        throw new AppException(ResponseCode.ProjectNameTaken)
+      if (!created) {
+        // 磁盘上已经有同名目录（例如上次部署留下的、数据库里没记录的孤儿目录）。
+        // 这里只把报错换成「名字被占用」，行为不变：已存在的目录一个字节都不动。
+        if (isAppExceptionWith(error, ResponseCode.ProjectFileExists))
+          throw new AppException(ResponseCode.ProjectNameTaken)
+
+        // 目录名本身指到了根目录外面（软链、掉包），照阶段 0 的口径报路径越界
+        if (isAppExceptionWith(error, ResponseCode.ProjectPathEscape) || isAppExceptionWith(error, ResponseCode.ProjectFileIsSymlink))
+          throw error
+      }
 
       throw new AppException(ResponseCode.ProjectDirCreateFailed)
     }
@@ -95,7 +115,7 @@ export class ProjectDirService {
 
   /** 删除项目目录（回滚用），失败只记日志，不再往上抛 */
   async removeProjectDir(dirName: string): Promise<void> {
-    await this.removeDir(await this.resolveProjectPath(dirName))
+    await this.removeDir(dirName)
   }
 
   /**
@@ -103,20 +123,19 @@ export class ProjectDirService {
    * 返回是否真的改了名：源目录不存在时返回 false（只记日志，不阻塞数据库侧的状态变更）。
    */
   async renameProjectDir(fromDirName: string, toDirName: string): Promise<boolean> {
-    const from = await this.resolveProjectPath(fromDirName)
-    const to = await this.resolveProjectPath(toDirName)
+    const root = this.root
 
     try {
-      await rename(from, to)
+      await safeRename(root, [fromDirName], [toDirName])
       return true
     }
     catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        this.logger.warn(`目录不存在，跳过改名: ${from}`)
+      if (isAppExceptionWith(error, ResponseCode.ProjectFileNotFound)) {
+        this.logger.warn(`目录不存在，跳过改名: ${fromDirName}`)
         return false
       }
 
-      this.logger.error(`目录改名失败: ${from} -> ${to}`, error instanceof Error ? error.stack : String(error))
+      this.logger.error(`目录改名失败: ${fromDirName} -> ${toDirName}`, error instanceof Error ? error.stack : String(error))
       throw new AppException(ResponseCode.ProjectDirRenameFailed)
     }
   }
@@ -127,8 +146,7 @@ export class ProjectDirService {
    */
   async refreshClaudeMd(dirName: string, info: ProjectDirInfo): Promise<boolean> {
     try {
-      const claudeMd = await this.resolveProjectPath(dirName, 'CLAUDE.md')
-      await writeFile(claudeMd, this.buildClaudeMd(info), 'utf8')
+      await safeWriteFile(this.root, [dirName, 'CLAUDE.md'], Buffer.from(this.buildClaudeMd(info), 'utf8'))
       return true
     }
     catch (error) {
@@ -262,12 +280,16 @@ export class ProjectDirService {
     }
   }
 
-  private async removeDir(dir: string): Promise<void> {
+  /** 删除一个项目目录，失败只记日志（回滚场景不该因为清理失败再抛一次） */
+  private async removeDir(dirName: string): Promise<void> {
     try {
-      await rm(dir, { recursive: true, force: true })
+      await safeRemove(this.root, [dirName])
     }
     catch (error) {
-      this.logger.error(`清理项目目录失败: ${dir}`, error instanceof Error ? error.stack : String(error))
+      if (isAppExceptionWith(error, ResponseCode.ProjectFileNotFound))
+        return
+
+      this.logger.error(`清理项目目录失败: ${dirName}`, error instanceof Error ? error.stack : String(error))
     }
   }
 }

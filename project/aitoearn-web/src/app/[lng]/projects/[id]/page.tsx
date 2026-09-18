@@ -1,7 +1,7 @@
 /**
  * 项目详情页 - Project Detail
- * 阶段 0 最简版：基本信息 + 可编辑显示名/说明/受众/目标 + 归档
- * 物料/生成/发布/数据四个标签页先留占位，阶段 1、2 再做
+ * 基本信息 + 可编辑显示名/说明/受众/目标 + 归档
+ * 「物料」标签页做了文件浏览器；生成/发布/数据三个标签页先留占位，阶段 2 再做
  */
 'use client'
 
@@ -29,11 +29,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useDocumentTitle } from '@/hooks'
 import { toast } from '@/utils/ui/toast'
 import { getProjectErrorKey } from '../projects.utils'
+import { MaterialsTab } from './components/MaterialsTab'
 import { ProjectInfoCard } from './components/ProjectInfoCard'
 import { ProjectSettingsForm } from './components/ProjectSettingsForm'
 
-/** 阶段 1、2 才实现的四个标签页，这里先占位 */
-const PLACEHOLDER_TABS = ['materials', 'generate', 'publish', 'data'] as const
+/** 标签页顺序，materials 已经实现，其余三个阶段 2 再做 */
+const TABS = ['materials', 'generate', 'publish', 'data'] as const
+
+/** 还没实现的标签页 */
+const PLACEHOLDER_TABS = ['generate', 'publish', 'data'] as const
 
 export default function ProjectDetailPage() {
   const { t } = useTransClient('projects')
@@ -110,7 +114,7 @@ export default function ProjectDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-6 md:px-8 md:py-8">
+      <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <Skeleton className="h-8 w-40" />
         <Skeleton className="mt-6 h-48 w-full rounded-xl" />
         <Skeleton className="mt-4 h-72 w-full rounded-xl" />
@@ -120,7 +124,7 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 py-20 text-center md:px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-4 py-20 text-center md:px-8">
         <h1 className="text-base font-medium text-foreground">{t('detail.notFound')}</h1>
         <p className="mt-2 max-w-md text-sm text-muted-foreground">{t('detail.notFoundDesc')}</p>
         <Button className="mt-6" variant="outline" onClick={handleBack}>
@@ -134,7 +138,7 @@ export default function ProjectDetailPage() {
   const isArchived = project.status === ProjectStatus.Archived
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
       {/* 页头 */}
       <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex min-w-0 items-start gap-3">
@@ -180,16 +184,29 @@ export default function ProjectDetailPage() {
         <ProjectSettingsForm project={project} onSaved={setProject} disabled={isArchived} />
       </div>
 
-      {/* 物料 / 生成 / 发布 / 数据：阶段 1、2 再做，先占位 */}
+      {/* 物料 / 生成 / 发布 / 数据 */}
       <div className="mt-6">
-        <Tabs defaultValue={PLACEHOLDER_TABS[0]}>
+        <Tabs defaultValue={TABS[0]}>
           <TabsList>
-            {PLACEHOLDER_TABS.map(tab => (
+            {TABS.map(tab => (
               <TabsTrigger key={tab} value={tab}>
                 {t(`tabs.${tab}`)}
               </TabsTrigger>
             ))}
           </TabsList>
+
+          <TabsContent value="materials">
+            {/* 归档项目的文件接口在服务端一律拒绝（连只读的 tree / read / download 也一样），
+                渲染出来只会是一个永远加载失败的目录树，所以直接说清楚为什么打不开 */}
+            {isArchived
+              ? (
+                  <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
+                    {t('materials.archived')}
+                  </div>
+                )
+              : <MaterialsTab projectId={project.id} readOnly={false} />}
+          </TabsContent>
+
           {PLACEHOLDER_TABS.map(tab => (
             <TabsContent key={tab} value={tab}>
               <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">

@@ -91,6 +91,16 @@
     "unknown": "That did not work. Please try again.",
     "network": "Network unavailable. Check your connection and try again."
   },
+  "fileError": {
+    "notFound": "That file or folder is gone. Refresh and take another look.",
+    "pathInvalid": "That path is not allowed. Pick another name and try again.",
+    "tooLarge": "This file is too big to open here. Download it instead.",
+    "notText": "This is not a text file, so it cannot be opened here. Download it instead.",
+    "exists": "Something with that name already exists. Pick another one.",
+    "writeFailed": "The file could not be written. Please try again.",
+    "isSymlink": "This is a symbolic link, so it is left alone for safety.",
+    "uploadFailed": "The upload failed. Please try again."
+  },
   "detail": {
     "loading": "Loading…",
     "loadFailed": "Could not load the project. Please try again.",
@@ -120,5 +130,107 @@
     "publish": "Publish",
     "data": "Data",
     "placeholder": "Not built yet. It arrives in a later stage."
+  },
+  "materials": {
+    "archived": "This project is archived, so its material folder is closed. Restore the project to browse or edit it.",
+    "rootLabel": "Project root",
+    "tree": {
+      "title": "Folders",
+      "loading": "Loading…",
+      "emptyDir": "Empty",
+      "loadFailed": "The folder tree did not load",
+      "loadFailedDesc": "The network may be down, or the directory may not exist on the server yet. Try again."
+    },
+    "menu": {
+      "more": "More actions",
+      "newFolder": "New folder",
+      "rename": "Rename",
+      "delete": "Delete"
+    },
+    "action": {
+      "download": "Download",
+      "upload": "Upload files",
+      "uploadHere": "Upload files here",
+      "uploadTo": "Upload to {{dir}}"
+    },
+    "editor": {
+      "saveSuccess": "Saved",
+      "meta": "{{size}} · updated {{time}}",
+      "unsaved": "unsaved changes"
+    },
+    "preview": {
+      "cardOss": "Image URL from the card file:",
+      "cardMissing": "There is no card file next to this image yet, so the preview comes from the download endpoint.",
+      "binary": "This file cannot be opened here. Download it to take a look.",
+      "imageFailed": "The image could not be loaded. Download it to take a look.",
+      "downloadFailed": "The download failed. Please try again."
+    },
+    "overview": {
+      "title": "Material overview",
+      "subtitle": "{{total}} pieces of material in total. Pick a folder on the left to see what is inside.",
+      "emptySubtitle": "No material yet. Drop a few real documents into the folders below — the AI only uses facts from here.",
+      "count": "{{num}} files",
+      "tip": "The AI takes every fact from these folders. The more real and specific the material, the better the output."
+    },
+    "emptyDir": {
+      "title": "This folder is still empty"
+    },
+    "list": {
+      "dir": "Folder"
+    },
+    "guide": {
+      "root": "The material root of this project. Background goes in background, publishing angles in angles, generated drafts in drafts, images in media.",
+      "background": "Background material goes here and it all has to be real and factual. It is split into product info, website copy, user feedback and legal text.",
+      "backgroundProduct": "Product introductions, feature descriptions, pricing and changelogs — anything that explains what the product actually is.",
+      "backgroundWebsite": "Website copy, landing pages and help-center articles. One page per file.",
+      "backgroundFeedback": "User feedback, app-store reviews, complaints and support chats. Keep the bad ones too, they are the most useful.",
+      "backgroundLegal": "Privacy policy, terms of service and compliance notices, kept word for word.",
+      "angles": "One file per publishing angle: who it is for, what it says, what tone it uses and where it gets posted.",
+      "drafts": "Generated drafts waiting to be published, together with the material and the angle each one came from.",
+      "media": "Original images. Uploading an image also writes a card file next to it with the OSS URL and the dimensions.",
+      "generic": "A folder you created yourself. Whatever goes in here is treated as fact about this project."
+    },
+    "newFolder": {
+      "title": "New folder",
+      "desc": "It will be created under {{dir}}",
+      "label": "Folder name",
+      "placeholder": "e.g. competitor",
+      "submit": "Create",
+      "success": "Folder created"
+    },
+    "rename": {
+      "title": "Rename",
+      "desc": "Current path: {{path}}",
+      "label": "New name",
+      "submit": "Save",
+      "success": "Renamed"
+    },
+    "delete": {
+      "title": "Delete this?",
+      "dirDesc": "This deletes the folder {{path}} and everything inside it. It cannot be undone.",
+      "fileDesc": "This deletes {{path}}. It cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Keep it",
+      "deleting": "Deleting…",
+      "success": "Deleted"
+    },
+    "nameError": {
+      "required": "The name cannot be empty",
+      "dots": "'.' and '..' cannot be used as a name",
+      "charset": "Slashes and invisible characters are not allowed",
+      "tooLong": "The name can be at most 255 characters"
+    },
+    "upload": {
+      "title": "Uploads ({{num}})",
+      "cancelAll": "Cancel all",
+      "clearFinished": "Clear finished",
+      "cancel": "Cancel",
+      "uploading": "Uploading {{progress}}%",
+      "pending": "Queued",
+      "done": "Uploaded to {{dir}}",
+      "canceled": "Canceled",
+      "tooLarge": "A single file cannot be larger than 100 MB",
+      "dropHint": "Drop files here to upload. They land in {{dir}}."
+    }
   }
 }

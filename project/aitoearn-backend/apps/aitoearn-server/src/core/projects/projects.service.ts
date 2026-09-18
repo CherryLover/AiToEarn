@@ -165,6 +165,18 @@ export class ProjectsService {
     return `${base}-${Date.now() % 100000}`
   }
 
+  /**
+   * 拿一个当前用户可写的项目：不属于自己报「不存在」，已归档报「已归档」。
+   * 物料文件接口全部从这里进，归属和归档只在这一处判。
+   */
+  async getWritableProject(id: string, userId: string) {
+    const project = await this.getOwnedProject(id, userId)
+    if (project.status === ProjectStatus.ARCHIVED)
+      throw new AppException(ResponseCode.ProjectArchived)
+
+    return project
+  }
+
   private async getOwnedProject(id: string, userId: string) {
     const project = await this.projectRepository.getById(id)
     if (!project || project.userId !== userId)

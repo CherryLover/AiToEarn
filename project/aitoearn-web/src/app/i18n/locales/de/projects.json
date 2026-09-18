@@ -91,6 +91,16 @@
     "unknown": "Hat nicht geklappt. Bitte später erneut versuchen.",
     "network": "Keine Netzwerkverbindung. Bitte Verbindung prüfen."
   },
+  "fileError": {
+    "notFound": "Diese Datei oder dieser Ordner ist nicht mehr da. Lade neu und sieh noch einmal nach.",
+    "pathInvalid": "Dieser Pfad ist nicht erlaubt. Wähle einen anderen Namen und versuche es erneut.",
+    "tooLarge": "Die Datei ist zu groß, um sie hier zu öffnen. Lade sie stattdessen herunter.",
+    "notText": "Das ist keine Textdatei und lässt sich hier nicht öffnen. Lade sie stattdessen herunter.",
+    "exists": "Es gibt bereits etwas mit diesem Namen. Wähle einen anderen.",
+    "writeFailed": "Die Datei konnte nicht geschrieben werden. Bitte versuche es erneut.",
+    "isSymlink": "Das ist ein symbolischer Link und wird aus Sicherheitsgründen nicht angefasst.",
+    "uploadFailed": "Der Upload ist fehlgeschlagen. Bitte versuche es erneut."
+  },
   "detail": {
     "loading": "Wird geladen…",
     "loadFailed": "Das Projekt konnte nicht geladen werden. Bitte später erneut versuchen.",
@@ -120,5 +130,107 @@
     "publish": "Veröffentlichen",
     "data": "Daten",
     "placeholder": "Noch nicht gebaut. Kommt in einer späteren Stufe."
+  },
+  "materials": {
+    "archived": "Dieses Projekt ist archiviert, der Materialordner ist geschlossen. Stelle das Projekt wieder her, um es anzusehen oder zu bearbeiten.",
+    "rootLabel": "Projektwurzel",
+    "tree": {
+      "title": "Ordner",
+      "loading": "Wird geladen…",
+      "emptyDir": "Leer",
+      "loadFailed": "Der Ordnerbaum konnte nicht geladen werden",
+      "loadFailedDesc": "Vielleicht ist das Netz weg, vielleicht existiert das Verzeichnis auf dem Server noch nicht. Versuche es erneut."
+    },
+    "menu": {
+      "more": "Weitere Aktionen",
+      "newFolder": "Neuer Ordner",
+      "rename": "Umbenennen",
+      "delete": "Löschen"
+    },
+    "action": {
+      "download": "Herunterladen",
+      "upload": "Dateien hochladen",
+      "uploadHere": "Hierher hochladen",
+      "uploadTo": "Nach {{dir}} hochladen"
+    },
+    "editor": {
+      "saveSuccess": "Gespeichert",
+      "meta": "{{size}} · geändert {{time}}",
+      "unsaved": "ungespeicherte Änderungen"
+    },
+    "preview": {
+      "cardOss": "Bild-URL aus der Kartendatei:",
+      "cardMissing": "Neben diesem Bild liegt noch keine Kartendatei, die Vorschau kommt daher über den Download.",
+      "binary": "Diese Datei lässt sich hier nicht öffnen. Lade sie herunter, um sie anzusehen.",
+      "imageFailed": "Das Bild konnte nicht geladen werden. Lade es herunter, um es anzusehen.",
+      "downloadFailed": "Der Download ist fehlgeschlagen. Bitte versuche es erneut."
+    },
+    "overview": {
+      "title": "Materialübersicht",
+      "subtitle": "Insgesamt {{total}} Materialien. Wähle links einen Ordner, um den Inhalt zu sehen.",
+      "emptySubtitle": "Noch kein Material. Lege ein paar echte Unterlagen in die Ordner unten — die KI nutzt nur Fakten von hier.",
+      "count": "{{num}} Dateien",
+      "tip": "Die KI holt sich jede Tatsache aus diesen Ordnern. Je echter und konkreter das Material, desto besser das Ergebnis."
+    },
+    "emptyDir": {
+      "title": "Dieser Ordner ist noch leer"
+    },
+    "list": {
+      "dir": "Ordner"
+    },
+    "guide": {
+      "root": "Die Materialwurzel dieses Projekts. Hintergrund kommt nach background, Veröffentlichungsrichtungen nach angles, erzeugte Entwürfe nach drafts, Bilder nach media.",
+      "background": "Hier kommt das Hintergrundmaterial hin, alles muss echt und sachlich sein. Es ist in Produktinfos, Website-Texte, Nutzerfeedback und Rechtstexte unterteilt.",
+      "backgroundProduct": "Produktvorstellungen, Funktionsbeschreibungen, Preise und Änderungsprotokolle — alles, was erklärt, was das Produkt wirklich ist.",
+      "backgroundWebsite": "Website-Texte, Landingpages und Hilfeartikel. Eine Seite pro Datei.",
+      "backgroundFeedback": "Nutzerfeedback, Store-Bewertungen, Beschwerden und Support-Chats. Behalte auch die schlechten, die sind am nützlichsten.",
+      "backgroundLegal": "Datenschutzerklärung, Nutzungsbedingungen und Compliance-Hinweise, wortgetreu abgelegt.",
+      "angles": "Eine Datei je Veröffentlichungsrichtung: für wen, worüber, in welchem Ton und auf welcher Plattform.",
+      "drafts": "Erzeugte Entwürfe vor der Veröffentlichung, zusammen mit dem verwendeten Material und der Richtung.",
+      "media": "Originalbilder. Beim Hochladen eines Bildes entsteht daneben automatisch eine Kartendatei mit OSS-URL und Maßen.",
+      "generic": "Ein selbst angelegter Ordner. Was hineinkommt, entscheidest du; die KI behandelt den Inhalt als Fakten zu diesem Projekt."
+    },
+    "newFolder": {
+      "title": "Neuer Ordner",
+      "desc": "Wird unter {{dir}} angelegt",
+      "label": "Ordnername",
+      "placeholder": "z. B. competitor",
+      "submit": "Anlegen",
+      "success": "Ordner angelegt"
+    },
+    "rename": {
+      "title": "Umbenennen",
+      "desc": "Aktueller Pfad: {{path}}",
+      "label": "Neuer Name",
+      "submit": "Speichern",
+      "success": "Umbenannt"
+    },
+    "delete": {
+      "title": "Wirklich löschen?",
+      "dirDesc": "Damit werden der Ordner {{path}} und sein gesamter Inhalt gelöscht. Das lässt sich nicht rückgängig machen.",
+      "fileDesc": "Damit wird {{path}} gelöscht. Das lässt sich nicht rückgängig machen.",
+      "confirm": "Löschen",
+      "cancel": "Behalten",
+      "deleting": "Wird gelöscht…",
+      "success": "Gelöscht"
+    },
+    "nameError": {
+      "required": "Der Name darf nicht leer sein",
+      "dots": "„.“ und „..“ sind als Name nicht erlaubt",
+      "charset": "Schrägstriche und unsichtbare Zeichen sind nicht erlaubt",
+      "tooLong": "Der Name darf höchstens 255 Zeichen haben"
+    },
+    "upload": {
+      "title": "Uploads ({{num}})",
+      "cancelAll": "Alle abbrechen",
+      "clearFinished": "Fertige entfernen",
+      "cancel": "Abbrechen",
+      "uploading": "Wird hochgeladen {{progress}}%",
+      "pending": "In der Warteschlange",
+      "done": "Nach {{dir}} hochgeladen",
+      "canceled": "Abgebrochen",
+      "tooLarge": "Eine einzelne Datei darf nicht größer als 100 MB sein",
+      "dropHint": "Dateien hierher ziehen, um sie hochzuladen. Ziel: {{dir}}"
+    }
   }
 }

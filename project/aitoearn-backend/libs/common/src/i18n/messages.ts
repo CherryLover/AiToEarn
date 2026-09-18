@@ -707,4 +707,38 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'en-US': 'Failed to rename project directory',
     'zh-CN': '项目物料目录改名失败',
   },
+
+  // 20100 (projects/files)
+  [ResponseCode.ProjectFileNotFound]: {
+    'en-US': 'File or directory not found',
+    'zh-CN': '文件或目录不存在',
+  },
+  [ResponseCode.ProjectFilePathInvalid]: {
+    'en-US': 'Invalid path: must be relative to the project root, no "..", no empty segments, at most 255 bytes per segment and 1024 bytes in total',
+    'zh-CN': '路径不合法：必须是相对项目根的路径，不能含 ..、不能有空路径段，单段最多 255 字节、总长最多 1024 字节',
+  },
+  [ResponseCode.ProjectFileTooLarge]: {
+    'en-US': 'File is too large to open as text, download it instead',
+    'zh-CN': '文件太大，无法按文本打开，请下载原件',
+  },
+  [ResponseCode.ProjectFileNotText]: {
+    'en-US': 'Not a text file, download it instead',
+    'zh-CN': '这不是文本文件，请下载原件',
+  },
+  [ResponseCode.ProjectFileExists]: {
+    'en-US': 'A file or directory with this name already exists',
+    'zh-CN': '同名文件或目录已存在',
+  },
+  [ResponseCode.ProjectFileWriteFailed]: {
+    'en-US': 'Failed to write file',
+    'zh-CN': '文件写入失败',
+  },
+  [ResponseCode.ProjectFileIsSymlink]: {
+    'en-US': 'Target is a symbolic link, refused',
+    'zh-CN': '目标是符号链接，拒绝操作',
+  },
+  [ResponseCode.ProjectFileUploadFailed]: {
+    'en-US': 'Failed to upload file',
+    'zh-CN': '文件上传失败',
+  },
 }
