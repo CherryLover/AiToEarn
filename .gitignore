@@ -45,3 +45,7 @@ public/bin/*
 
 sh/*
 project/web/.cursor/
+
+# Python 编译缓存
+__pycache__/
+*.pyc
