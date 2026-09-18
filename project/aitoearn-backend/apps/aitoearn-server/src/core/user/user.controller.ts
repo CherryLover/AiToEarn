@@ -16,6 +16,9 @@ import {
 import { UserService } from './user.service'
 import { UserInfoVO } from './user.vo'
 
+/** 自部署版不计费，积分接口固定返回这个数 */
+const SELF_HOSTED_CREDITS = 999999
+
 @ApiTags('User/User')
 @Controller('user')
 export class UserController {
@@ -31,6 +34,15 @@ export class UserController {
   @Get('mine')
   getUserInfoById(@GetToken() token: TokenInfo) {
     return this.userService.getUserInfoById(token.id)
+  }
+
+  @ApiDoc({
+    summary: '积分余额',
+    description: '自部署版不计费，固定返回一个大数。浏览器插件的 AI 助手启动前会查这个接口，查不到会当成 0 并提示积分不足。',
+  })
+  @Get('credits')
+  getCredits() {
+    return { balance: SELF_HOSTED_CREDITS }
   }
 
   @ApiDoc({
