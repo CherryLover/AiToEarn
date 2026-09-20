@@ -27,6 +27,7 @@
 | `contract-stage3.md` | 阶段 3：执行端通道（服务端与网页侧） | 阶段 3 的 Agent |
 | `contract-stage4.md` | 阶段 4 前半段：手动发布闭环 + Bark 推送（**不做真实发布**） | 阶段 4 的 Agent |
 | `contract-extension.md` | 给插件线的执行端对接文档 | 插件线 |
+| `contract-settings.md` | 设置页重做、Bark 网页配置、通知规则 | 设置这一轮的 Agent |
 
 ## 开工须知
 

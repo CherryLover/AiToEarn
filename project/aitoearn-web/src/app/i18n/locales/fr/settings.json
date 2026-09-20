@@ -1,4 +1,18 @@
 {
+  "meta": {
+    "title": "Paramètres",
+    "description": "Gérez votre profil, l'apparence et les notifications push : renseignez votre propre adresse Bark et votre clé, puis choisissez ce qui arrive sur votre téléphone.",
+    "keywords": "paramètres, notifications, Bark, push, thème, langue"
+  },
+  "page": {
+    "title": "Paramètres",
+    "subtitle": "Profil, apparence et notifications, une chose à la fois."
+  },
+  "nav": {
+    "profile": "Profil",
+    "appearance": "Apparence",
+    "notify": "Notifications"
+  },
   "title": "Paramètres",
   "tabs": {
     "profile": "Profil",
@@ -49,7 +63,17 @@
     "redeemCodeSuccess": "Code d'activation d'adhésion entreprise utilisé avec succès",
     "redeemCodeFailed": "Échec de l'utilisation du code d'activation d'adhésion entreprise",
     "redeemCodeContactPrefix": "Vous n'avez pas de code d'activation ? ",
-    "redeemCodeContactSuffix": " pour obtenir un code d'activation d'adhésion entreprise."
+    "redeemCodeContactSuffix": " pour obtenir un code d'activation d'adhésion entreprise.",
+    "desc": "Votre avatar et votre nom apparaissent sur ce que vous publiez et dans l'historique partagé.",
+    "avatarLabel": "Avatar",
+    "avatarDesc": "JPG ou PNG, 5 Mo maximum. Vous pourrez recadrer après la sélection.",
+    "nameLabel": "Nom affiché",
+    "namePlaceholder": "Choisissez un nom",
+    "nameDesc": "De 2 à 20 caractères. C'est ce nom que les autres voient.",
+    "accountLabel": "Compte de connexion",
+    "accountDesc": "L'e-mail ou le numéro utilisé pour vous connecter. Pas encore modifiable ici.",
+    "linksLabel": "Liens",
+    "linksDesc": "Documentation et dépôt open source."
   },
   "income": {
     "balance": "Solde annonceur",
@@ -347,5 +371,99 @@
     "recharge": "Recharger",
     "use": "Utiliser",
     "info": "Voir les notes sur les crédits Seedance"
+  },
+  "appearance": {
+    "desc": "Le thème et la langue ne concernent que cet appareil. Ils s'appliquent tout de suite, rien à enregistrer."
+  },
+  "notify": {
+    "desc": "Faites remonter sur votre téléphone les tâches longues, comme la génération de matériel par l'IA, dès qu'elles se terminent. L'envoi passe par Bark, avec votre propre adresse et votre propre clé.",
+    "loadFailed": "Impossible de charger vos paramètres de notification.",
+    "retry": "Réessayer",
+    "channelTitle": "Push Bark",
+    "channelDesc": "Ouvrez Bark sur votre téléphone et recopiez ici l'adresse de push et la clé qu'il vous donne. Sans cela, l'envoi est simplement ignoré, le reste continue de fonctionner.",
+    "enabledLabel": "Recevoir les notifications",
+    "enabledDesc": "Désactivé, plus rien n'est envoyé, pas même via le canal par défaut du serveur. L'adresse et la clé sont conservées.",
+    "envFallback": {
+      "title": "Le serveur dispose d'un canal par défaut",
+      "user": "Vous avez renseigné votre propre adresse, les notifications passent donc par elle. Le canal par défaut du serveur ne sert que si vous n'en renseignez aucune.",
+      "env": "Vous n'avez pas renseigné d'adresse, les notifications passent donc pour l'instant par le canal par défaut du serveur : vous les recevez sans rien configurer. Renseignez l'adresse ci-dessous pour utiliser la vôtre.",
+      "off": "La réception est désactivée, même le canal par défaut du serveur n'est pas utilisé. Rien n'est envoyé pour le moment."
+    },
+    "urlLabel": "Adresse Bark",
+    "urlDesc": "L'adresse de push fournie par Bark, du type https://votre-domaine/votre-device-key/. Uniquement des adresses publiques : les adresses locales et de réseau privé sont refusées. Laissez vide pour ne pas utiliser d'adresse à vous.",
+    "urlPlaceholder": "https://example.com/your-device-key/",
+    "keyLabel": "Clé Bark",
+    "keyDescSet": "Déjà renseignée ({{masked}}). Laissez vide pour ne rien changer, ou saisissez une nouvelle valeur pour la remplacer.",
+    "keyDescEmpty": "La valeur de l'en-tête bark-key. Une fois enregistrée, elle n'est plus affichée qu'en masqué.",
+    "keyPlaceholderSet": "Laissez vide pour conserver la clé",
+    "keyPlaceholderEmpty": "Saisissez votre clé Bark",
+    "groupLabel": "Groupe de notification",
+    "groupDesc": "Votre téléphone regroupe les notifications sous ce nom. Laissez vide pour utiliser AiToEarn.",
+    "rulesTitle": "Règles de notification",
+    "rulesDesc": "Quand vous prévenir. D'autres règles arriveront, il n'y en a qu'une pour l'instant.",
+    "rulesDisabledHint": "La réception est désactivée, aucune des règles ci-dessous ne s'applique : désactivé signifie que rien n'est envoyé, pas même via le canal par défaut du serveur.",
+    "rule": {
+      "draft_ready": {
+        "title": "Prévenir quand l'IA a fini de générer le matériel",
+        "desc": "Vous recevez un message dès que la série de génération en cours est terminée, sans rester devant la page."
+      }
+    },
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "saveSuccess": "Paramètres de notification enregistrés",
+    "testTitle": "Envoyer une notification de test",
+    "testDesc": "Envoie réellement une notification sur votre téléphone avec les paramètres enregistrés. Le titre précise qu'il s'agit d'un test. La clé ne revient jamais au navigateur : le test utilise donc toujours ce qui est enregistré. Enregistrez d'abord, testez ensuite.",
+    "testAction": "Envoyer une notification de test",
+    "testDirtyHint": "Enregistrez d'abord vos modifications, puis testez.",
+    "testEnvHint": "L'envoi passera par le canal par défaut du serveur.",
+    "testOffHint": "La réception est désactivée. Activez-la et enregistrez avant de tester.",
+    "testEmptyHint": "Aucun canal disponible pour l'instant. Renseignez l'adresse Bark et la clé, puis enregistrez.",
+    "testSuccess": "Envoyée",
+    "testSuccessDesc": "Une notification de test devrait être arrivée sur votre téléphone. Sinon, vérifiez que Bark est autorisé à envoyer des notifications.",
+    "testFailed": "Non envoyée",
+    "testFail": {
+      "urlInvalid": "Adresse invalide : ce n'est pas une adresse complète, ou le protocole n'est pas http/https. Corrigez puis enregistrez à nouveau.",
+      "urlBlocked": "Adresse refusée : elle pointe vers une adresse locale ou un réseau privé, le serveur ne l'appellera pas.",
+      "urlUnresolvable": "Nom de domaine introuvable : aucune IP pour cet hôte. Vérifiez l'orthographe.",
+      "timeout": "Délai dépassé : Bark n'a pas répondu en 5 secondes, le réseau est peut-être bloqué.",
+      "unreachable": "Connexion impossible : le serveur n'a pas pu joindre cette adresse. Vérifiez le domaine, le port et le pare-feu.",
+      "unauthorized": "Mauvaise clé : Bark a refusé la requête (401/403). Saisissez à nouveau la clé.",
+      "rejected": "Refusé : Bark a répondu avec un statut d'erreur. Vérifiez la device key dans l'adresse.",
+      "ruleDisabled": "Cette règle est désactivée. Réactivez-la puis réessayez.",
+      "notConfigured": "Rien de configuré : renseignez d'abord l'adresse Bark et la clé.",
+      "unknown": "L'envoi n'a pas abouti. Réessayez dans un instant."
+    },
+    "urlError": {
+      "required": "Renseignez votre adresse Bark",
+      "tooLong": "Cette adresse est trop longue",
+      "malformed": "Ce n'est pas une adresse complète : commencez par https://",
+      "protocol": "Seules les adresses http et https sont acceptées",
+      "private": "Les adresses locales et de réseau privé ne sont pas autorisées. Utilisez une adresse Bark joignable depuis Internet."
+    },
+    "keyError": {
+      "required": "Renseignez votre clé Bark",
+      "tooLong": "Cette clé est trop longue"
+    },
+    "groupError": {
+      "tooLong": "Ce nom de groupe est trop long"
+    },
+    "error": {
+      "urlInvalid": "Cette adresse Bark n'est pas valide, vérifiez qu'elle est complète",
+      "urlBlocked": "Adresse refusée : elle pointe vers une adresse locale ou un réseau privé, le serveur ne l'appellera pas",
+      "urlUnresolvable": "Ce nom d'hôte ne peut pas être résolu, vérifiez l'orthographe",
+      "keyRequired": "Si vous renseignez une adresse Bark, la clé est obligatoire",
+      "notConfigured": "Bark n'est pas encore configuré : renseignez l'adresse et la clé, puis enregistrez",
+      "ruleInvalid": "Cette règle de notification n'est pas valide",
+      "groupInvalid": "Ce groupe de notification n'est pas valide",
+      "saveFailed": "Enregistrement impossible. Réessayez dans un instant."
+    }
+  },
+  "login": {
+    "desc": "Cette partie nécessite d'être connecté.",
+    "hint": "Connectez-vous pour modifier votre profil et vos notifications ici.",
+    "action": "Se connecter"
+  },
+  "form": {
+    "unsaved": "Modifications non enregistrées"
   }
 }

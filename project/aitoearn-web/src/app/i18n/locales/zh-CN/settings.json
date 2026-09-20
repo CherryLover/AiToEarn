@@ -1,4 +1,18 @@
 {
+  "meta": {
+    "title": "设置",
+    "description": "管理个人资料、外观和通知推送：填自己的 Bark 地址和密钥，按规则接收 AI 生成完成的提醒。",
+    "keywords": "设置, 通知, Bark, 推送, 主题, 语言"
+  },
+  "page": {
+    "title": "设置",
+    "subtitle": "个人资料、外观和通知都在这里，一屏一件事。"
+  },
+  "nav": {
+    "profile": "个人资料",
+    "appearance": "外观",
+    "notify": "通知"
+  },
   "title": "设置",
   "tabs": {
     "profile": "个人资料",
@@ -50,7 +64,17 @@
     "redeemCodeSuccess": "企业会员激活码兑换成功",
     "redeemCodeFailed": "企业会员激活码兑换失败",
     "redeemCodeContactPrefix": "没有激活码？",
-    "redeemCodeContactSuffix": "，获取企业会员激活码。"
+    "redeemCodeContactSuffix": "，获取企业会员激活码。",
+    "desc": "头像和昵称会出现在你发布的内容和协作记录里。",
+    "avatarLabel": "头像",
+    "avatarDesc": "支持 JPG、PNG，不超过 5MB，选完可以裁剪。",
+    "nameLabel": "昵称",
+    "namePlaceholder": "给自己起个名字",
+    "nameDesc": "2 到 20 个字符，别人看到的就是这个名字。",
+    "accountLabel": "登录账号",
+    "accountDesc": "登录用的邮箱或手机号，这里暂时不支持修改。",
+    "linksLabel": "相关链接",
+    "linksDesc": "使用文档和开源仓库。"
   },
   "income": {
     "balance": "广告主余额",
@@ -359,5 +383,99 @@
     "recharge": "充值",
     "use": "前往使用",
     "info": "查看 Seedance专用积分说明"
+  },
+  "appearance": {
+    "desc": "主题和语言只影响你这台设备上的显示，选了立刻生效，不用保存。"
+  },
+  "notify": {
+    "desc": "把 AI 生成素材这类等得久的活儿，做完了推到你手机上。推送走 Bark，地址和密钥填你自己的。",
+    "loadFailed": "通知设置没读出来。",
+    "retry": "重试",
+    "channelTitle": "Bark 推送",
+    "channelDesc": "打开手机上的 Bark，把它给你的推送地址和密钥填到这里。不填就静默跳过，不影响其他功能。",
+    "enabledLabel": "接收推送",
+    "enabledDesc": "关掉之后什么都不推，服务器的默认通道也不走。已填的地址和密钥会保留。",
+    "envFallback": {
+      "title": "服务器配了默认通道",
+      "user": "你填了自己的地址，通知就走你自己的。服务器的默认通道只在你没填时兜底。",
+      "env": "你没填自己的地址，通知现在走服务器的默认通道，不配也收得到。填了下面的地址就改用你自己的。",
+      "off": "「接收推送」关着，连服务器的默认通道也不走，现在什么都不会推。"
+    },
+    "urlLabel": "Bark 地址",
+    "urlDesc": "Bark 里那条推送地址，形如 https://你的域名/设备key/。只能填公网地址，本机和内网地址会被拒绝。留空表示不用自己的通道。",
+    "urlPlaceholder": "https://example.com/your-device-key/",
+    "keyLabel": "Bark 密钥",
+    "keyDescSet": "已设置（{{masked}}）。留空表示不修改，要换就直接输入新的。",
+    "keyDescEmpty": "请求头 bark-key 的值。保存之后只显示掩码，不会再回显明文。",
+    "keyPlaceholderSet": "留空表示不修改",
+    "keyPlaceholderEmpty": "输入 Bark 密钥",
+    "groupLabel": "通知分组",
+    "groupDesc": "手机上按这个名字把通知归成一组，留空用 AiToEarn。",
+    "rulesTitle": "通知规则",
+    "rulesDesc": "什么情况下推给你。以后会往下加，现在先有一条。",
+    "rulesDisabledHint": "「接收推送」关着，下面的规则都不生效——关掉就是彻底不推，服务器的默认通道也不走。",
+    "rule": {
+      "draft_ready": {
+        "title": "AI 生成素材结束后通知",
+        "desc": "这一轮素材生成完了就推一条，不用一直盯着页面。"
+      }
+    },
+    "save": "保存",
+    "saving": "保存中...",
+    "saveSuccess": "通知设置已保存",
+    "testTitle": "发送测试通知",
+    "testDesc": "用已经保存的配置真发一条到手机上，标题里会写明这是测试。密钥不会回传到浏览器，所以测的一定是已保存的那份：先保存，再测。",
+    "testAction": "发送测试通知",
+    "testDirtyHint": "先保存改动，再发测试。",
+    "testEnvHint": "会用服务器的默认通道发。",
+    "testOffHint": "「接收推送」关着，打开并保存之后才能测。",
+    "testEmptyHint": "现在没有可用的通道，先把 Bark 地址和密钥填好并保存。",
+    "testSuccess": "发出去了",
+    "testSuccessDesc": "手机上应该收到一条测试通知了。没收到就看看 Bark 的通知权限是不是关着。",
+    "testFailed": "没发出去",
+    "testFail": {
+      "urlInvalid": "地址不合法：不是完整的网址，或者协议不是 http/https。检查一下再保存。",
+      "urlBlocked": "这个地址不允许：它指向本机或内网，服务器不会去请求它。",
+      "urlUnresolvable": "域名解析不出来：这个地址的域名查不到 IP，检查一下有没有拼错。",
+      "timeout": "超时：5 秒内没等到 Bark 回应，可能是网络不通。",
+      "unreachable": "连不上：服务器没能和这个地址建立连接，检查一下域名、端口和防火墙。",
+      "unauthorized": "密钥不对：Bark 拒绝了这次请求（401/403），重新填一次密钥。",
+      "rejected": "对方拒绝了：Bark 返回了错误状态码，检查一下地址里的设备 key 对不对。",
+      "ruleDisabled": "这条规则被关掉了，打开对应的规则再试。",
+      "notConfigured": "还没配置：先把 Bark 地址和密钥填好再测。",
+      "unknown": "没发成功，过一会儿再试一次。"
+    },
+    "urlError": {
+      "required": "请填写 Bark 地址",
+      "tooLong": "地址太长了",
+      "malformed": "这不是一个完整的网址，要带上 https://",
+      "protocol": "只支持 http 和 https 开头的地址",
+      "private": "不能填本机或内网地址，请用公网能访问的 Bark 地址"
+    },
+    "keyError": {
+      "required": "请填写 Bark 密钥",
+      "tooLong": "密钥太长了"
+    },
+    "groupError": {
+      "tooLong": "分组名太长了"
+    },
+    "error": {
+      "urlInvalid": "Bark 地址不合法，检查一下是不是写全了",
+      "urlBlocked": "这个地址不允许：它指向本机或内网，服务器不会去请求它",
+      "urlUnresolvable": "这个地址的域名解析不出来，检查一下有没有拼错",
+      "keyRequired": "填了 Bark 地址就得填密钥",
+      "notConfigured": "还没配置 Bark，先填好地址和密钥并保存",
+      "ruleInvalid": "通知规则不合法",
+      "groupInvalid": "通知分组不合法",
+      "saveFailed": "保存失败，过一会儿再试"
+    }
+  },
+  "login": {
+    "desc": "这一块要登录之后才能用。",
+    "hint": "登录之后就能在这里改个人资料和通知设置。",
+    "action": "去登录"
+  },
+  "form": {
+    "unsaved": "有未保存的改动"
   }
 }

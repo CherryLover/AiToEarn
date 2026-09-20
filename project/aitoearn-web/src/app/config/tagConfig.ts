@@ -62,7 +62,9 @@ export const TagInfoMap = new Map<TagType, ITagInfo>([
   [TagType.FIXED, {
     label: 'tag.fixed',
     description: 'create.tabFixedDesc',
-    colorClass: 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
+    // 这一档原来是 violet，正好是退役的那支品牌紫，换成中性暖灰；
+    // 其余几档是一组分类色，彼此要能区分，不并成主色
+    colorClass: 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300',
   }],
 ])
 

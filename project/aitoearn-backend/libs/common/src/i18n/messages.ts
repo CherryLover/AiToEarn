@@ -1033,4 +1033,34 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'en-US': 'Current record status does not allow this operation',
     'zh-CN': '发布记录当前状态不允许这个操作',
   },
+
+  // 20600 (settings)
+  [ResponseCode.SettingsNotifyUrlInvalid]: {
+    'en-US': 'Notification URL is invalid, it must start with http:// or https://',
+    'zh-CN': '通知地址填得不对，要以 http:// 或 https:// 开头',
+  },
+  [ResponseCode.SettingsNotifyUrlBlocked]: {
+    'en-US': 'This notification URL points to a private, loopback or cloud metadata address and is not allowed',
+    'zh-CN': '这个通知地址指向内网或本机地址，不允许。请换成公网能访问的地址',
+  },
+  [ResponseCode.SettingsNotifyUrlUnresolvable]: {
+    'en-US': 'The domain in the notification URL cannot be resolved',
+    'zh-CN': '通知地址的域名解析不出来，检查一下有没有写错',
+  },
+  [ResponseCode.SettingsNotifyKeyRequired]: {
+    'en-US': 'Notification key is required once a URL is set',
+    'zh-CN': '填了通知地址就得把 key 一起填上',
+  },
+  [ResponseCode.SettingsNotifyNotConfigured]: {
+    'en-US': 'Notification is not configured yet, save the settings before sending a test',
+    'zh-CN': '还没配好通知，先保存再发测试',
+  },
+  [ResponseCode.SettingsNotifyRuleInvalid]: {
+    'en-US': 'Notification rules are invalid: unknown rule type, or the same type appears more than once',
+    'zh-CN': '通知规则不合法：有不认识的规则类型，或者同一种规则给了多条',
+  },
+  [ResponseCode.SettingsNotifyGroupInvalid]: {
+    'en-US': 'Notification group name is invalid',
+    'zh-CN': '通知分组填得不对',
+  },
 }

@@ -492,7 +492,7 @@ export function ChatMessage({
                   {/* 优雅的波点动画 */}
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <div
-                      className="w-1.5 h-1.5 rounded-full bg-blue-500"
+                      className="w-1.5 h-1.5 rounded-full bg-brand-purple"
                       style={{
                         animation: 'bounceDots 1.4s ease-in-out infinite both',
                         animationDelay: '0s',
@@ -500,7 +500,7 @@ export function ChatMessage({
                     >
                     </div>
                     <div
-                      className="w-1.5 h-1.5 rounded-full bg-purple-500"
+                      className="w-1.5 h-1.5 rounded-full bg-primary"
                       style={{
                         animation: 'bounceDots 1.4s ease-in-out infinite both',
                         animationDelay: '0.2s',
@@ -508,7 +508,7 @@ export function ChatMessage({
                     >
                     </div>
                     <div
-                      className="w-1.5 h-1.5 rounded-full bg-pink-500"
+                      className="w-1.5 h-1.5 rounded-full bg-warning"
                       style={{
                         animation: 'bounceDots 1.4s ease-in-out infinite both',
                         animationDelay: '0.4s',
@@ -519,7 +519,7 @@ export function ChatMessage({
 
                   {/* 思考文字 */}
                   <span
-                    className="text-sm font-medium bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
+                    className="text-sm font-medium bg-linear-to-r from-brand-purple via-primary to-warning bg-clip-text text-transparent"
                     style={{
                       animation: 'thinkingGlow 1.8s ease-in-out infinite',
                       display: 'inline-block',

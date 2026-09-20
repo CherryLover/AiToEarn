@@ -36,5 +36,5 @@ export function calculateProgress(
  * @param status 状态
  */
 export function getStatusConfig(status: string) {
-  return STATUS_CONFIG[status] || { text: status, color: '#333' }
+  return STATUS_CONFIG[status] || { text: status, color: 'var(--foreground)' }
 }

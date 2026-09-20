@@ -323,4 +323,15 @@ export enum ResponseCode {
   PublishedPostUrlInvalid = 20509, // 帖子链接不合法
   PublishedPostCreateFailed = 20510, // 建发布记录或执行工单失败
   PublishedPostStatusInvalid = 20511, // 当前状态不允许该操作
+
+  // ========================================
+  // 20600-20699: settings（设置页与通知配置）
+  // ========================================
+  SettingsNotifyUrlInvalid = 20600, // 通知地址不合法：不是合法 URL，或协议不是 http/https
+  SettingsNotifyUrlBlocked = 20601, // 通知地址指向内网、回环或云元数据地址，不允许
+  SettingsNotifyUrlUnresolvable = 20602, // 通知地址的域名解析不出来
+  SettingsNotifyKeyRequired = 20603, // 填了地址就得填 key
+  SettingsNotifyNotConfigured = 20604, // 还没配通知，先保存再测试
+  SettingsNotifyRuleInvalid = 20605, // 通知规则不合法：类型不认识或同一类型给了多条
+  SettingsNotifyGroupInvalid = 20606, // 通知分组不合法
 }

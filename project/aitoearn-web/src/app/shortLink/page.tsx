@@ -19,20 +19,27 @@ import { openApp } from '@/utils/appLaunch'
 
 type LaunchStatus = 'loading' | 'launching' | 'failed'
 
-/* ─── 色彩常量（Tailwind 中性灰风格） ─── */
+/*
+ * ─── 色彩常量 ───
+ *
+ * 只有这个页面必须写死 hex：layout.tsx 给它单开了 <html><body> 且没引 globals.css，
+ * 主题变量在这里根本取不到（上面的注释也说了不能用 Tailwind 类名）。
+ * 值取自 globals.css 亮色那一档，改主题色时这里要跟着改，
+ * 否则扫码唤起抖音这一步会是全站唯一一块冷灰配色。
+ */
 const colors = {
-  bg: '#f8fafc',
+  bg: '#fafaf9',
   card: '#ffffff',
-  border: '#e2e8f0',
-  text: '#1e293b',
-  textMuted: '#64748b',
-  error: '#ef4444',
-  errorBg: 'rgba(239,68,68,0.1)',
-  warning: '#f97316',
-  warningBg: 'rgba(249,115,22,0.1)',
-  btnBg: '#0f172a',
+  border: '#e7e5e4',
+  text: '#1c1917',
+  textMuted: '#78716c',
+  error: '#c1332d',
+  errorBg: 'rgba(193,51,45,0.1)',
+  warning: '#d97706',
+  warningBg: 'rgba(217,119,6,0.1)',
+  btnBg: '#1f6f5c',
   btnText: '#ffffff',
-  iconCircleBg: 'rgba(148,163,184,0.15)',
+  iconCircleBg: 'rgba(120,113,108,0.15)',
 }
 
 /* ─── 内联 SVG 图标 ─── */

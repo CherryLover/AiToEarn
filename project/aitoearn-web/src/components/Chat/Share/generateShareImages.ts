@@ -72,45 +72,57 @@ async function generateImageFromAllMessages(
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
   `
 
-  // 设置 CSS 变量（浅色主题值）
+  // 截图用的主题变量（globals.css 亮色那一档的字面值）
+  //
+  // 为什么这里必须写死 hex、不能写 var()：html2canvas 读的是计算后的样式，
+  // 对 oklch / color-mix 这类函数式颜色支持不可靠，所以在容器上把整套变量冻结成 hex。
+  // 也为什么固定用亮色：分享图是给别人看的，作者开着暗色模式不该导出一张黑底图。
+  //
+  // 值必须和 globals.css 的 :root 保持一致，改主题色时这里要跟着改。
   const cssVars: Record<string, string> = {
     '--background': '#ffffff',
-    '--foreground': '#0f172a',
+    '--foreground': '#1c1917',
     '--card': '#ffffff',
-    '--card-foreground': '#0f172a',
-    '--muted': '#f4f4f5',
-    '--muted-foreground': '#71717a',
-    '--border': '#e4e4e7',
-    '--primary': '#18181b',
-    '--primary-foreground': '#fafafa',
-    '--secondary': '#f4f4f5',
-    '--secondary-foreground': '#18181b',
-    '--accent': '#f4f4f5',
-    '--accent-foreground': '#18181b',
-    '--destructive': '#ef4444',
-    '--destructive-foreground': '#fafafa',
-    '--ring': '#a1a1aa',
+    '--card-foreground': '#1c1917',
+    '--muted': '#f5f4f2',
+    '--muted-foreground': '#78716c',
+    '--border': '#e7e5e4',
+    '--primary': '#1f6f5c',
+    '--primary-foreground': '#ffffff',
+    '--secondary': '#f5f4f2',
+    '--secondary-foreground': '#1c1917',
+    '--accent': '#f0eeeb',
+    '--accent-foreground': '#1c1917',
+    '--destructive': '#c1332d',
+    '--destructive-foreground': '#ffffff',
+    '--ring': '#1f6f5c',
     '--radius': '0.625rem',
-    '--success': '#22c55e',
-    '--success-foreground': '#fafafa',
-    '--warning': '#f59e0b',
-    '--warning-foreground': '#18181b',
-    '--info': '#3b82f6',
-    '--info-foreground': '#fafafa',
+    '--success': '#15803d',
+    '--success-foreground': '#ffffff',
+    '--warning': '#d97706',
+    '--warning-foreground': '#1c1917',
+    '--info': '#1d4ed8',
+    '--info-foreground': '#ffffff',
+    '--brand-cyan': '#1f6f5c',
+    '--brand-purple': '#14594a',
+    '--brand-accent': '#d97706',
+    '--gradient-foreground': '#ffffff',
     // Tailwind v4 使用 --color-* 变量
     '--color-background': '#ffffff',
-    '--color-foreground': '#0f172a',
+    '--color-foreground': '#1c1917',
     '--color-card': '#ffffff',
-    '--color-card-foreground': '#0f172a',
-    '--color-muted': '#f4f4f5',
-    '--color-muted-foreground': '#71717a',
-    '--color-border': '#e4e4e7',
-    '--color-primary': '#18181b',
-    '--color-primary-foreground': '#fafafa',
-    '--color-success': '#22c55e',
-    '--color-destructive': '#ef4444',
-    '--color-warning': '#f59e0b',
-    '--color-info': '#3b82f6',
+    '--color-card-foreground': '#1c1917',
+    '--color-muted': '#f5f4f2',
+    '--color-muted-foreground': '#78716c',
+    '--color-border': '#e7e5e4',
+    '--color-primary': '#1f6f5c',
+    '--color-primary-foreground': '#ffffff',
+    '--color-success': '#15803d',
+    '--color-destructive': '#c1332d',
+    '--color-warning': '#d97706',
+    '--color-info': '#1d4ed8',
+    '--color-brand-cyan': '#1f6f5c',
+    '--color-brand-purple': '#14594a',
   }
 
   Object.entries(cssVars).forEach(([key, value]) => {
@@ -153,10 +165,10 @@ async function generateImageFromAllMessages(
         { style: { display: 'flex', flexDirection: 'column' } },
         React.createElement(
           'div',
-          { style: { fontSize: '18px', fontWeight: 700, color: '#0f172a' } },
+          { style: { fontSize: '18px', fontWeight: 700, color: '#1c1917' } },
           appTitle,
         ),
-        React.createElement('div', { style: { fontSize: '12px', color: '#6b7280' } }, appUrl),
+        React.createElement('div', { style: { fontSize: '12px', color: '#78716c' } }, appUrl),
       ),
     )
 
@@ -172,10 +184,10 @@ async function generateImageFromAllMessages(
           {
             style: {
               fontSize: '12px',
-              color: '#71717a',
+              color: '#78716c',
               marginTop: '16px',
               paddingTop: '12px',
-              borderTop: '1px solid #e4e4e7',
+              borderTop: '1px solid #e7e5e4',
             },
           },
           `Shared by ${userName}`,
@@ -188,7 +200,7 @@ async function generateImageFromAllMessages(
             style: {
               marginTop: '24px',
               paddingTop: '20px',
-              borderTop: '1px solid #e4e4e7',
+              borderTop: '1px solid #e7e5e4',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -209,21 +221,21 @@ async function generateImageFromAllMessages(
               }),
               React.createElement(
                 'span',
-                { style: { fontSize: '14px', fontWeight: 600, color: '#0f172a' } },
+                { style: { fontSize: '14px', fontWeight: 600, color: '#1c1917' } },
                 appTitle,
               ),
             ),
             // 生成日期
             React.createElement(
               'div',
-              { style: { fontSize: '12px', color: '#71717a' } },
+              { style: { fontSize: '12px', color: '#78716c' } },
               `Generated: ${new Date().toLocaleDateString()}`,
             ),
             // 有效期
             expiresAt
             && React.createElement(
               'div',
-              { style: { fontSize: '12px', color: '#71717a' } },
+              { style: { fontSize: '12px', color: '#78716c' } },
               `Expires: ${new Date(expiresAt).toLocaleDateString()}`,
             ),
             // 分享链接（简短显示）
@@ -233,7 +245,7 @@ async function generateImageFromAllMessages(
               {
                 style: {
                   fontSize: '11px',
-                  color: '#94a3b8',
+                  color: '#78716c',
                   wordBreak: 'break-all',
                   maxWidth: '300px',
                 },
@@ -250,17 +262,17 @@ async function generateImageFromAllMessages(
               style: {
                 width: '100px',
                 height: '100px',
-                backgroundColor: '#f8fafc',
+                backgroundColor: '#f5f4f2',
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '1px solid #e2e8f0',
+                border: '1px solid #e7e5e4',
               },
             },
             React.createElement(
               'span',
-              { style: { fontSize: '12px', color: '#94a3b8' } },
+              { style: { fontSize: '12px', color: '#78716c' } },
               'QR Code',
             ),
           ),
@@ -348,7 +360,7 @@ async function generateAndInsertQRCode(container: HTMLElement, shareUrl: string)
       width: 100,
       margin: 1,
       color: {
-        dark: '#0f172a', // 二维码颜色
+        dark: '#1c1917', // 二维码颜色
         light: '#ffffff', // 背景色
       },
       errorCorrectionLevel: 'M',
@@ -375,23 +387,23 @@ async function generateAndInsertQRCode(container: HTMLElement, shareUrl: string)
  * 用于解决 oklch 颜色在 html2canvas 中无法渲染的问题
  */
 const TEXT_COLOR_MAP: Record<string, string> = {
-  'text-success': '#22c55e',
-  'text-destructive': '#ef4444',
-  'text-warning': '#f59e0b',
-  'text-info': '#3b82f6',
-  'text-primary': '#18181b',
-  'text-muted': '#71717a',
-  'text-muted-foreground': '#71717a',
-  'text-foreground': '#0f172a',
+  'text-success': '#15803d',
+  'text-destructive': '#c1332d',
+  'text-warning': '#d97706',
+  'text-info': '#1d4ed8',
+  'text-primary': '#1f6f5c',
+  'text-muted': '#78716c',
+  'text-muted-foreground': '#78716c',
+  'text-foreground': '#1c1917',
 }
 
 const BG_COLOR_MAP: Record<string, string> = {
-  'bg-success': '#22c55e',
-  'bg-destructive': '#ef4444',
-  'bg-warning': '#f59e0b',
-  'bg-info': '#3b82f6',
-  'bg-primary': '#18181b',
-  'bg-muted': '#f4f4f5',
+  'bg-success': '#15803d',
+  'bg-destructive': '#c1332d',
+  'bg-warning': '#d97706',
+  'bg-info': '#1d4ed8',
+  'bg-primary': '#1f6f5c',
+  'bg-muted': '#f5f4f2',
   'bg-card': '#ffffff',
   'bg-background': '#ffffff',
 }
@@ -419,7 +431,7 @@ function forceOpaqueStyles(container: HTMLElement): void {
   // 处理 bg-muted 类
   container.querySelectorAll('[class*="bg-muted"]').forEach((el) => {
     const htmlEl = el as HTMLElement
-    htmlEl.style.setProperty('background-color', '#f4f4f5', 'important')
+    htmlEl.style.setProperty('background-color', '#f5f4f2', 'important')
     htmlEl.style.setProperty('opacity', '1', 'important')
   })
 
@@ -448,7 +460,7 @@ function forceOpaqueStyles(container: HTMLElement): void {
     const htmlEl = el as HTMLElement
     const computed = window.getComputedStyle(htmlEl)
     if (computed.borderColor?.includes('oklch') || computed.borderTopColor?.includes('oklch')) {
-      htmlEl.style.setProperty('border-color', '#e4e4e7', 'important')
+      htmlEl.style.setProperty('border-color', '#e7e5e4', 'important')
     }
   })
 
@@ -475,7 +487,7 @@ function forceOpaqueStyles(container: HTMLElement): void {
 
     // 如果没有匹配到特殊颜色类，且颜色包含 oklch，则设置默认颜色
     if (!textColorSet && computed.color?.includes('oklch')) {
-      htmlEl.style.setProperty('color', '#0f172a', 'important')
+      htmlEl.style.setProperty('color', '#1c1917', 'important')
     }
 
     // 处理特殊背景颜色类
@@ -596,13 +608,13 @@ async function ensureVideoThumbnails(container: HTMLElement): Promise<void> {
         placeholder.style.cssText = `
         width: ${video.offsetWidth || 200}px;
         height: ${video.offsetHeight || 150}px;
-        background: #f3f4f6;
-        border: 2px dashed #d1d5db;
+        background: #f5f4f2;
+        border: 2px dashed #e7e5e4;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #6b7280;
+        color: #78716c;
         font-size: 14px;
       `
         placeholder.innerHTML = '🎥 <span>Video</span>'

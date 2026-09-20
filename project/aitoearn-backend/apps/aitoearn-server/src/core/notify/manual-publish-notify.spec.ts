@@ -5,6 +5,7 @@
  * 接这里就不用去碰 publishing 模块（那是另一个 Agent 的地盘）。
  */
 import { Logger } from '@nestjs/common'
+import { UserType } from '@yikart/common'
 import { ExecutionTaskMode, ExecutionTaskStatus, ExecutionTaskType } from '@yikart/mongodb'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ExecutionTasksService } from '../execution-tasks/execution-tasks.service'
@@ -65,9 +66,30 @@ describe('建 manual 工单时推一条提醒', () => {
       payload: PUBLISH_PAYLOAD,
     })
 
-    expect(notifyManualPublishPending).toHaveBeenCalledWith({
-      platform: 'xhs',
-      title: '导出藏得太深，四步变一步',
+    expect(notifyManualPublishPending).toHaveBeenCalledWith(
+      {
+        platform: 'xhs',
+        title: '导出藏得太深，四步变一步',
+      },
+      { userId: 'user-1', userType: UserType.User },
+    )
+  })
+
+  /**
+   * 不带 userId 的话这条推送只认服务器 `.env` 的默认配置：
+   * 用户在设置页填的地址读不到，他关掉的总开关和规则也管不到这一条。
+   */
+  it('推送带上工单的 userId，才读得到这个人自己配的通道和开关', async () => {
+    await service.create('user-9', {
+      projectId: 'proj-1',
+      type: ExecutionTaskType.PUBLISH,
+      mode: ExecutionTaskMode.MANUAL,
+      payload: PUBLISH_PAYLOAD,
+    })
+
+    expect(notifyManualPublishPending.mock.calls[0][1]).toEqual({
+      userId: 'user-9',
+      userType: UserType.User,
     })
   })
 

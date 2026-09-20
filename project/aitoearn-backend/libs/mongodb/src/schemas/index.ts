@@ -20,6 +20,7 @@ import { PublishDayInfo, PublishDayInfoSchema } from './publish-day-info.schema'
 import { PublishInfo, PublishInfoSchema } from './publish-info.schema'
 import { PublishRecord, PublishRecordSchema } from './publish-record.schema'
 import { PublishedPost, PublishedPostSchema } from './published-post.schema'
+import { UserNotifySetting, UserNotifySettingSchema } from './user-notify-setting.schema'
 import {
   User,
   UserSchema,
@@ -47,6 +48,7 @@ export * from './publish-day-info.schema'
 export * from './publish-info.schema'
 export * from './publish-record.schema'
 export * from './published-post.schema'
+export * from './user-notify-setting.schema'
 export * from './user.schema'
 
 export const schemas = [
@@ -73,4 +75,5 @@ export const schemas = [
   { name: Device.name, schema: DeviceSchema },
   { name: ExecutionTask.name, schema: ExecutionTaskSchema },
   { name: PublishedPost.name, schema: PublishedPostSchema },
+  { name: UserNotifySetting.name, schema: UserNotifySettingSchema },
 ] as const

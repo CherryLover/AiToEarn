@@ -1,6 +1,13 @@
 /**
  * ChatMessage 样式
  * 包含 Markdown 内容渲染和多步骤工作流展示样式
+ *
+ * 颜色一律用 globals.css 的主题变量，不写死色值，暗色因此自动跟着走
+ * （这个文件原来整套是写死的紫罗兰系，而且只有亮色一版）。
+ *
+ * 这里刻意不用 color-mix()：同一套样式会被 Chat/Share/generateShareImages.ts
+ * 拿去用 html2canvas 截图分享，那条链路对函数式颜色的支持不可靠，
+ * 它的做法是在容器上把这些变量冻结成一组浅色 hex。只引用变量本身最稳。
  */
 
 // 消息步骤容器
@@ -39,7 +46,7 @@
 .workflowDetailList {
   max-height: 200px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+  scrollbar-color: var(--border) transparent;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -51,11 +58,11 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(139, 92, 246, 0.3);
+    background: var(--border);
     border-radius: 2px;
 
     &:hover {
-      background: rgba(139, 92, 246, 0.5);
+      background: var(--muted-foreground);
     }
   }
 }
@@ -105,7 +112,7 @@
     margin: 16px 0 8px 0;
     font-weight: 600;
     line-height: 1.4;
-    color: #1a1a1a;
+    color: var(--foreground);
   }
 
   :global(h1:first-child),
@@ -183,17 +190,18 @@
   // 代码块
   :global(code) {
     padding: 2px 6px;
-    background: rgba(139, 92, 246, 0.1);
+    background: var(--muted);
     border-radius: 4px;
     font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
     font-size: 13px;
-    color: #7c3aed;
+    color: var(--primary);
   }
 
   :global(pre) {
     margin: 12px 0;
     padding: 12px 16px;
-    background: #1e1e1e;
+    background: var(--secondary);
+    border: 1px solid var(--border);
     border-radius: 8px;
     overflow-x: auto;
   }
@@ -205,7 +213,7 @@
   :global(pre code) {
     padding: 0;
     background: transparent;
-    color: #d4d4d4;
+    color: var(--foreground);
     font-size: 13px;
     line-height: 1.5;
   }
@@ -214,8 +222,8 @@
   :global(blockquote) {
     margin: 12px 0;
     padding: 8px 16px;
-    border-left: 4px solid #a855f7;
-    background: rgba(168, 85, 247, 0.05);
+    border-left: 4px solid var(--primary);
+    background: var(--muted);
     border-radius: 0 8px 8px 0;
   }
 
@@ -223,15 +231,17 @@
     margin-bottom: 0;
   }
 
+  // 引用里是正文，按 globals.css 的规矩必须用 --foreground：
+  // --muted-foreground 压在 --muted 上只有 4.36:1，够不到 4.5
   :global(blockquote p) {
     margin: 0;
-    color: #4b5563;
+    color: var(--foreground);
     font-style: italic;
   }
 
   // 链接
   :global(a) {
-    color: #7c3aed;
+    color: var(--primary);
     text-decoration: none;
     font-weight: 500;
     /* 支持长链接/无空格字符串换行，防止溢出气泡容器 */
@@ -244,13 +254,13 @@
 
   :global(a:hover) {
     text-decoration: underline;
-    color: #6d28d9;
+    color: var(--primary);
   }
 
   // 粗体 & 斜体
   :global(strong) {
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--foreground);
   }
 
   :global(em) {
@@ -261,7 +271,7 @@
   :global(hr) {
     margin: 16px 0;
     border: none;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--border);
   }
 
   // 表格
@@ -279,18 +289,18 @@
   :global(th),
   :global(td) {
     padding: 8px 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border);
     text-align: left;
   }
 
   :global(th) {
-    background: #f9fafb;
+    background: var(--muted);
     font-weight: 600;
-    color: #374151;
+    color: var(--foreground);
   }
 
   :global(tr:nth-child(even)) {
-    background: #fafafa;
+    background: var(--muted);
   }
 
   // 图片
@@ -304,6 +314,6 @@
   // 删除线
   :global(del) {
     text-decoration: line-through;
-    color: #9ca3af;
+    color: var(--muted-foreground);
   }
 }

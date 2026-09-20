@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Options } from '@anthropic-ai/claude-agent-sdk'
 import { Test } from '@nestjs/testing'
-import { AppException, ResponseCode } from '@yikart/common'
+import { AppException, ResponseCode, UserType } from '@yikart/common'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NotifyService } from '../../notify/notify.service'
 import { AgentRuntimeService } from './agent-runtime.service'
@@ -87,6 +87,8 @@ vi.mock('@yikart/mongodb', () => autoStubModule({
     Aborted: 'aborted',
     RequiresAction: 'requiresAction',
   },
+  // 推送要按规则类型判开关，这个枚举是真值，不能让 autoStub 变成空类
+  NotifyRuleType: { DRAFT_READY: 'draft_ready' },
   Transactional: () => () => undefined,
 }))
 
@@ -277,6 +279,7 @@ describe('agentRuntimeService · 草稿完成推送', () => {
   let tmpRoot: string
   let root: string
   let sendMock: ReturnType<typeof vi.fn>
+  let canNotifyMock: ReturnType<typeof vi.fn>
 
   /** 造一份草稿，并把目录时间戳设成指定时刻 */
   function writeDraft(name: string, at: Date) {
@@ -288,11 +291,14 @@ describe('agentRuntimeService · 草稿完成推送', () => {
     utimesSync(dir, seconds, seconds)
   }
 
-  async function runHook(context: { projectName?: string, startedAt: Date }) {
+  async function runHook(
+    context: { projectName?: string, startedAt: Date },
+    user?: { userId: string, userType: UserType },
+  ) {
+    // 真实的 NotifyService 把「配没配」和「规则开没开」一起收进 canNotify 里回答，
+    // 这里按同一个契约桩：canNotifyMock 说不推，钩子就连草稿目录都不该去读
     const notifyStub = {
-      get enabled() {
-        return notifyConfig.enabled
-      },
+      canNotify: canNotifyMock,
       notifyDraftReady: sendMock,
     }
 
@@ -307,10 +313,13 @@ describe('agentRuntimeService · 草稿完成推送', () => {
       .compile()
 
     const service = moduleRef.get(AgentRuntimeService) as unknown as {
-      notifyDraftReady: (context?: { projectName?: string, startedAt: Date }) => Promise<void>
+      notifyDraftReady: (
+        context?: { projectName?: string, startedAt: Date },
+        user?: { userId: string, userType: UserType },
+      ) => Promise<void>
     }
 
-    await service.notifyDraftReady(context)
+    await service.notifyDraftReady(context, user)
   }
 
   beforeEach(() => {
@@ -320,6 +329,7 @@ describe('agentRuntimeService · 草稿完成推送', () => {
     projectsConfig.root = root
     notifyConfig.enabled = true
     sendMock = vi.fn().mockResolvedValue(true)
+    canNotifyMock = vi.fn().mockResolvedValue(true)
   })
 
   afterEach(() => {
@@ -339,7 +349,7 @@ describe('agentRuntimeService · 草稿完成推送', () => {
       angle: 'export-friction',
       platform: 'xhs',
       draftCount: 1,
-    })
+    }, undefined)
   })
 
   it('这一轮没写草稿就不推：提炼方向、闲聊不会误报', async () => {
@@ -360,11 +370,34 @@ describe('agentRuntimeService · 草稿完成推送', () => {
 
   it('没配推送就静默跳过，连草稿目录都不去读', async () => {
     notifyConfig.enabled = false
+    canNotifyMock.mockResolvedValue(false)
     writeDraft('2026-09-18-xhs-export-friction', new Date())
 
     await runHook({ projectName: 'demo', startedAt: new Date(Date.now() - 60_000) })
 
     expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('用户把「AI 生成素材结束后通知」这条规则关掉，生成完就不推', async () => {
+    canNotifyMock.mockResolvedValue(false)
+    writeDraft('2026-09-18-xhs-export-friction', new Date())
+
+    await runHook(
+      { projectName: 'demo', startedAt: new Date(Date.now() - 60_000) },
+      { userId: 'u-1', userType: UserType.User },
+    )
+
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('查规则时把当前用户带上，推送时也带上 —— 不然读不到这个人自己配的 Bark', async () => {
+    const user = { userId: 'u-1', userType: UserType.User }
+    writeDraft('2026-09-18-xhs-export-friction', new Date())
+
+    await runHook({ projectName: 'demo', startedAt: new Date(Date.now() - 60_000) }, user)
+
+    expect(canNotifyMock).toHaveBeenCalledWith('draft_ready', user)
+    expect(sendMock).toHaveBeenCalledWith(expect.objectContaining({ projectName: 'demo' }), user)
   })
 
   it('项目目录不存在也不抛错，主流程不受影响', async () => {

@@ -1,6 +1,17 @@
+/**
+ * websit 系列静态页（隐私政策、服务条款、数据删除等）的样式
+ *
+ * 颜色统一走 globals.css 的主题变量，不再写死：
+ * 这套原来是一整页写死的 #733dec 紫 + 冷灰，换主色后整站只剩这几页还是紫的。
+ * 换成变量之后暗色模式也一起有了（原来只有亮色一版）。
+ *
+ * 信息框 / 警告框用语义色调出底色和描边，文字一律 --foreground：
+ * --info / --warning 原值当文字压在自己的浅色底上只有 2.9~3.5，够不到正文的 4.5。
+ */
+
 .websitPage {
   min-height: 100vh;
-  background: #fff;
+  background: var(--background);
 }
 
 .header {
@@ -8,9 +19,9 @@
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
+  background: color-mix(in oklab, var(--background) 92%, transparent);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--border);
   z-index: 100;
 }
 
@@ -32,7 +43,7 @@
 .logoText {
   font-size: 24px;
   font-weight: bold;
-  color: #733dec;
+  color: var(--primary);
 }
 
 .nav {
@@ -45,19 +56,19 @@
 }
 
 .navLink {
-  color: #6b7280;
+  color: var(--muted-foreground);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 
   &:hover {
-    color: #111827;
+    color: var(--foreground);
   }
 }
 
 .getStartedBtn {
-  background: #733dec;
-  color: white;
+  background: var(--primary);
+  color: var(--primary-foreground);
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
@@ -66,7 +77,7 @@
   transition: background 0.2s;
 
   &:hover {
-    background: #5b2bc7;
+    background: color-mix(in oklab, var(--primary) 85%, var(--foreground));
   }
 }
 
@@ -85,13 +96,13 @@
   text-align: center;
   margin-bottom: 48px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 
 .title {
   font-size: 48px;
   font-weight: bold;
-  color: #111827;
+  color: var(--foreground);
   margin-bottom: 16px;
 
   @media (max-width: 768px) {
@@ -100,7 +111,7 @@
 }
 
 .lastUpdated {
-  color: #6b7280;
+  color: var(--muted-foreground);
   font-size: 14px;
 }
 
@@ -114,23 +125,23 @@
 
 .introduction {
   font-size: 18px;
-  color: #374151;
+  color: var(--foreground);
   margin-bottom: 32px;
   padding: 24px;
-  background: #f9fafb;
+  background: var(--muted);
   border-radius: 12px;
-  border-left: 4px solid #733dec;
+  border-left: 4px solid var(--primary);
 }
 
 .sectionTitle {
   font-size: 24px;
   font-weight: 600;
-  color: #111827;
+  color: var(--foreground);
   margin-bottom: 16px;
 }
 
 .sectionContent {
-  color: #374151;
+  color: var(--foreground);
   font-size: 16px;
   margin-bottom: 16px;
 }
@@ -146,13 +157,13 @@
   align-items: flex-start;
   margin-bottom: 16px;
   padding: 16px;
-  background: #f9fafb;
+  background: var(--muted);
   border-radius: 8px;
 }
 
 .stepNumber {
-  background: #733dec;
-  color: white;
+  background: var(--primary);
+  color: var(--primary-foreground);
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -166,13 +177,13 @@
 }
 
 .stepText {
-  color: #374151;
+  color: var(--foreground);
   font-size: 16px;
 }
 
 .contactInfo {
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
+  background: color-mix(in oklab, var(--info) 8%, var(--card));
+  border: 1px solid color-mix(in oklab, var(--info) 28%, transparent);
   border-radius: 12px;
   padding: 24px;
   margin: 32px 0;
@@ -181,18 +192,18 @@
 .contactTitle {
   font-size: 18px;
   font-weight: 600;
-  color: #1e40af;
+  color: var(--foreground);
   margin-bottom: 12px;
 }
 
 .contactText {
-  color: #1e40af;
+  color: var(--foreground);
   font-size: 16px;
 }
 
 .warningBox {
-  background: #fef3cd;
-  border: 1px solid #facc15;
+  background: color-mix(in oklab, var(--warning) 10%, var(--card));
+  border: 1px solid color-mix(in oklab, var(--warning) 35%, transparent);
   border-radius: 12px;
   padding: 24px;
   margin: 32px 0;
@@ -201,19 +212,19 @@
 .warningTitle {
   font-size: 18px;
   font-weight: 600;
-  color: #a16207;
+  color: var(--foreground);
   margin-bottom: 12px;
 }
 
 .warningText {
-  color: #a16207;
+  color: var(--foreground);
   font-size: 16px;
 }
 
 .subSectionTitle {
   font-size: 20px;
   font-weight: 600;
-  color: #111827;
+  color: var(--foreground);
   margin-bottom: 12px;
   margin-top: 24px;
 }
@@ -223,18 +234,18 @@
   padding-left: 20px;
 
   li {
-    color: #374151;
+    color: var(--foreground);
     font-size: 16px;
     margin-bottom: 8px;
     line-height: 1.6;
 
     a {
-      color: #733dec;
+      color: var(--primary);
       text-decoration: none;
       transition: color 0.2s;
 
       &:hover {
-        color: #5b21b6;
+        color: color-mix(in oklab, var(--primary) 82%, var(--foreground));
         text-decoration: underline;
       }
     }
@@ -244,25 +255,25 @@
 .contactTitle {
   font-size: 18px;
   font-weight: 600;
-  color: #111827;
+  color: var(--foreground);
   margin-bottom: 12px;
 }
 
 .contactText {
-  color: #374151;
+  color: var(--foreground);
   font-size: 16px;
   line-height: 1.6;
   margin-bottom: 12px;
 
   strong {
-    color: #111827;
+    color: var(--foreground);
     font-weight: 600;
   }
 }
 
 .contactInfo {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--muted);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 24px;
   margin: 24px 0;
@@ -280,9 +291,9 @@
   align-items: flex-start;
   margin-bottom: 16px;
   padding: 16px;
-  background: #f8fafc;
+  background: var(--muted);
   border-radius: 8px;
-  border-left: 4px solid #733dec;
+  border-left: 4px solid var(--primary);
 }
 
 .stepNumber {
@@ -291,8 +302,8 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: #733dec;
-  color: white;
+  background: var(--primary);
+  color: var(--primary-foreground);
   border-radius: 50%;
   font-weight: 600;
   font-size: 16px;
@@ -301,15 +312,15 @@
 }
 
 .stepText {
-  color: #374151;
+  color: var(--foreground);
   font-size: 16px;
   line-height: 1.6;
   flex: 1;
 }
 
 .warningBox {
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
+  background: color-mix(in oklab, var(--warning) 10%, var(--card));
+  border: 1px solid color-mix(in oklab, var(--warning) 35%, transparent);
   border-radius: 12px;
   padding: 20px;
   margin: 24px 0;
@@ -318,6 +329,6 @@
 .warningTitle {
   font-size: 18px;
   font-weight: 600;
-  color: #92400e;
+  color: var(--foreground);
   margin-bottom: 8px;
 }

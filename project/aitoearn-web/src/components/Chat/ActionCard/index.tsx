@@ -99,10 +99,9 @@ export function ActionCard({ action, className }: IActionCardProps) {
           title: t('action.insufficientCredits') || '积分不足',
           description: t('action.insufficientCreditsDesc') || '任务已暂停，请充值积分后继续。',
           buttonText: t('action.rechargeCredits') || '充值积分',
-          bgClass:
-            'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30',
-          borderClass: 'border-amber-200 dark:border-amber-800',
-          iconClass: 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50',
+          bgClass: 'bg-warning/8 dark:bg-warning/12',
+          borderClass: 'border-warning/30',
+          iconClass: 'text-foreground bg-warning/20',
         }
       case 'errorOnly':
         return {
@@ -110,10 +109,9 @@ export function ActionCard({ action, className }: IActionCardProps) {
           title: action.title || t('action.error') || '生成失败',
           description: action.description || t('action.errorDesc') || '生成失败，请稍后重试。',
           buttonText: '',
-          bgClass:
-            'bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30',
-          borderClass: 'border-rose-200 dark:border-rose-800',
-          iconClass: 'text-rose-600 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/50',
+          bgClass: 'bg-destructive/8 dark:bg-destructive/12',
+          borderClass: 'border-destructive/30',
+          iconClass: 'text-foreground bg-destructive/20',
         }
       case 'createChannel':
         return {
@@ -123,10 +121,9 @@ export function ActionCard({ action, className }: IActionCardProps) {
             t('action.addChannelDesc', { platform: platformName })
             || `You haven't connected a ${platformName} account yet. Please add a channel to publish content.`,
           buttonText: t('action.addChannelNow') || 'Add Channel',
-          bgClass:
-            'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30',
-          borderClass: 'border-blue-200 dark:border-blue-800',
-          iconClass: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50',
+          bgClass: 'bg-info/8 dark:bg-info/12',
+          borderClass: 'border-info/30',
+          iconClass: 'text-foreground bg-info/20',
         }
       case 'updateChannel':
         return {
@@ -136,10 +133,9 @@ export function ActionCard({ action, className }: IActionCardProps) {
             t('action.updateAuthDesc', { platform: platformName })
             || `${platformName} 账号授权已过期，请重新授权`,
           buttonText: t('action.reauthorize') || '重新授权',
-          bgClass:
-            'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30',
-          borderClass: 'border-amber-200 dark:border-amber-800',
-          iconClass: 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50',
+          bgClass: 'bg-warning/8 dark:bg-warning/12',
+          borderClass: 'border-warning/30',
+          iconClass: 'text-foreground bg-warning/20',
         }
       case 'loginChannel':
         return {
@@ -149,10 +145,9 @@ export function ActionCard({ action, className }: IActionCardProps) {
             t('action.loginChannelDesc', { platform: platformName })
             || `请先登录 ${platformName} 账号`,
           buttonText: t('action.goLogin') || '去登录',
-          bgClass:
-            'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30',
-          borderClass: 'border-purple-200 dark:border-purple-800',
-          iconClass: 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50',
+          bgClass: 'bg-primary/8 dark:bg-primary/12',
+          borderClass: 'border-primary/30',
+          iconClass: 'text-foreground bg-primary/20',
         }
       case 'navigateToPublish':
         return {
@@ -162,10 +157,9 @@ export function ActionCard({ action, className }: IActionCardProps) {
             t('action.readyToPublishDesc', { platform: platformName })
             || `内容已准备好，可以发布到 ${platformName}`,
           buttonText: t('action.goPublish') || '去发布',
-          bgClass:
-            'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30',
-          borderClass: 'border-green-200 dark:border-green-800',
-          iconClass: 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50',
+          bgClass: 'bg-success/8 dark:bg-success/12',
+          borderClass: 'border-success/30',
+          iconClass: 'text-foreground bg-success/20',
         }
       default:
         return null

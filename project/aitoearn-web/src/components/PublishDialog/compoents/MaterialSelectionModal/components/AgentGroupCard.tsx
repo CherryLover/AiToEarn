@@ -40,7 +40,7 @@ export function AgentGroupCard({ onClick, count }: AgentGroupCardProps) {
       {/* 封面区域 - 渐变背景 */}
       <div className="relative aspect-[16/10] overflow-hidden">
         {/* 渐变背景 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-purple via-primary to-brand-cyan" />
 
         {/* 装饰元素 */}
         <div className="absolute inset-0 overflow-hidden">

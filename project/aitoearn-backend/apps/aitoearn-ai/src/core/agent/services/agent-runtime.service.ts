@@ -1,3 +1,4 @@
+import type { NotifyUserRef } from '../../notify/notify-settings.service'
 import { spawn } from 'node:child_process'
 import * as fs from 'node:fs'
 import { join } from 'node:path'
@@ -41,6 +42,7 @@ import { config } from '../../../config'
 import { AiAvailabilityService } from '../../ai-availability'
 import { RelayMediaResolverService } from '../../ai/relay-media'
 import { findDraftWrittenSince } from '../../notify/draft-summary'
+import { NotifyRuleType } from '../../notify/notify-settings.service'
 import { NotifyService } from '../../notify/notify.service'
 import { ChannelsToolName, CLAUDE_CODE_ROUTER_PROVIDER_NAME, McpServerName, POLLING_TASK_AGENT_PROMPT, SKILL_ANALYZER_AGENT_PROMPT, SYSTEM_PROMPT } from '../agent.constants'
 import { ContentBlock, CreateContentGenerationTaskDto } from '../agent.dto'
@@ -893,8 +895,9 @@ export class AgentRuntimeService {
 
           void this.contentGenerateRepository.updateStatus(taskId, finalStatus)
 
-          // 任务跑完这一刻才知道有没有真写出草稿。推送不等它，也不让它影响这条消息的返回
-          void this.notifyDraftReady(notifyContext)
+          // 任务跑完这一刻才知道有没有真写出草稿。推送不等它，也不让它影响这条消息的返回。
+          // 带上 userId / userType：推送要先查这个人自己配的 Bark 地址和规则开关
+          void this.notifyDraftReady(notifyContext, { userId, userType })
 
           return ContentGenerationTaskAgentChunkVo.create({
             type: this.getMessageType(chunk),
@@ -950,11 +953,18 @@ export class AgentRuntimeService {
    *
    * 只有**这一轮真的往 `drafts/` 里写了东西**才推。提炼方向、闲聊这些同样带 projectName 的任务
    * 不会误报；没配推送、读不到草稿目录、推送失败，一律安静退出，主流程一点感知都没有。
+   *
+   * 推不推由 `NotifyService.canNotify` 说了算：它把「这个人配没配 Bark」和
+   * 「`draft_ready` 这条规则开没开」一起算完再回答。**先问再扫草稿目录**——
+   * 用户把这条规则关掉时，连目录都不用去读。
    */
-  private async notifyDraftReady(context?: DraftNotifyContext): Promise<void> {
+  private async notifyDraftReady(context?: DraftNotifyContext, user?: NotifyUserRef): Promise<void> {
     try {
       const projectName = context?.projectName
-      if (!projectName || !this.notifyService?.enabled)
+      if (!projectName || !this.notifyService)
+        return
+
+      if (!await this.notifyService.canNotify(NotifyRuleType.DRAFT_READY, user))
         return
 
       const projectDir = this.projectWorkspace.resolveProjectCwd(projectName)
@@ -971,7 +981,7 @@ export class AgentRuntimeService {
         angle: draft.angle,
         platform: draft.platform,
         draftCount: draft.count,
-      })
+      }, user)
     }
     catch (error) {
       this.logger.warn(error, '草稿完成推送失败')

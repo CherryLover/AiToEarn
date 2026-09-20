@@ -3,17 +3,23 @@
  * 状态配置、进度配置等常量
  */
 
-/** 状态显示配置 */
+/**
+ * 状态显示配置
+ *
+ * color 是直接当 CSS 颜色值用的，所以写成主题变量：进行中一律主色，
+ * 完成 / 失败 / 取消走语义色，暗色模式跟着 globals.css 自动切。
+ * （原来是一组写死的紫罗兰色，换主色后会变成页面上的紫色孤岛。）
+ */
 export const STATUS_CONFIG: Record<string, { text: string, color: string }> = {
-  THINKING: { text: 'thinking', color: '#a66ae4' },
-  WAITING: { text: 'waiting', color: '#b78ae9' },
-  GENERATING_CONTENT: { text: 'generatingContent', color: '#a66ae4' },
-  GENERATING_IMAGE: { text: 'generatingImage', color: '#8b4fd9' },
-  GENERATING_VIDEO: { text: 'generatingVideo', color: '#9558de' },
-  GENERATING_TEXT: { text: 'generatingText', color: '#a66ae4' },
-  COMPLETED: { text: 'completed', color: '#52c41a' },
-  FAILED: { text: 'failed', color: '#ff4d4f' },
-  CANCELLED: { text: 'cancelled', color: '#8c8c8c' },
+  THINKING: { text: 'thinking', color: 'var(--primary)' },
+  WAITING: { text: 'waiting', color: 'var(--muted-foreground)' },
+  GENERATING_CONTENT: { text: 'generatingContent', color: 'var(--primary)' },
+  GENERATING_IMAGE: { text: 'generatingImage', color: 'var(--primary)' },
+  GENERATING_VIDEO: { text: 'generatingVideo', color: 'var(--primary)' },
+  GENERATING_TEXT: { text: 'generatingText', color: 'var(--primary)' },
+  COMPLETED: { text: 'completed', color: 'var(--success)' },
+  FAILED: { text: 'failed', color: 'var(--destructive)' },
+  CANCELLED: { text: 'cancelled', color: 'var(--muted-foreground)' },
 }
 
 /** 基础进度配置 */

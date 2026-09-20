@@ -1,7 +1,17 @@
 /**
  * EcosystemDiagram - AiToEarn 生态系统图
  * 一图解释 AiToEarn 的核心功能和生态闭环
- * 设计风格：白色背景 + 宇宙行星动画 + 环形布局 + 自动轮播详情
+ * 设计风格：卡片背景 + 宇宙行星动画 + 环形布局 + 自动轮播详情
+ *
+ * 配色：整张图只用主题里的两支颜色——左边「创作者」星球走主色（primary / brand-purple），
+ * 右边「需求者」小行星走强调色（warning），中间的交易带是两者过渡。
+ * 全部是装饰层，透明度压得很低，不跟正文抢；亮色暗色靠变量自动切，不各写一套。
+ *
+ * 注意光晕的写法：任意值里只写形状和颜色变量（shadow-[0_0_8px_2px_var(--primary)]），
+ * 透明度必须另起一个 shadow-primary/40。不要把 color-mix() 写进任意值——
+ * Tailwind 会把它当成「颜色 + 透明度」再按自己的规则重写，百分比和 transparent 会被吃掉，
+ * 编译出来是满不透明的光晕（实测过）。同一条规则里的多重阴影只共用一个 --tw-shadow-color，
+ * 所以内外光晕用同一支颜色。
  */
 'use client'
 
@@ -74,7 +84,7 @@ export function EcosystemDiagram() {
         </div>
 
         {/* 生态系统图 - 白色背景容器 */}
-        <div className={cn('relative rounded-3xl overflow-hidden', 'bg-white dark:bg-background')}>
+        <div className={cn('relative rounded-3xl overflow-hidden', 'bg-card dark:bg-background')}>
           {/* 内容区域 */}
           <div className="relative z-10 py-12 md:py-16 px-6 md:px-12">
             {/* 桌面端布局 */}
@@ -83,37 +93,37 @@ export function EcosystemDiagram() {
               <div className="relative">
                 <div className="relative w-[320px] h-[320px] lg:w-[380px] lg:h-[380px]">
                   {/* 宇宙背景光晕 */}
-                  <div className="absolute inset-[-20px] rounded-full bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-cyan-500/5 blur-2xl animate-pulse" />
+                  <div className="absolute inset-[-20px] rounded-full bg-gradient-to-r from-primary/5 via-brand-purple/5 to-primary/5 blur-2xl animate-pulse" />
 
                   {/* 最外层轨道环 - 缓慢旋转 */}
-                  <div className="absolute inset-0 rounded-full border border-dashed border-blue-300/30 dark:border-blue-400/20 animate-[spin_60s_linear_infinite]">
+                  <div className="absolute inset-0 rounded-full border border-dashed border-primary/25 dark:border-primary/20 animate-[spin_60s_linear_infinite]">
                     {/* 轨道上的卫星点 */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-blue-400/60 shadow-[0_0_8px_2px_rgba(59,130,246,0.4)]" />
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1.5 h-1.5 rounded-full bg-purple-400/60 shadow-[0_0_6px_2px_rgba(168,85,247,0.4)]" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/60 shadow-[0_0_8px_2px_var(--primary)] shadow-primary/40" />
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1.5 h-1.5 rounded-full bg-brand-purple/60 shadow-[0_0_6px_2px_var(--brand-purple)] shadow-brand-purple/40" />
                   </div>
 
                   {/* 第二层轨道环 - 反向旋转 */}
-                  <div className="absolute inset-6 rounded-full border border-purple-300/30 dark:border-purple-400/20 animate-[spin_45s_linear_infinite_reverse]">
+                  <div className="absolute inset-6 rounded-full border border-brand-purple/25 dark:border-primary/20 animate-[spin_45s_linear_infinite_reverse]">
                     {/* 轨道上的卫星点 */}
-                    <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-cyan-400/70 shadow-[0_0_10px_3px_rgba(34,211,238,0.5)]" />
-                    <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-indigo-400/60 shadow-[0_0_6px_2px_rgba(129,140,248,0.4)]" />
+                    <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-primary/70 shadow-[0_0_10px_3px_var(--primary)] shadow-primary/50" />
+                    <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-brand-purple/60 shadow-[0_0_6px_2px_var(--brand-purple)] shadow-brand-purple/40" />
                   </div>
 
                   {/* 第三层轨道环 - 正向旋转较快 */}
-                  <div className="absolute inset-12 rounded-full border border-cyan-300/30 dark:border-cyan-400/20 animate-[spin_30s_linear_infinite]">
+                  <div className="absolute inset-12 rounded-full border border-primary/20 dark:border-primary/15 animate-[spin_30s_linear_infinite]">
                     {/* 轨道上的卫星点 */}
-                    <div className="absolute bottom-1/4 right-0 translate-x-1/2 w-2 h-2 rounded-full bg-pink-400/60 shadow-[0_0_8px_2px_rgba(244,114,182,0.4)]" />
+                    <div className="absolute bottom-1/4 right-0 translate-x-1/2 w-2 h-2 rounded-full bg-warning/60 shadow-[0_0_8px_2px_var(--warning)] shadow-warning/40" />
                   </div>
 
                   {/* 内层发光星球核心 */}
                   <div className="absolute inset-[72px] lg:inset-20 rounded-full overflow-hidden">
                     {/* 多层渐变光晕 */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-100 via-purple-50 to-cyan-100 dark:from-blue-900/40 dark:via-purple-900/30 dark:to-cyan-900/40" />
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/15 via-primary/5 to-brand-purple/15 dark:from-primary/25 dark:via-primary/10 dark:to-brand-purple/25" />
                     <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/50 to-transparent dark:via-white/10 animate-[spin_20s_linear_infinite]" />
                     {/* 核心光芒 */}
-                    <div className="absolute inset-2 rounded-full bg-white/80 dark:bg-background/80 shadow-[inset_0_0_30px_rgba(59,130,246,0.15),0_0_20px_rgba(139,92,246,0.1)]" />
+                    <div className="absolute inset-2 rounded-full bg-card/80 dark:bg-background/80 shadow-[inset_0_0_30px_var(--primary),0_0_20px_var(--primary)] shadow-primary/15" />
                     {/* 脉动光环 */}
-                    <div className="absolute inset-0 rounded-full border-2 border-blue-200/30 dark:border-blue-500/20 animate-ping opacity-30" />
+                    <div className="absolute inset-0 rounded-full border-2 border-primary/25 dark:border-primary/20 animate-ping opacity-30" />
                   </div>
 
                   {/* 中心文字 */}
@@ -124,10 +134,10 @@ export function EcosystemDiagram() {
                   </div>
 
                   {/* 星星装饰粒子 */}
-                  <div className="absolute top-[10%] left-[15%] w-1 h-1 rounded-full bg-blue-400/80 animate-[twinkle_2s_ease-in-out_infinite]" />
-                  <div className="absolute top-[20%] right-[10%] w-0.5 h-0.5 rounded-full bg-purple-400/80 animate-[twinkle_3s_ease-in-out_infinite_0.5s]" />
-                  <div className="absolute bottom-[15%] left-[10%] w-1 h-1 rounded-full bg-cyan-400/80 animate-[twinkle_2.5s_ease-in-out_infinite_1s]" />
-                  <div className="absolute bottom-[25%] right-[15%] w-0.5 h-0.5 rounded-full bg-pink-400/80 animate-[twinkle_2s_ease-in-out_infinite_1.5s]" />
+                  <div className="absolute top-[10%] left-[15%] w-1 h-1 rounded-full bg-primary/70 animate-[twinkle_2s_ease-in-out_infinite]" />
+                  <div className="absolute top-[20%] right-[10%] w-0.5 h-0.5 rounded-full bg-brand-purple/70 animate-[twinkle_3s_ease-in-out_infinite_0.5s]" />
+                  <div className="absolute bottom-[15%] left-[10%] w-1 h-1 rounded-full bg-primary/60 animate-[twinkle_2.5s_ease-in-out_infinite_1s]" />
+                  <div className="absolute bottom-[25%] right-[15%] w-0.5 h-0.5 rounded-full bg-warning/70 animate-[twinkle_2s_ease-in-out_infinite_1.5s]" />
 
                   {/* 功能节点 - 均匀分布在圆环周围 */}
                   {nodeOrder.map((key, index) => {
@@ -170,16 +180,16 @@ export function EcosystemDiagram() {
                       />
                     </svg>
                     {/* 能量粒子动画 */}
-                    <div className="absolute top-1/2 left-0 w-1 h-1 rounded-full bg-blue-400 animate-[energyFlow_1.5s_ease-in-out_infinite]" />
+                    <div className="absolute top-1/2 left-0 w-1 h-1 rounded-full bg-primary animate-[energyFlow_1.5s_ease-in-out_infinite]" />
                   </div>
                 </div>
 
-                <div className="relative px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border border-blue-200/50 dark:border-blue-700/30 shadow-md">
+                <div className="relative px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/8 to-warning/8 dark:from-primary/15 dark:to-warning/15 border border-primary/20 dark:border-primary/25 shadow-md">
                   <span className="text-foreground font-medium text-sm whitespace-nowrap">
                     {t('ecosystem.trade')}
                   </span>
                   {/* 光晕效果 */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/10 to-purple-400/10 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/10 to-warning/10 animate-pulse" />
                 </div>
 
                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -193,7 +203,7 @@ export function EcosystemDiagram() {
                       />
                     </svg>
                     {/* 能量粒子动画 */}
-                    <div className="absolute top-1/2 right-0 w-1 h-1 rounded-full bg-purple-400 animate-[energyFlowReverse_1.5s_ease-in-out_infinite]" />
+                    <div className="absolute top-1/2 right-0 w-1 h-1 rounded-full bg-warning animate-[energyFlowReverse_1.5s_ease-in-out_infinite]" />
                   </div>
                   <span>{t('ecosystem.buy')}</span>
                 </div>
@@ -203,37 +213,37 @@ export function EcosystemDiagram() {
               <div>
                 <div className="relative w-32 h-32 lg:w-40 lg:h-40">
                   {/* 外层光晕 */}
-                  <div className="absolute inset-[-10px] rounded-full bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10 blur-xl animate-pulse" />
+                  <div className="absolute inset-[-10px] rounded-full bg-gradient-to-br from-warning/10 via-warning/8 to-primary/10 blur-xl animate-pulse" />
 
                   {/* 外层轨道环 - 缓慢旋转 */}
-                  <div className="absolute inset-[-8px] rounded-full border border-dashed border-purple-300/30 dark:border-purple-400/20 animate-[spin_40s_linear_infinite]">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-orange-400/70 shadow-[0_0_6px_2px_rgba(251,146,60,0.5)]" />
+                  <div className="absolute inset-[-8px] rounded-full border border-dashed border-warning/25 dark:border-warning/20 animate-[spin_40s_linear_infinite]">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-warning/70 shadow-[0_0_6px_2px_var(--warning)] shadow-warning/50" />
                   </div>
 
                   {/* 内层轨道 - 反向旋转 */}
-                  <div className="absolute inset-1 rounded-full border border-pink-300/25 dark:border-pink-400/15 animate-[spin_25s_linear_infinite_reverse]">
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1 h-1 rounded-full bg-cyan-400/60 shadow-[0_0_4px_2px_rgba(34,211,238,0.4)]" />
+                  <div className="absolute inset-1 rounded-full border border-warning/20 dark:border-warning/15 animate-[spin_25s_linear_infinite_reverse]">
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1 h-1 rounded-full bg-primary/60 shadow-[0_0_4px_2px_var(--primary)] shadow-primary/40" />
                   </div>
 
                   {/* 星球本体 */}
                   <div className="absolute inset-3 rounded-full overflow-hidden">
                     {/* 渐变背景 */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-100 via-pink-50 to-orange-100 dark:from-purple-900/40 dark:via-pink-900/30 dark:to-orange-900/40" />
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-warning/18 via-warning/6 to-primary/15 dark:from-warning/25 dark:via-warning/10 dark:to-primary/20" />
                     {/* 光泽效果 */}
                     <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/40 to-transparent dark:via-white/10 animate-[spin_15s_linear_infinite]" />
                     {/* 核心 */}
-                    <div className="absolute inset-1 rounded-full bg-white/90 dark:bg-background/90 shadow-[inset_0_0_20px_rgba(168,85,247,0.15),0_0_15px_rgba(244,114,182,0.1)] flex items-center justify-center">
+                    <div className="absolute inset-1 rounded-full bg-card/90 dark:bg-background/90 shadow-[inset_0_0_20px_var(--warning),0_0_15px_var(--warning)] shadow-warning/15 flex items-center justify-center">
                       <span className="text-foreground font-bold text-base lg:text-lg text-center px-2 drop-shadow-sm">
                         {t('ecosystem.consumer')}
                       </span>
                     </div>
                     {/* 脉动效果 */}
-                    <div className="absolute inset-0 rounded-full border border-purple-200/30 dark:border-purple-500/20 animate-ping opacity-20" />
+                    <div className="absolute inset-0 rounded-full border border-warning/25 dark:border-warning/20 animate-ping opacity-20" />
                   </div>
 
                   {/* 星星装饰 */}
-                  <div className="absolute top-[5%] right-[10%] w-0.5 h-0.5 rounded-full bg-pink-400/80 animate-[twinkle_2s_ease-in-out_infinite]" />
-                  <div className="absolute bottom-[10%] left-[5%] w-0.5 h-0.5 rounded-full bg-purple-400/80 animate-[twinkle_2.5s_ease-in-out_infinite_0.5s]" />
+                  <div className="absolute top-[5%] right-[10%] w-0.5 h-0.5 rounded-full bg-warning/70 animate-[twinkle_2s_ease-in-out_infinite]" />
+                  <div className="absolute bottom-[10%] left-[5%] w-0.5 h-0.5 rounded-full bg-primary/60 animate-[twinkle_2.5s_ease-in-out_infinite_0.5s]" />
                 </div>
               </div>
             </div>
@@ -244,19 +254,19 @@ export function EcosystemDiagram() {
               <div className="flex justify-center">
                 <div className="relative w-40 h-40">
                   {/* 光晕 */}
-                  <div className="absolute inset-[-10px] rounded-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-cyan-500/10 blur-xl animate-pulse" />
+                  <div className="absolute inset-[-10px] rounded-full bg-gradient-to-r from-primary/10 via-brand-purple/10 to-primary/10 blur-xl animate-pulse" />
 
                   {/* 轨道环 */}
-                  <div className="absolute inset-0 rounded-full border border-dashed border-blue-300/30 animate-[spin_40s_linear_infinite]">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-400/60 shadow-[0_0_6px_2px_rgba(59,130,246,0.4)]" />
+                  <div className="absolute inset-0 rounded-full border border-dashed border-primary/25 animate-[spin_40s_linear_infinite]">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary/60 shadow-[0_0_6px_2px_var(--primary)] shadow-primary/40" />
                   </div>
-                  <div className="absolute inset-4 rounded-full border border-purple-300/25 animate-[spin_30s_linear_infinite_reverse]">
-                    <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-cyan-400/60 shadow-[0_0_4px_2px_rgba(34,211,238,0.4)]" />
+                  <div className="absolute inset-4 rounded-full border border-brand-purple/25 animate-[spin_30s_linear_infinite_reverse]">
+                    <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-primary/60 shadow-[0_0_4px_2px_var(--primary)] shadow-primary/40" />
                   </div>
 
                   {/* 星球核心 */}
-                  <div className="absolute inset-8 rounded-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border border-blue-200/30 dark:border-blue-700/20 shadow-md">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/30 to-transparent animate-[spin_20s_linear_infinite]" />
+                  <div className="absolute inset-8 rounded-full bg-gradient-to-br from-primary/10 to-brand-purple/10 dark:from-primary/20 dark:to-brand-purple/20 border border-primary/20 dark:border-primary/25 shadow-md">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/30 to-transparent dark:via-white/10 animate-[spin_20s_linear_infinite]" />
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-foreground font-bold text-sm">
@@ -286,7 +296,7 @@ export function EcosystemDiagram() {
                   {' '}
                   →
                 </span>
-                <div className="relative px-4 py-2 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border border-blue-200/50 dark:border-blue-700/30 shadow-sm">
+                <div className="relative px-4 py-2 rounded-full bg-gradient-to-r from-primary/8 to-warning/8 dark:from-primary/15 dark:to-warning/15 border border-primary/20 dark:border-primary/25 shadow-sm">
                   <span className="text-foreground font-medium text-sm">
                     {t('ecosystem.trade')}
                   </span>
@@ -301,15 +311,15 @@ export function EcosystemDiagram() {
               <div className="flex justify-center">
                 <div className="relative w-24 h-24">
                   {/* 光晕 */}
-                  <div className="absolute inset-[-6px] rounded-full bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10 blur-lg animate-pulse" />
+                  <div className="absolute inset-[-6px] rounded-full bg-gradient-to-br from-warning/10 via-warning/8 to-primary/10 blur-lg animate-pulse" />
 
                   {/* 轨道 */}
-                  <div className="absolute inset-[-4px] rounded-full border border-dashed border-purple-300/30 animate-[spin_30s_linear_infinite]">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-orange-400/60" />
+                  <div className="absolute inset-[-4px] rounded-full border border-dashed border-warning/25 animate-[spin_30s_linear_infinite]">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-warning/60" />
                   </div>
 
                   {/* 星球 */}
-                  <div className="absolute inset-2 rounded-full bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border border-purple-200/30 dark:border-purple-700/20 shadow-md flex items-center justify-center">
+                  <div className="absolute inset-2 rounded-full bg-gradient-to-br from-warning/12 to-warning/6 dark:from-warning/20 dark:to-warning/10 border border-warning/20 dark:border-warning/25 shadow-md flex items-center justify-center">
                     <span className="text-foreground font-bold text-xs text-center px-2">
                       {t('ecosystem.consumer')}
                     </span>
@@ -413,7 +423,7 @@ function FunctionNode({ label, angle, radius, isActive, onClick }: FunctionNodeP
           'px-5 py-2.5 rounded-full shadow-md border transition-all duration-300',
           isActive
             ? 'bg-gradient-back border-transparent text-gradient-foreground scale-110 shadow-lg shadow-primary/30'
-            : 'bg-white dark:bg-background border-border text-foreground hover:scale-105 hover:border-primary/50 hover:shadow-lg',
+            : 'bg-card dark:bg-background border-border text-foreground hover:scale-105 hover:border-primary/50 hover:shadow-lg',
         )}
       >
         <span className="font-medium text-sm whitespace-nowrap">{label}</span>
@@ -441,7 +451,7 @@ function MobileFunctionNode({
         'px-4 py-2.5 rounded-full shadow-sm border text-center transition-all duration-300 cursor-pointer',
         isActive
           ? 'bg-gradient-back border-transparent text-gradient-foreground shadow-primary/20'
-          : 'bg-white dark:bg-background border-border text-foreground hover:border-primary/50',
+          : 'bg-card dark:bg-background border-border text-foreground hover:border-primary/50',
         className,
       )}
       onClick={onClick}
@@ -470,7 +480,7 @@ function DetailPanel({
         // 固定高度，避免内容切换时高度变化导致抖动
         'h-[180px] md:h-[160px]',
         hasContent
-          ? 'bg-white/95 dark:bg-background/95 backdrop-blur-md p-4 md:p-6'
+          ? 'bg-card/95 dark:bg-background/95 backdrop-blur-md p-4 md:p-6'
           : 'bg-transparent',
       )}
     >

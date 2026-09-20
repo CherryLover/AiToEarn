@@ -1,4 +1,18 @@
 {
+  "meta": {
+    "title": "Settings",
+    "description": "Manage your profile, appearance and push notifications: point Bark at your own server and key, and pick which events reach your phone.",
+    "keywords": "settings, notifications, Bark, push, theme, language"
+  },
+  "page": {
+    "title": "Settings",
+    "subtitle": "Profile, appearance and notifications, one thing per screen."
+  },
+  "nav": {
+    "profile": "Profile",
+    "appearance": "Appearance",
+    "notify": "Notifications"
+  },
   "title": "Settings",
   "tabs": {
     "profile": "Profile",
@@ -50,7 +64,17 @@
     "redeemCodeSuccess": "Enterprise membership activation code redeemed successfully",
     "redeemCodeFailed": "Failed to redeem the enterprise membership activation code",
     "redeemCodeContactPrefix": "Don't have an activation code? ",
-    "redeemCodeContactSuffix": " to get an enterprise membership activation code."
+    "redeemCodeContactSuffix": " to get an enterprise membership activation code.",
+    "desc": "Your avatar and display name show up on what you publish and in shared history.",
+    "avatarLabel": "Avatar",
+    "avatarDesc": "JPG or PNG, up to 5MB. You can crop it after picking a file.",
+    "nameLabel": "Display name",
+    "namePlaceholder": "Pick a name",
+    "nameDesc": "2 to 20 characters. This is the name other people see.",
+    "accountLabel": "Sign-in account",
+    "accountDesc": "The email or phone number you sign in with. It can't be changed here yet.",
+    "linksLabel": "Links",
+    "linksDesc": "Documentation and the open-source repository."
   },
   "income": {
     "balance": "Advertiser Balance",
@@ -359,5 +383,99 @@
     "recharge": "Recharge",
     "use": "Go use",
     "info": "View Seedance credits notes"
+  },
+  "appearance": {
+    "desc": "Theme and language only affect this device. They apply right away, nothing to save."
+  },
+  "notify": {
+    "desc": "Get the slow jobs, like AI material generation, pushed to your phone when they finish. Push goes through Bark, using your own server and key.",
+    "loadFailed": "Couldn't load your notification settings.",
+    "retry": "Try again",
+    "channelTitle": "Bark push",
+    "channelDesc": "Open Bark on your phone and copy the push URL and key it gives you. Leave it empty and push is silently skipped — nothing else is affected.",
+    "enabledLabel": "Receive push",
+    "enabledDesc": "Turn this off and nothing is pushed at all, not even through the server's default channel. Your URL and key are kept.",
+    "envFallback": {
+      "title": "The server has a default channel",
+      "user": "You've set your own URL, so notifications go through it. The server's default channel only covers you when you haven't.",
+      "env": "You haven't set your own URL, so notifications currently go through the server's default channel — you get them without configuring anything. Fill in the URL below to use your own.",
+      "off": "Receive push is off, so not even the server's default channel is used. Nothing is being sent right now."
+    },
+    "urlLabel": "Bark URL",
+    "urlDesc": "The push URL from Bark, like https://your-domain/your-device-key/. Public addresses only — loopback and private network addresses are rejected. Leave it empty to not use a channel of your own.",
+    "urlPlaceholder": "https://example.com/your-device-key/",
+    "keyLabel": "Bark key",
+    "keyDescSet": "Already set ({{masked}}). Leave it empty to keep it, or type a new one to replace it.",
+    "keyDescEmpty": "The value of the bark-key request header. Once saved it is only ever shown masked.",
+    "keyPlaceholderSet": "Leave empty to keep the current key",
+    "keyPlaceholderEmpty": "Enter your Bark key",
+    "groupLabel": "Notification group",
+    "groupDesc": "Your phone groups notifications under this name. Leave it empty to use AiToEarn.",
+    "rulesTitle": "Notification rules",
+    "rulesDesc": "When to ping you. More rules will land here later; there is one for now.",
+    "rulesDisabledHint": "Receive push is off, so none of the rules below apply — off means nothing is sent at all, not even through the server's default channel.",
+    "rule": {
+      "draft_ready": {
+        "title": "AI finished generating material",
+        "desc": "Get a ping when the current round of material generation is done, so you don't have to watch the page."
+      }
+    },
+    "save": "Save",
+    "saving": "Saving...",
+    "saveSuccess": "Notification settings saved",
+    "testTitle": "Send a test notification",
+    "testDesc": "Sends a real notification to your phone using the saved settings. The title says it's a test. Your key never comes back to the browser, so the test always uses what's saved: save first, then test.",
+    "testAction": "Send test notification",
+    "testDirtyHint": "Save your changes first, then send the test.",
+    "testEnvHint": "This will go through the server's default channel.",
+    "testOffHint": "Receive push is off. Turn it on and save before testing.",
+    "testEmptyHint": "No channel available yet. Fill in the Bark URL and key, then save.",
+    "testSuccess": "Sent",
+    "testSuccessDesc": "A test notification should have arrived on your phone. If nothing showed up, check that Bark is allowed to send notifications.",
+    "testFailed": "Not sent",
+    "testFail": {
+      "urlInvalid": "Invalid address: it isn't a complete URL, or the protocol isn't http/https. Check it and save again.",
+      "urlBlocked": "Address not allowed: it points at loopback or a private network, so the server won't call it.",
+      "urlUnresolvable": "Hostname can't be resolved: no IP was found for that domain. Check it for typos.",
+      "timeout": "Timed out: Bark didn't answer within 5 seconds, the network may be blocked.",
+      "unreachable": "Couldn't connect: the server failed to reach that address. Check the domain, the port and your firewall.",
+      "unauthorized": "Wrong key: Bark rejected the request (401/403). Enter the key again.",
+      "rejected": "Rejected: Bark answered with an error status. Check the device key in the URL.",
+      "ruleDisabled": "That rule is switched off. Turn it back on and try again.",
+      "notConfigured": "Nothing configured yet: fill in the Bark URL and key first.",
+      "unknown": "It didn't go through. Try again in a moment."
+    },
+    "urlError": {
+      "required": "Enter your Bark URL",
+      "tooLong": "That URL is too long",
+      "malformed": "That isn't a complete URL — include https://",
+      "protocol": "Only http and https addresses are allowed",
+      "private": "Loopback and private network addresses aren't allowed. Use a Bark URL reachable from the internet."
+    },
+    "keyError": {
+      "required": "Enter your Bark key",
+      "tooLong": "That key is too long"
+    },
+    "groupError": {
+      "tooLong": "That group name is too long"
+    },
+    "error": {
+      "urlInvalid": "That Bark URL isn't valid — check that it's complete",
+      "urlBlocked": "That address isn't allowed: it points at loopback or a private network, so the server won't call it",
+      "urlUnresolvable": "That hostname can't be resolved — check it for typos",
+      "keyRequired": "Enter a Bark key when you set a Bark URL",
+      "notConfigured": "Bark isn't set up yet — enter the URL and key, then save",
+      "ruleInvalid": "That notification rule isn't valid",
+      "groupInvalid": "That notification group isn't valid",
+      "saveFailed": "Couldn't save. Try again in a moment."
+    }
+  },
+  "login": {
+    "desc": "You need to sign in to use this part.",
+    "hint": "Sign in and you can edit your profile and notification settings here.",
+    "action": "Sign in"
+  },
+  "form": {
+    "unsaved": "Unsaved changes"
   }
 }

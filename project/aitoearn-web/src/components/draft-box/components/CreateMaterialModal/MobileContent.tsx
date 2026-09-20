@@ -397,7 +397,7 @@ const MobileContent = memo(
           <Button
             variant="ghost"
             size="sm"
-            className="cursor-pointer transition-all hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10"
+            className="cursor-pointer transition-all hover:bg-gradient-to-r hover:from-primary/10 hover:to-brand-purple/10"
             onClick={(e) => {
               e.stopPropagation()
               router.push(

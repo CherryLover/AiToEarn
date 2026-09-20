@@ -110,11 +110,11 @@ function StepCard({ stepNumber, title, children, icon }: StepCardProps) {
   return (
     <div className="relative">
       {/* 步骤连接线 */}
-      <div className="absolute left-[18px] top-14 bottom-0 w-[2px] bg-gradient-to-b from-[#c565ef]/30 to-[#55D9ED]/15" />
+      <div className="absolute left-[18px] top-14 bottom-0 w-[2px] bg-gradient-to-b from-brand-purple/30 to-brand-cyan/15" />
 
       <div className="flex gap-4 md:gap-6">
         {/* 步骤编号 */}
-        <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[#c565ef] to-[#55D9ED] text-white flex items-center justify-center font-semibold text-sm z-10 shadow-md shadow-[#c565ef]/20">
+        <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-brand-purple to-brand-cyan text-gradient-foreground flex items-center justify-center font-semibold text-sm z-10 shadow-md shadow-primary/20">
           {stepNumber}
         </div>
 
@@ -146,7 +146,7 @@ function GuideImage({ src, alt, caption, className, onClick }: GuideImageProps) 
   return (
     <figure className={cn('my-4', className)}>
       <div
-        className="group relative overflow-hidden rounded-xl border border-border/50 bg-card p-1.5 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-[#c565ef]/15 hover:-translate-y-0.5"
+        className="group relative overflow-hidden rounded-xl border border-border/50 bg-card p-1.5 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-primary/15 hover:-translate-y-0.5"
         onClick={onClick}
       >
         <Image
@@ -161,7 +161,7 @@ function GuideImage({ src, alt, caption, className, onClick }: GuideImageProps) 
         {/* 点击放大提示 */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all rounded-md">
           <div className="opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all bg-white/90 dark:bg-black/80 rounded-full p-2 shadow-lg">
-            <ZoomIn className="w-5 h-5 text-[#c565ef]" />
+            <ZoomIn className="w-5 h-5 text-primary" />
           </div>
         </div>
       </div>
@@ -189,7 +189,7 @@ function TableOfContents({ t }: { t: (key: string) => string }) {
 
   return (
     <Card className="relative h-fit overflow-hidden border-border/50 p-4 shadow-sm">
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#c565ef] to-[#55D9ED]" />
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-brand-purple to-brand-cyan" />
       <h4 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
         {t('tableOfContents')}
       </h4>
@@ -198,7 +198,7 @@ function TableOfContents({ t }: { t: (key: string) => string }) {
           <a
             key={section.id}
             href={`#${section.id}`}
-            className="flex items-center gap-2 px-2 py-1.5 text-sm rounded-md border-l-2 border-transparent hover:border-[#c565ef]/50 hover:bg-gradient-to-r hover:from-[#c565ef]/5 hover:to-transparent transition-all cursor-pointer"
+            className="flex items-center gap-2 px-2 py-1.5 text-sm rounded-md border-l-2 border-transparent hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all cursor-pointer"
           >
             <ChevronRight className="w-3 h-3" />
             {section.label}
@@ -236,8 +236,8 @@ export default function PluginGuideContent() {
     <div className="relative min-h-screen bg-background">
       {/* 装饰光晕 */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-[30%] -right-40 w-80 h-80 bg-[#c565ef]/3 rounded-full blur-3xl" />
-        <div className="absolute top-[60%] -left-40 w-80 h-80 bg-[#55D9ED]/3 rounded-full blur-3xl" />
+        <div className="absolute top-[30%] -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute top-[60%] -left-40 w-80 h-80 bg-brand-purple/5 rounded-full blur-3xl" />
       </div>
 
       {/* 图片预览组件 */}
@@ -249,20 +249,20 @@ export default function PluginGuideContent() {
       />
 
       {/* 页头区域 */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-[#c565ef]/5 via-[#55D9ED]/3 to-background">
+      <div className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-primary/3 to-background">
         {/* 页头装饰光晕 */}
-        <div className="pointer-events-none absolute -top-20 -left-20 w-60 h-60 bg-[#c565ef]/8 rounded-full blur-3xl" />
-        <div className="pointer-events-none absolute -top-10 -right-20 w-60 h-60 bg-[#55D9ED]/8 rounded-full blur-3xl" />
+        <div className="pointer-events-none absolute -top-20 -left-20 w-60 h-60 bg-primary/8 rounded-full blur-3xl" />
+        <div className="pointer-events-none absolute -top-10 -right-20 w-60 h-60 bg-brand-purple/8 rounded-full blur-3xl" />
         <div className="container mx-auto px-4 py-12 md:py-16">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#c565ef]/10 bg-gradient-to-r from-[#c565ef]/5 to-[#55D9ED]/5 px-3 py-1.5 backdrop-blur-sm">
-              <div className="flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-[#c565ef] to-[#55D9ED]">
-                <Puzzle className="w-3 h-3 text-white" />
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-gradient-to-r from-brand-purple/5 to-brand-cyan/5 px-3 py-1.5 backdrop-blur-sm">
+              <div className="flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-brand-purple to-brand-cyan">
+                <Puzzle className="w-3 h-3 text-gradient-foreground" />
               </div>
               <span className="text-sm font-medium text-foreground/80">Browser Extension</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-[#c565ef] to-[#55D9ED] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-purple to-brand-cyan bg-clip-text text-transparent">
                 {t('title')}
               </span>
             </h1>
@@ -277,7 +277,7 @@ export default function PluginGuideContent() {
           </div>
         </div>
         {/* 渐变分隔线 */}
-        <div className="h-px bg-gradient-to-r from-transparent via-[#c565ef]/20 to-transparent" />
+        <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       </div>
 
       {/* 主体内容 */}
@@ -322,13 +322,13 @@ export default function PluginGuideContent() {
                   onClick={() => openPreview(3)}
                 />
 
-                <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
-                  <HelpCircle className="h-4 w-4 text-blue-600" />
+                <Alert className="bg-info/8 dark:bg-info/12 border-info/25 dark:border-info/30">
+                  <HelpCircle className="h-4 w-4 text-info" />
                   <div className="min-w-0 flex-1">
-                    <AlertTitle className="mb-2 leading-snug text-blue-800 dark:text-blue-300">
+                    <AlertTitle className="mb-2 leading-snug text-foreground">
                       {t('steps.step2.note')}
                     </AlertTitle>
-                    <AlertDescription className="text-blue-700 dark:text-blue-400">
+                    <AlertDescription className="text-foreground/80">
                       <ul className="mt-0 list-disc space-y-3 pl-5">
                         <li>
                           <span className="font-medium">{t('steps.step2.channels.chrome.title')}</span>
@@ -347,7 +347,7 @@ export default function PluginGuideContent() {
                         {t('steps.step2.updateNote.prefix')}
                         <Link
                           href="/websit/plugin-update-docs"
-                          className="mx-1 font-medium text-blue-800 underline underline-offset-4 dark:text-blue-300"
+                          className="mx-1 font-medium text-primary underline underline-offset-4"
                         >
                           {t('steps.step2.updateNote.linkText')}
                         </Link>
@@ -361,9 +361,9 @@ export default function PluginGuideContent() {
 
             {/* ===== 第二部分：手动安装（可选） ===== */}
             <section id="manual-install" className="mb-12">
-              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-orange-500/5 to-transparent border-l-4 border-orange-500/40">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/15 to-orange-500/10 flex items-center justify-center">
-                  <Smartphone className="w-5 h-5 text-orange-500" />
+              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-transparent border-l-4 border-primary/40">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-primary/10 flex items-center justify-center">
+                  <Smartphone className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <h2 className="text-2xl md:text-3xl font-bold">{t('sections.manualInstall')}</h2>
@@ -371,17 +371,17 @@ export default function PluginGuideContent() {
                 </div>
               </div>
 
-              <Alert className="mb-6 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
-                <HelpCircle className="h-4 w-4 text-amber-600" />
+              <Alert className="mb-6 bg-warning/10 dark:bg-warning/12 border-warning/30">
+                <HelpCircle className="h-4 w-4 text-warning" />
                 <div className="min-w-0 flex-1">
-                  <AlertTitle className="mb-2 leading-snug text-amber-800 dark:text-amber-300">
+                  <AlertTitle className="mb-2 leading-snug text-foreground">
                     {t('manualInstall.tip')}
                   </AlertTitle>
-                  <AlertDescription className="text-amber-700 dark:text-amber-400">
+                  <AlertDescription className="text-foreground/80">
                     {t('manualInstall.tipPrefix')}
                     <a
                       href="#authorize"
-                      className="mx-1 font-medium text-amber-800 underline underline-offset-4 dark:text-amber-300"
+                      className="mx-1 font-medium text-primary underline underline-offset-4"
                     >
                       {t('manualInstall.tipLinkText')}
                     </a>
@@ -391,9 +391,9 @@ export default function PluginGuideContent() {
               </Alert>
 
               <div className="space-y-6">
-                <Card className="p-6 border-l-4 border-l-[#c565ef]/30 hover:border-l-[#c565ef]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <Card className="p-6 border-l-4 border-l-primary/30 hover:border-l-primary/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#c565ef]/20 to-[#55D9ED]/20 flex items-center justify-center text-xs font-semibold text-foreground">
+                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-purple/20 to-brand-cyan/20 flex items-center justify-center text-xs font-semibold text-foreground">
                       1
                     </span>
                     {t('manualInstall.step1.title')}
@@ -406,9 +406,9 @@ export default function PluginGuideContent() {
                   />
                 </Card>
 
-                <Card className="p-6 border-l-4 border-l-[#c565ef]/30 hover:border-l-[#c565ef]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <Card className="p-6 border-l-4 border-l-primary/30 hover:border-l-primary/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#c565ef]/20 to-[#55D9ED]/20 flex items-center justify-center text-xs font-semibold text-foreground">
+                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-purple/20 to-brand-cyan/20 flex items-center justify-center text-xs font-semibold text-foreground">
                       2
                     </span>
                     {t('manualInstall.step2.title')}
@@ -421,9 +421,9 @@ export default function PluginGuideContent() {
                   />
                 </Card>
 
-                <Card className="p-6 border-l-4 border-l-[#c565ef]/30 hover:border-l-[#c565ef]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <Card className="p-6 border-l-4 border-l-primary/30 hover:border-l-primary/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#c565ef]/20 to-[#55D9ED]/20 flex items-center justify-center text-xs font-semibold text-foreground">
+                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-purple/20 to-brand-cyan/20 flex items-center justify-center text-xs font-semibold text-foreground">
                       3
                     </span>
                     {t('manualInstall.step3.title')}
@@ -436,9 +436,9 @@ export default function PluginGuideContent() {
                   />
                 </Card>
 
-                <Card className="p-6 border-l-4 border-l-[#c565ef]/30 hover:border-l-[#c565ef]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <Card className="p-6 border-l-4 border-l-primary/30 hover:border-l-primary/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#c565ef]/20 to-[#55D9ED]/20 flex items-center justify-center text-xs font-semibold text-foreground">
+                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-purple/20 to-brand-cyan/20 flex items-center justify-center text-xs font-semibold text-foreground">
                       4
                     </span>
                     {t('manualInstall.step4.title')}
@@ -451,9 +451,9 @@ export default function PluginGuideContent() {
                   />
                 </Card>
 
-                <Card className="p-6 border-l-4 border-l-[#c565ef]/30 hover:border-l-[#c565ef]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <Card className="p-6 border-l-4 border-l-primary/30 hover:border-l-primary/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#c565ef]/20 to-[#55D9ED]/20 flex items-center justify-center text-xs font-semibold text-foreground">
+                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-purple/20 to-brand-cyan/20 flex items-center justify-center text-xs font-semibold text-foreground">
                       5
                     </span>
                     {t('manualInstall.step5.title')}
@@ -466,9 +466,9 @@ export default function PluginGuideContent() {
                   />
                 </Card>
 
-                <Card className="p-6 border-l-4 border-l-[#c565ef]/30 hover:border-l-[#c565ef]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <Card className="p-6 border-l-4 border-l-primary/30 hover:border-l-primary/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#c565ef]/20 to-[#55D9ED]/20 flex items-center justify-center text-xs font-semibold text-foreground">
+                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-purple/20 to-brand-cyan/20 flex items-center justify-center text-xs font-semibold text-foreground">
                       6
                     </span>
                     {t('manualInstall.step6.title')}
@@ -485,9 +485,9 @@ export default function PluginGuideContent() {
 
             {/* ===== 第三部分：授权插件 ===== */}
             <section id="authorize" className="mb-12">
-              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-green-500/5 to-transparent border-l-4 border-green-500/40">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500/15 to-green-500/10 flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-green-500" />
+              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-transparent border-l-4 border-primary/40">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-primary/10 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-primary" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold">{t('sections.authorize')}</h2>
               </div>
@@ -538,9 +538,9 @@ export default function PluginGuideContent() {
 
             {/* ===== 第四部分：登录账号 ===== */}
             <section id="login-account" className="mb-12">
-              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-purple-500/5 to-transparent border-l-4 border-purple-500/40">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/15 to-purple-500/10 flex items-center justify-center">
-                  <Smartphone className="w-5 h-5 text-purple-500" />
+              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-transparent border-l-4 border-primary/40">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-primary/10 flex items-center justify-center">
+                  <Smartphone className="w-5 h-5 text-primary" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold">{t('sections.loginAccount')}</h2>
               </div>
@@ -564,13 +564,13 @@ export default function PluginGuideContent() {
                   onClick={() => openPreview(14)}
                 />
 
-                <Alert className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
-                  <HelpCircle className="h-4 w-4 text-amber-600" />
+                <Alert className="bg-warning/10 dark:bg-warning/12 border-warning/30">
+                  <HelpCircle className="h-4 w-4 text-warning" />
                   <div className="min-w-0 flex-1">
-                    <AlertTitle className="mb-2 leading-snug text-amber-800 dark:text-amber-300">
+                    <AlertTitle className="mb-2 leading-snug text-foreground">
                       {t('steps.step7b.importantNote')}
                     </AlertTitle>
-                    <AlertDescription className="text-amber-700 dark:text-amber-400">
+                    <AlertDescription className="text-foreground/80">
                       {t('steps.step7b.importantNoteContent')}
                     </AlertDescription>
                   </div>
@@ -587,9 +587,9 @@ export default function PluginGuideContent() {
 
             {/* ===== 第五部分：同步账号 ===== */}
             <section id="sync-account" className="mb-12">
-              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-blue-500/5 to-transparent border-l-4 border-blue-500/40">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/15 to-blue-500/10 flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-blue-500" />
+              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-transparent border-l-4 border-primary/40">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-primary/10 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold">{t('sections.syncAccount')}</h2>
               </div>
@@ -621,9 +621,9 @@ export default function PluginGuideContent() {
               </StepCard>
 
               {/* 完成提示 */}
-              <div className="mt-8 p-6 rounded-2xl bg-gradient-to-r from-[#c565ef]/8 to-[#55D9ED]/8 border border-[#c565ef]/15 shadow-sm">
+              <div className="mt-8 p-6 rounded-2xl bg-gradient-to-r from-brand-purple/8 to-brand-cyan/8 border border-primary/20 shadow-sm">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#c565ef] to-[#55D9ED] flex items-center justify-center shrink-0 shadow-md shadow-[#c565ef]/20">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-purple to-brand-cyan flex items-center justify-center shrink-0 shadow-md shadow-primary/20">
                     <CheckCircle2 className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -640,21 +640,21 @@ export default function PluginGuideContent() {
 
             {/* ===== FAQ 部分 ===== */}
             <section id="faq" className="mb-12">
-              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-violet-500/5 to-transparent border-l-4 border-violet-500/40">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500/15 to-violet-500/10 flex items-center justify-center">
-                  <HelpCircle className="w-5 h-5 text-violet-500" />
+              <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-transparent border-l-4 border-primary/40">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-primary/10 flex items-center justify-center">
+                  <HelpCircle className="w-5 h-5 text-primary" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold">{t('faq.title')}</h2>
               </div>
 
               <div className="space-y-4">
-                <Card className="p-6 border-l-4 border-l-[#c565ef]/30 hover:shadow-md transition-shadow">
+                <Card className="p-6 border-l-4 border-l-primary/30 hover:shadow-md transition-shadow">
                   <h4 className="font-semibold mb-2 flex items-start gap-2">
-                    <span className="bg-gradient-to-r from-[#c565ef] to-[#55D9ED] bg-clip-text text-transparent font-bold">Q:</span>
+                    <span className="bg-gradient-to-r from-brand-purple to-brand-cyan bg-clip-text text-transparent font-bold">Q:</span>
                     {t('faq.q1.question')}
                   </h4>
                   <p className="text-muted-foreground pl-6">
-                    <span className="bg-gradient-to-r from-[#55D9ED] to-[#c565ef] bg-clip-text text-transparent font-semibold">A: </span>
+                    <span className="bg-gradient-to-r from-brand-cyan to-brand-purple bg-clip-text text-transparent font-semibold">A: </span>
                     {t('faq.q1.answer')}
                   </p>
                 </Card>

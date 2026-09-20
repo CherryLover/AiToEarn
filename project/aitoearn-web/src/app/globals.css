@@ -57,6 +57,8 @@ button {
   --color-info-foreground: var(--info-foreground);
   --color-brand-purple: var(--brand-purple);
   --color-brand-cyan: var(--brand-cyan);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
   --color-gradient-foreground: var(--gradient-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
@@ -77,50 +79,79 @@ button {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/*
+ * 主题变量（设置页重做这一轮定的全站配色）
+ *
+ * 定色表：背景 #FAFAF9 / 卡片 #FFFFFF / 主色 #1F6F5C / 强调 #D97706 / 文字 #1C1917 / 副文 #78716C
+ * 调子安静，中性色走暖石灰一档，不抢内容。
+ *
+ * 三件必须先知道的事：
+ *
+ * 1. 这里的 `--accent` 是 shadcn 的「悬停底色」，**不是**定色表里的「强调色」。
+ *    强调色是 `--brand-accent`（同时喂给 `--warning`）。把 #D97706 塞进 `--accent` 的话，
+ *    全站菜单项、下拉项、日历格子的 hover 底色会一起变橙，那是改崩不是改配色。
+ *
+ * 2. `--brand-cyan` / `--brand-purple` 是历史名字，侧边栏选中态等 29 个文件直接写死了这两个类名，
+ *    改名要动别的 Agent 的目录，所以这轮**只换值不改名**：现在两个都是主色系，
+ *    `--brand-cyan` 是主色本身，`--brand-purple` 是更深的一档，渐变落在同一色系里。
+ *
+ * 3. 暗色不是把亮色调暗就完事：`--gradient-foreground`（渐变上的文字）在暗色里必须翻成深色，
+ *    因为暗色下的渐变底色是亮绿，白字只有 2.2:1。
+ *
+ * 对比度（WCAG AA，正文要求 4.5:1）：
+ *   亮色 文字/背景 16.7 · 副文/背景 4.6 · 主色/背景 5.8 · 白字/主色 6.0 · 深字/强调 5.5
+ *   暗色 文字/背景 16.0 · 副文/背景 6.9 · 主色/背景 7.9 · 深字/主色 7.3 · 深字/强调 8.7
+ *   已知边界：副文压在 `bg-muted` 上是 4.4:1，差一点点。那个组合只用在图标和次要标签上，
+ *   正文一律用 `--foreground`，不要拿 `text-muted-foreground` 写正文。
+ */
 :root {
   --gradientBackColor: linear-gradient(to right in oklch, var(--brand-purple), var(--brand-cyan));
-  /* 品牌色 */
-  --brand-purple: oklch(0.74 0.17 3);
-  --brand-cyan: oklch(0.71 0.17 294);
-  --gradient-foreground: oklch(0.985 0 0);
+  /* 品牌色：主色，以及它更深的一档（渐变另一端） */
+  --brand-purple: #14594a;
+  --brand-cyan: #1f6f5c;
+  /* 强调色：警告、待办。当底色用时配深色文字 */
+  --brand-accent: #d97706;
+  --brand-accent-foreground: #1c1917;
+  --gradient-foreground: #ffffff;
   /* Section 交替背景色 */
-  --section-alt-bg: #f8f9fa;
+  --section-alt-bg: #f5f4f2;
 
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
   --primary: var(--brand-cyan);
-  --primary-foreground: var(--gradient-foreground);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --success: oklch(0.65 0.2 145);
-  --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.75 0.18 70);
-  --warning-foreground: oklch(0.2 0 0);
-  --info: oklch(0.6 0.18 250);
-  --info-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --primary-foreground: #ffffff;
+  --secondary: #f5f4f2;
+  --secondary-foreground: #1c1917;
+  --muted: #f5f4f2;
+  --muted-foreground: #78716c;
+  /* 悬停底色，见上面第 1 条 */
+  --accent: #f0eeeb;
+  --accent-foreground: #1c1917;
+  --destructive: #c1332d;
+  --destructive-foreground: #ffffff;
+  --success: #15803d;
+  --success-foreground: #ffffff;
+  --warning: var(--brand-accent);
+  --warning-foreground: var(--brand-accent-foreground);
+  --info: #1d4ed8;
+  --info-foreground: #ffffff;
+  --border: #e7e5e4;
+  --input: #e7e5e4;
   --ring: var(--brand-cyan);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: #1f6f5c;
+  --chart-2: #d97706;
+  --chart-3: #3f7d8c;
+  --chart-4: #8a6a3a;
+  --chart-5: #78716c;
   --sidebar: color-mix(in oklch, var(--brand-cyan) 3%, var(--background));
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--brand-cyan);
-  --sidebar-primary-foreground: var(--gradient-foreground);
+  --sidebar-primary-foreground: var(--primary-foreground);
   --sidebar-accent: color-mix(in oklch, var(--brand-cyan) 10%, var(--background));
   --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: color-mix(in oklch, var(--border) 50%, transparent);
@@ -128,42 +159,48 @@ button {
 }
 
 .dark {
-  --gradient-foreground: oklch(0.985 0 0);
-  --section-alt-bg: rgba(255, 255, 255, 0.03);
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: var(--brand-purple);
-  --primary-foreground: var(--gradient-foreground);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --success: oklch(0.7 0.2 145);
-  --success-foreground: oklch(0.15 0 0);
-  --warning: oklch(0.8 0.18 70);
-  --warning-foreground: oklch(0.15 0 0);
-  --info: oklch(0.65 0.18 250);
-  --info-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  /* 暗色下品牌色整体提亮，否则侧边栏选中态（text-brand-cyan）在深底上糊成一团 */
+  --brand-purple: #3e9b82;
+  --brand-cyan: #5cbfa3;
+  --brand-accent: #f0a93b;
+  --brand-accent-foreground: #231a0c;
+  /* 渐变底色在暗色下是亮绿，文字必须翻深，见顶部第 3 条 */
+  --gradient-foreground: #0f231e;
+  --section-alt-bg: rgba(255, 255, 255, 0.04);
+  --background: #1c1917;
+  --foreground: #f5f5f4;
+  --card: #242120;
+  --card-foreground: #f5f5f4;
+  --popover: #242120;
+  --popover-foreground: #f5f5f4;
+  --primary: var(--brand-cyan);
+  --primary-foreground: #10241f;
+  --secondary: #2c2826;
+  --secondary-foreground: #f5f5f4;
+  --muted: #2c2826;
+  --muted-foreground: #a8a29e;
+  --accent: #332e2b;
+  --accent-foreground: #f5f5f4;
+  --destructive: #f98080;
+  --destructive-foreground: #231a0c;
+  --success: #4ade80;
+  --success-foreground: #10241f;
+  --warning: var(--brand-accent);
+  --warning-foreground: var(--brand-accent-foreground);
+  --info: #7ea6ff;
+  --info-foreground: #0f1b33;
+  --border: #3a3634;
+  --input: #3a3634;
   --ring: var(--brand-cyan);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: #5cbfa3;
+  --chart-2: #f0a93b;
+  --chart-3: #7fb6c7;
+  --chart-4: #c9a36a;
+  --chart-5: #a8a29e;
   --sidebar: color-mix(in oklch, var(--brand-cyan) 7%, var(--background));
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--brand-cyan);
-  --sidebar-primary-foreground: var(--gradient-foreground);
+  --sidebar-primary-foreground: var(--primary-foreground);
   --sidebar-accent: color-mix(in oklch, var(--brand-cyan) 14%, var(--background));
   --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: color-mix(in oklch, var(--border) 50%, transparent);
@@ -191,8 +228,7 @@ button {
     vertical-align: baseline;
     color: color-mix(in oklch, var(--brand-cyan) 76%, var(--foreground));
     border-radius: calc(var(--radius-sm) + 1px);
-    background: linear-gradient(90deg, var(--brand-cyan), var(--brand-purple)) 0 100% / 100% 0.08em
-      no-repeat;
+    background: linear-gradient(90deg, var(--brand-cyan), var(--brand-purple)) 0 100% / 100% 0.08em no-repeat;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
     line-height: inherit;

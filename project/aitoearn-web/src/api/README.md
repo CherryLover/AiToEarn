@@ -29,3 +29,4 @@
 | `platforms/`     | 平台专项能力，例如发布、互动、作品校验和平台参数。 | `platforms/README.md`     |
 | `projects/`      | 项目元信息与项目物料文件的浏览、读写与上传。       | `projects/README.md`      |
 | `publishing/`    | 发布登记：从草稿建手动发布工单、回填链接与发布记录。 | `publishing/README.md`    |
+| `settings/`      | 设置页里按用户存服务端的配置：Bark 通知与通知规则。 | `settings/README.md`      |

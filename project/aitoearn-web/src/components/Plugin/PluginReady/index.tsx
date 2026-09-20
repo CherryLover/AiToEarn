@@ -62,7 +62,7 @@ export function PluginReady({ highlightPlatform, onViewDetail }: PluginReadyProp
                 className={cn(
                   'flex cursor-pointer items-center gap-2 rounded-md px-3 py-2.5 text-left text-sm transition-all',
                   isActive
-                    ? 'bg-purple-50 font-medium text-purple-600'
+                    ? 'bg-primary/10 font-medium text-primary'
                     : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                 )}
               >

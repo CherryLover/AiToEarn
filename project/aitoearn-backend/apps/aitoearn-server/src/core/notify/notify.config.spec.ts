@@ -3,9 +3,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { notifyConfigSchema } from './notify.config'
 import { NotifyService } from './notify.service'
 
-const { notifyConfig } = vi.hoisted(() => ({
+const { notifyConfig, postGuardedJsonMock } = vi.hoisted(() => ({
   notifyConfig: {} as Record<string, unknown>,
+  postGuardedJsonMock: vi.fn(),
 }))
+
+// 「一个请求都不发」要盯住真正发包的那个函数。**不能盯 fetch**：
+// 两条通道现在都走 postGuardedJson（node:http），盯 fetch 等于盯了个永远不会被调的东西
+vi.mock('./notify.http', async () => {
+  const actual = await vi.importActual<typeof import('./notify.http')>('./notify.http')
+  return { ...actual, postGuardedJson: postGuardedJsonMock }
+})
+
+// notify.service 现在要读用户配置，会把 @yikart/mongodb 的 schema 全加载一遍；
+// 测试环境下 @Prop 拿不到类型元数据，照 manual-publish-notify.spec.ts 的写法桩掉
+vi.mock('@nestjs/mongoose', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>('@nestjs/mongoose')
+  return { ...actual, Prop: () => () => undefined }
+})
 
 // 真 config 要跑命令行参数解析，测试里起不来，照 notify.service.spec.ts 的写法整个桩掉
 vi.mock('../../config', () => ({
@@ -40,6 +55,8 @@ describe('bark 配置清空后服务照常', () => {
     // 桩 config 是个共享对象，用例之间必须清干净，免得上一条的开关漏到下一条
     for (const key of Object.keys(notifyConfig))
       delete notifyConfig[key]
+    postGuardedJsonMock.mockReset()
+    postGuardedJsonMock.mockResolvedValue({ status: 200 })
     // 推送失败只记一行日志，测试里不需要看这些噪音
     vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined)
   })
@@ -63,8 +80,6 @@ describe('bark 配置清空后服务照常', () => {
 
     // 2. 解析结果必须是「配齐了才算开」，缺一样就当没配
     Object.assign(notifyConfig, parsed.data)
-    const fetchMock = vi.fn()
-    vi.stubGlobal('fetch', fetchMock)
     const notify = new NotifyService()
 
     expect(notify.enabled).toBe(false)
@@ -72,7 +87,7 @@ describe('bark 配置清空后服务照常', () => {
     // 3. 两个接入点都静默跳过，不抛错、不发请求
     await expect(notify.notifyDraftReady({ projectName: 'fortyweeks' })).resolves.toBe(false)
     await expect(notify.notifyManualPublishPending({ platform: 'xhs' })).resolves.toBe(false)
-    expect(fetchMock).not.toHaveBeenCalled()
+    expect(postGuardedJsonMock).not.toHaveBeenCalled()
   })
 
   it('配齐了才真推：三样都填上才开', () => {

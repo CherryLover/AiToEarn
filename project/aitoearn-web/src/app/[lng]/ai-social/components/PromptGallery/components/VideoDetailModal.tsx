@@ -138,7 +138,7 @@ const ModalContent = memo(({ onOpenChange, item, onApplyPrompt }: ModalContentPr
                     <span className="text-sm font-medium text-muted-foreground">
                       {t('modal.materialsLabel')}
                     </span>
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-gradient-to-r from-[#c565ef]/10 to-[#55D9ED]/10 text-foreground/70 border border-[#c565ef]/20">
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-gradient-to-r from-brand-purple/10 to-brand-cyan/10 text-foreground/70 border border-primary/20">
                       {item.materials.length}
                     </span>
                   </div>
@@ -146,7 +146,7 @@ const ModalContent = memo(({ onOpenChange, item, onApplyPrompt }: ModalContentPr
                     {item.materials.map((material, idx) => (
                       <div
                         key={idx}
-                        className="relative w-16 h-16 rounded-lg overflow-hidden border border-border bg-muted hover:border-[#c565ef]/40 transition-colors"
+                        className="relative w-16 h-16 rounded-lg overflow-hidden border border-border bg-muted hover:border-primary/40 transition-colors"
                       >
                         <Image src={material} alt={`material-${idx + 1}`} fill className="object-cover" sizes="64px" />
                       </div>

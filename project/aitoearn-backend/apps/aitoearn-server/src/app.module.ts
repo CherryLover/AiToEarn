@@ -26,6 +26,7 @@ import { OidcLoginModule } from './core/oidc-login/oidc-login.module'
 import { ProjectsModule } from './core/projects/projects.module'
 import { PublishModule } from './core/publish-record/publish-record.module'
 import { PublishingModule } from './core/publishing/publishing.module'
+import { SettingsModule } from './core/settings/settings.module'
 import { ShortLinkModule } from './core/short-link/short-link.module'
 import { UnifiedMcpModule } from './core/unified-mcp/unified-mcp.module'
 import { UserModule } from './core/user/user.module'
@@ -87,6 +88,7 @@ import { UserModule } from './core/user/user.module'
     DevicesModule,
     ExecutionTasksModule,
     PublishingModule,
+    SettingsModule,
     RelayModule,
     // MCP modules (after business modules to ensure @Global services are available)
     ChannelsMcpModule,

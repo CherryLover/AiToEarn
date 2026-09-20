@@ -164,7 +164,7 @@ export default function DraftBoxCore() {
           <div className="flex flex-col h-full bg-background">
             <div className="flex-1 flex items-center justify-center p-4">
               <div className="text-center max-w-md">
-                <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-[#c565ef]/10 to-[#55D9ED]/10 flex items-center justify-center mb-6">
+                <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-brand-purple/10 to-brand-cyan/10 flex items-center justify-center mb-6">
                   <Sparkles className="h-10 w-10 text-foreground/60" />
                 </div>
                 <h2 className="text-xl font-semibold text-foreground mb-2">

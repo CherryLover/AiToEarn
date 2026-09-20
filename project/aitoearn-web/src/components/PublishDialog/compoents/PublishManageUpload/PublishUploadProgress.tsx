@@ -119,10 +119,10 @@ const PublishUploadProgress = memo(
     // 根据状态确定进度条颜色
     const getProgressColor = () => {
       if (progressStatus === 'exception')
-        return '#ef4444'
+        return 'var(--destructive)'
       if (progressStatus === 'success')
-        return '#22c55e'
-      return '#3b82f6' // 蓝色
+        return 'var(--success)'
+      return 'var(--primary)'
     }
 
     return (

@@ -315,10 +315,15 @@ export class ExecutionTasksService {
     try {
       const payload = task.payload as { platform?: string, snapshot?: { title?: string } } | undefined
 
-      void this.notifyService?.notifyManualPublishPending({
-        platform: payload?.platform,
-        title: payload?.snapshot?.title,
-      })?.catch((error: Error) => this.logger.warn(error, '待人工发布推送失败'))
+      // 带上 userId：不带的话这条推送只走服务器 .env 的默认通道，
+      // 读不到用户自己在设置页配的地址，他关掉的总开关和规则也管不到这一条
+      void this.notifyService?.notifyManualPublishPending(
+        {
+          platform: payload?.platform,
+          title: payload?.snapshot?.title,
+        },
+        { userId: task.userId, userType: task.userType },
+      )?.catch((error: Error) => this.logger.warn(error, '待人工发布推送失败'))
     }
     catch (error) {
       this.logger.warn(error, '待人工发布推送失败')

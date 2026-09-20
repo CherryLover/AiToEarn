@@ -1,203 +1,57 @@
 /**
- * SettingsModal - 设置弹框组件
- * 包含个人资料、Agent、通用设置等功能
- * 采用可扩展的 Tab 配置结构
- * 支持移动端响应式布局
+ * SettingsModal - 设置入口（已经不是弹框了）
+ *
+ * 设置从弹框搬到了独立页面 `/[lng]/settings`：左边分区导航、右边内容区，
+ * 一屏一件事，输入框有标签有说明，不再挤在一个 900px 的框里。
+ *
+ * 这个文件留着不删，是因为侧边栏、移动端抽屉、用户下拉菜单都还在调
+ * `useSettingsModalStore().openSettings()`，那几个文件不归这一轮改。
+ * 所以组件名和 props 原样保留，行为改成「跳到设置页对应分区」。
+ * 以后谁来收尾，可以把那几处直接换成 `<Link href="/settings">`，然后删掉这里和 store。
  */
 
 'use client'
 
-import type { ReactNode } from 'react'
 import type { SettingsTab } from '@/store/settingsModal'
-import { Globe, User } from 'lucide-react'
-import Image from 'next/image'
-import { useEffect, useRef, useState } from 'react'
-import { useTransClient } from '@/app/i18n/client'
-import logo from '@/assets/images/logo.png'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { useUserStore } from '@/store/user'
-import { cn } from '@/utils/className'
-import {
-  GeneralTab,
-  ProfileTab,
-} from './tabs'
-
-/** Tab 配置项类型 */
-interface TabConfig {
-  key: SettingsTab
-  icon: ReactNode
-  label: string
-  /** 是否需要登录才能显示 */
-  requireAuth?: boolean
-}
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { useGetClientLng } from '@/hooks/useSystem'
 
 /** 设置页面类型（导出供外部使用） */
 export type { SettingsTab } from '@/store/settingsModal'
 
+/** 弹框时代的 tab 名 → 设置页分区 hash */
+const TAB_TO_SECTION: Record<SettingsTab, string> = {
+  profile: 'profile',
+  general: 'appearance',
+}
+
 export interface SettingsModalProps {
-  /** 是否显示弹框 */
+  /** 是否要打开设置（现在等于「是否要跳转」） */
   open: boolean
-  /** 关闭弹框回调 */
+  /** 关闭回调，跳转后立刻调一次，把 store 的标记清掉 */
   onClose: () => void
-  /** 默认选中的 Tab */
+  /** 默认分区 */
   defaultTab?: SettingsTab
 }
 
 /**
- * SettingsModal 设置弹框组件
+ * 不渲染任何东西：`open` 变成 true 就跳到设置页。
  */
 export function SettingsModal({ open, onClose, defaultTab }: SettingsModalProps) {
-  // 预加载所有子组件需要的 namespace，避免切换 tab 时闪烁
-  const { t } = useTransClient(['settings', 'profile'])
-  const token = useUserStore(state => state.token)
-  const isLoggedIn = !!token
-  const [activeTab, setActiveTab] = useState<SettingsTab>(isLoggedIn ? 'profile' : 'general')
-  const tabContainerRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const lng = useGetClientLng()
 
-  // 打开弹框时，如果有 defaultTab 则使用它
-  useEffect(() => {
-    if (open && defaultTab && isLoggedIn) {
-      setActiveTab(defaultTab)
-    }
-  }, [open, defaultTab, isLoggedIn])
-
-  // 登录状态变化时重置标签
-  useEffect(() => {
-    if (!isLoggedIn && activeTab === 'profile') {
-      setActiveTab('general')
-    }
-  }, [isLoggedIn, activeTab])
-
-  // 选中 Tab 自动居中（仅移动端水平滚动时生效）
   useEffect(() => {
     if (!open)
       return
 
-    const scrollToCenter = () => {
-      const container = tabContainerRef.current
-      if (!container)
-        return
+    const section = defaultTab ? TAB_TO_SECTION[defaultTab] : ''
+    router.push(`/${lng}/settings${section ? `#${section}` : ''}`)
+    onClose()
+  }, [open, defaultTab, lng, onClose, router])
 
-      // 容器不可水平滚动时跳过（桌面端垂直布局）
-      if (container.scrollWidth <= container.clientWidth)
-        return
-
-      const activeElement = container.querySelector(
-        `[data-tab-key="${activeTab}"]`,
-      ) as HTMLElement
-      if (!activeElement)
-        return
-
-      const containerWidth = container.clientWidth
-      const tabCenter = activeElement.offsetLeft + activeElement.offsetWidth / 2
-      const targetScroll = tabCenter - containerWidth / 2
-
-      const maxScroll = container.scrollWidth - containerWidth
-      const finalScroll = Math.max(0, Math.min(targetScroll, maxScroll))
-
-      container.scrollTo({ left: finalScroll, behavior: 'smooth' })
-    }
-
-    // 延迟执行，等待 Dialog 入场动画完成后 DOM 尺寸才正确
-    const raf = requestAnimationFrame(() => {
-      scrollToCenter()
-    })
-
-    return () => cancelAnimationFrame(raf)
-  }, [activeTab, open])
-
-  // Tab 配置列表（易于扩展）
-  const tabConfigs: TabConfig[] = [
-    {
-      key: 'profile',
-      icon: <User className="h-4 w-4" />,
-      label: t('tabs.profile'),
-      requireAuth: true,
-    },
-    { key: 'general', icon: <Globe className="h-4 w-4" />, label: t('tabs.general') },
-  ]
-
-  // 根据登录状态和 placeId 过滤 Tab
-  const visibleTabs = tabConfigs.filter((tab) => {
-    if (tab.requireAuth && !isLoggedIn)
-      return false
-    return true
-  })
-
-  // 渲染右侧内容
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'profile':
-        return isLoggedIn ? <ProfileTab onClose={onClose} /> : <GeneralTab />
-      case 'general':
-        return <GeneralTab />
-      default:
-        return null
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={isOpen => !isOpen && onClose()}>
-      <DialogContent
-        className="w-[95vw] max-w-[900px] gap-0 overflow-hidden p-0 sm:p-0 md:w-[900px]"
-        aria-describedby={undefined}
-      >
-        <DialogTitle className="sr-only">{t('title')}</DialogTitle>
-
-        {/* 移动端布局：垂直排列；桌面端：水平排列 */}
-        <div className="flex h-[85vh] max-h-[650px] flex-col overflow-hidden md:h-[70vh] md:max-h-none md:flex-row">
-          {/* 侧边栏/顶部导航 */}
-          <div className="flex w-full shrink-0 overflow-hidden flex-col border-b border-border md:w-52 md:border-b-0 md:border-r">
-            {/* 侧边栏头部 - Logo + 项目名称 */}
-            <div className="flex h-14 shrink-0 items-center gap-2 px-4 md:h-auto md:px-5 md:py-4">
-              <Image src={logo} alt="Aitoearn" width={24} height={24} className="hidden md:block md:h-7 md:w-7" />
-              <span className="text-sm font-semibold tracking-tight text-foreground md:text-base">
-                <span className="md:hidden">{t('title')}</span>
-                <span className="hidden md:inline">Aitoearn</span>
-              </span>
-            </div>
-
-            {/* Tab 列表 - 移动端水平滚动，桌面端垂直列表 */}
-            <div ref={tabContainerRef} className="relative flex gap-1 overflow-x-auto scrollbar-none snap-x snap-mandatory px-3 pb-3 md:flex-col md:snap-none md:overflow-x-visible md:px-3 md:pb-4">
-              {visibleTabs.map((tab) => {
-                const isActive = activeTab === tab.key
-
-                return (
-                  <button
-                    key={tab.key}
-                    data-tab-key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={cn(
-                      'snap-center flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-left text-sm transition-all md:gap-2 md:py-2.5',
-                      isActive
-                        ? 'bg-muted font-medium text-foreground'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                    )}
-                  >
-                    <span className="relative flex items-center justify-center">{tab.icon}</span>
-                    <span className="whitespace-nowrap">{tab.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* 右侧/下方内容区域 */}
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            {/* 右侧头部 - 设置标题 */}
-            <div className="hidden shrink-0 items-center border-b border-border md:flex md:px-6 md:py-4">
-              <h2 className="text-base font-semibold text-foreground md:text-lg">{t('title')}</h2>
-            </div>
-
-            {/* 右侧内容 - 确保内容区域可以正确滚动 */}
-            <div className="flex-1 overflow-auto px-4 py-4 md:px-6 md:py-6">
-              <div className="flex min-h-full min-w-0 flex-col">{renderContent()}</div>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
+  return null
 }
 
 export default SettingsModal

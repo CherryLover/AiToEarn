@@ -1,4 +1,18 @@
 {
+  "meta": {
+    "title": "설정",
+    "description": "프로필, 화면 모드, 푸시 알림을 관리합니다. 내 Bark 주소와 키를 직접 넣고 어떤 일이 끝났을 때 알림을 받을지 고르세요.",
+    "keywords": "설정, 알림, Bark, 푸시, 테마, 언어"
+  },
+  "page": {
+    "title": "설정",
+    "subtitle": "프로필, 화면, 알림을 한 화면에 하나씩."
+  },
+  "nav": {
+    "profile": "프로필",
+    "appearance": "화면",
+    "notify": "알림"
+  },
   "title": "설정",
   "tabs": {
     "profile": "프로필",
@@ -49,7 +63,17 @@
     "redeemCodeSuccess": "기업 멤버십 활성화 코드 교환에 성공했습니다",
     "redeemCodeFailed": "기업 멤버십 활성화 코드 교환에 실패했습니다",
     "redeemCodeContactPrefix": "활성화 코드가 없으신가요? ",
-    "redeemCodeContactSuffix": "에서 기업 멤버십 활성화 코드를 받으세요."
+    "redeemCodeContactSuffix": "에서 기업 멤버십 활성화 코드를 받으세요.",
+    "desc": "프로필 사진과 이름은 게시한 내용과 공유 기록에 표시됩니다.",
+    "avatarLabel": "프로필 사진",
+    "avatarDesc": "JPG 또는 PNG, 5MB 이하. 고른 뒤에 잘라낼 수 있습니다.",
+    "nameLabel": "표시 이름",
+    "namePlaceholder": "이름을 입력하세요",
+    "nameDesc": "2~20자. 다른 사람에게 보이는 이름입니다.",
+    "accountLabel": "로그인 계정",
+    "accountDesc": "로그인에 쓰는 이메일 또는 전화번호입니다. 여기서는 아직 바꿀 수 없습니다.",
+    "linksLabel": "관련 링크",
+    "linksDesc": "문서와 오픈소스 저장소."
   },
   "income": {
     "balance": "광고주 잔액",
@@ -347,5 +371,99 @@
     "recharge": "충전",
     "use": "사용하러 가기",
     "info": "Seedance 전용 크레딧 안내 보기"
+  },
+  "appearance": {
+    "desc": "테마와 언어는 이 기기에서만 적용됩니다. 고르면 바로 반영되고 따로 저장할 필요가 없습니다."
+  },
+  "notify": {
+    "desc": "AI 소재 생성처럼 오래 걸리는 작업이 끝나면 휴대폰으로 알려 줍니다. 전송은 Bark를 쓰고, 주소와 키는 직접 넣습니다.",
+    "loadFailed": "알림 설정을 불러오지 못했습니다.",
+    "retry": "다시 시도",
+    "channelTitle": "Bark 푸시",
+    "channelDesc": "휴대폰에서 Bark를 열고 거기 나오는 푸시 주소와 키를 여기에 넣으세요. 비워 두면 전송을 조용히 건너뛰고, 다른 기능에는 영향이 없습니다.",
+    "enabledLabel": "알림 받기",
+    "enabledDesc": "끄면 아무것도 보내지 않습니다. 서버의 기본 채널도 쓰지 않습니다. 주소와 키는 그대로 남습니다.",
+    "envFallback": {
+      "title": "서버에 기본 채널이 설정돼 있습니다",
+      "user": "직접 주소를 넣었으니 알림은 그 주소로 갑니다. 서버의 기본 채널은 주소를 넣지 않았을 때만 대신 씁니다.",
+      "env": "직접 넣은 주소가 없어서 알림이 지금은 서버의 기본 채널로 갑니다. 따로 설정하지 않아도 받을 수 있습니다. 아래에 주소를 넣으면 내 채널로 바뀝니다.",
+      "off": "알림 받기가 꺼져 있어서 서버의 기본 채널도 쓰지 않습니다. 지금은 아무것도 보내지 않습니다."
+    },
+    "urlLabel": "Bark 주소",
+    "urlDesc": "Bark가 알려 주는 푸시 주소입니다. 예: https://내도메인/내디바이스키/. 인터넷에서 닿는 주소만 되고, 루프백과 사설망 주소는 거부됩니다. 비워 두면 내 채널을 쓰지 않습니다.",
+    "urlPlaceholder": "https://example.com/your-device-key/",
+    "keyLabel": "Bark 키",
+    "keyDescSet": "이미 설정됨({{masked}}). 비워 두면 그대로 두고, 바꾸려면 새 값을 입력하세요.",
+    "keyDescEmpty": "요청 헤더 bark-key의 값입니다. 저장한 뒤에는 가린 형태로만 보여 줍니다.",
+    "keyPlaceholderSet": "비워 두면 바꾸지 않습니다",
+    "keyPlaceholderEmpty": "Bark 키를 입력하세요",
+    "groupLabel": "알림 그룹",
+    "groupDesc": "휴대폰에서 이 이름으로 알림을 묶습니다. 비우면 AiToEarn을 씁니다.",
+    "rulesTitle": "알림 규칙",
+    "rulesDesc": "언제 알려 줄지 정합니다. 규칙은 앞으로 더 늘어나고, 지금은 하나뿐입니다.",
+    "rulesDisabledHint": "알림 받기가 꺼져 있어서 아래 규칙은 동작하지 않습니다. 끄면 아예 보내지 않고, 서버의 기본 채널도 쓰지 않습니다.",
+    "rule": {
+      "draft_ready": {
+        "title": "AI 소재 생성이 끝나면 알림",
+        "desc": "이번 소재 생성이 끝나는 순간 알려 줍니다. 화면을 계속 보고 있지 않아도 됩니다."
+      }
+    },
+    "save": "저장",
+    "saving": "저장 중...",
+    "saveSuccess": "알림 설정을 저장했습니다",
+    "testTitle": "테스트 알림 보내기",
+    "testDesc": "저장된 설정으로 실제 한 건을 휴대폰에 보냅니다. 제목에 테스트라고 적혀 있습니다. 키는 브라우저로 돌아오지 않기 때문에 테스트는 항상 저장된 설정으로 나갑니다. 먼저 저장한 뒤에 테스트하세요.",
+    "testAction": "테스트 알림 보내기",
+    "testDirtyHint": "변경 사항을 저장한 뒤에 테스트하세요.",
+    "testEnvHint": "서버의 기본 채널로 보냅니다.",
+    "testOffHint": "알림 받기가 꺼져 있습니다. 켜고 저장한 뒤에 테스트하세요.",
+    "testEmptyHint": "쓸 수 있는 채널이 없습니다. Bark 주소와 키를 넣고 저장하세요.",
+    "testSuccess": "보냈습니다",
+    "testSuccessDesc": "휴대폰에 테스트 알림이 도착했을 겁니다. 오지 않았다면 Bark의 알림 권한을 확인하세요.",
+    "testFailed": "보내지 못했습니다",
+    "testFail": {
+      "urlInvalid": "주소가 올바르지 않습니다. 완전한 주소가 아니거나 프로토콜이 http/https가 아닙니다. 확인하고 다시 저장하세요.",
+      "urlBlocked": "허용되지 않는 주소입니다. 루프백이나 사설망을 가리켜서 서버가 요청하지 않습니다.",
+      "urlUnresolvable": "도메인을 해석할 수 없습니다. 이 주소의 호스트 이름으로 IP를 찾지 못했습니다. 오타를 확인하세요.",
+      "timeout": "시간 초과: 5초 안에 Bark가 응답하지 않았습니다. 네트워크 문제일 수 있습니다.",
+      "unreachable": "연결하지 못했습니다. 서버가 이 주소에 닿지 못했습니다. 도메인, 포트, 방화벽을 확인하세요.",
+      "unauthorized": "키가 잘못됐습니다. Bark가 요청을 거부했습니다(401/403). 키를 다시 입력하세요.",
+      "rejected": "거부됐습니다. Bark가 오류 상태를 돌려줬습니다. 주소에 들어간 디바이스 키를 확인하세요.",
+      "ruleDisabled": "이 규칙이 꺼져 있습니다. 해당 규칙을 켜고 다시 시도하세요.",
+      "notConfigured": "아직 설정하지 않았습니다. Bark 주소와 키를 먼저 넣으세요.",
+      "unknown": "보내지 못했습니다. 잠시 후 다시 시도하세요."
+    },
+    "urlError": {
+      "required": "Bark 주소를 입력하세요",
+      "tooLong": "주소가 너무 깁니다",
+      "malformed": "완전한 주소가 아닙니다. https:// 부터 넣으세요",
+      "protocol": "http와 https 주소만 쓸 수 있습니다",
+      "private": "루프백이나 사설망 주소는 쓸 수 없습니다. 인터넷에서 닿는 Bark 주소를 넣으세요"
+    },
+    "keyError": {
+      "required": "Bark 키를 입력하세요",
+      "tooLong": "키가 너무 깁니다"
+    },
+    "groupError": {
+      "tooLong": "그룹 이름이 너무 깁니다"
+    },
+    "error": {
+      "urlInvalid": "Bark 주소가 올바르지 않습니다. 빠진 부분이 없는지 확인하세요",
+      "urlBlocked": "허용되지 않는 주소입니다. 루프백이나 사설망을 가리켜서 서버가 요청하지 않습니다",
+      "urlUnresolvable": "이 호스트 이름을 해석할 수 없습니다. 오타를 확인하세요",
+      "keyRequired": "Bark 주소를 넣었으면 키도 넣어야 합니다",
+      "notConfigured": "Bark가 아직 설정되지 않았습니다. 주소와 키를 넣고 저장하세요",
+      "ruleInvalid": "알림 규칙이 올바르지 않습니다",
+      "groupInvalid": "알림 그룹이 올바르지 않습니다",
+      "saveFailed": "저장하지 못했습니다. 잠시 후 다시 시도하세요"
+    }
+  },
+  "login": {
+    "desc": "이 항목은 로그인해야 사용할 수 있습니다.",
+    "hint": "로그인하면 여기서 프로필과 알림 설정을 바꿀 수 있습니다.",
+    "action": "로그인하기"
+  },
+  "form": {
+    "unsaved": "저장하지 않은 변경 사항이 있습니다"
   }
 }

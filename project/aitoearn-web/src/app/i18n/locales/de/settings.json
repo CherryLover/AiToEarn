@@ -1,4 +1,18 @@
 {
+  "meta": {
+    "title": "Einstellungen",
+    "description": "Profil, Erscheinungsbild und Push-Benachrichtigungen verwalten: eigene Bark-Adresse und eigenen Schlüssel eintragen und festlegen, welche Ereignisse aufs Handy gehen.",
+    "keywords": "Einstellungen, Benachrichtigungen, Bark, Push, Design, Sprache"
+  },
+  "page": {
+    "title": "Einstellungen",
+    "subtitle": "Profil, Erscheinungsbild und Benachrichtigungen – eine Sache pro Bildschirm."
+  },
+  "nav": {
+    "profile": "Profil",
+    "appearance": "Erscheinungsbild",
+    "notify": "Benachrichtigungen"
+  },
   "title": "Einstellungen",
   "tabs": {
     "profile": "Profil",
@@ -49,7 +63,17 @@
     "redeemCodeSuccess": "Aktivierungscode für Unternehmensmitgliedschaft erfolgreich eingelöst",
     "redeemCodeFailed": "Aktivierungscode für Unternehmensmitgliedschaft konnte nicht eingelöst werden",
     "redeemCodeContactPrefix": "Kein Aktivierungscode? ",
-    "redeemCodeContactSuffix": ", um einen Aktivierungscode für die Unternehmensmitgliedschaft zu erhalten."
+    "redeemCodeContactSuffix": ", um einen Aktivierungscode für die Unternehmensmitgliedschaft zu erhalten.",
+    "desc": "Bild und Anzeigename erscheinen bei deinen Veröffentlichungen und im geteilten Verlauf.",
+    "avatarLabel": "Profilbild",
+    "avatarDesc": "JPG oder PNG, höchstens 5 MB. Nach der Auswahl kannst du zuschneiden.",
+    "nameLabel": "Anzeigename",
+    "namePlaceholder": "Namen eingeben",
+    "nameDesc": "2 bis 20 Zeichen. Diesen Namen sehen die anderen.",
+    "accountLabel": "Anmeldekonto",
+    "accountDesc": "Die E-Mail-Adresse oder Telefonnummer, mit der du dich anmeldest. Hier noch nicht änderbar.",
+    "linksLabel": "Links",
+    "linksDesc": "Dokumentation und Open-Source-Repository."
   },
   "income": {
     "balance": "Advertiser-Guthaben",
@@ -347,5 +371,99 @@
     "recharge": "Aufladen",
     "use": "Zur Nutzung",
     "info": "Hinweise zu Seedance-Credits anzeigen"
+  },
+  "appearance": {
+    "desc": "Design und Sprache gelten nur für dieses Gerät. Sie wirken sofort, es gibt nichts zu speichern."
+  },
+  "notify": {
+    "desc": "Lass dir lange Jobs wie die KI-Materialerzeugung aufs Handy melden, sobald sie fertig sind. Der Versand läuft über Bark mit deiner eigenen Adresse und deinem eigenen Schlüssel.",
+    "loadFailed": "Benachrichtigungseinstellungen konnten nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "channelTitle": "Bark-Push",
+    "channelDesc": "Öffne Bark auf dem Handy und trage die dort angezeigte Push-Adresse und den Schlüssel ein. Ohne Eintrag wird der Versand stillschweigend übersprungen, alles andere läuft weiter.",
+    "enabledLabel": "Benachrichtigungen empfangen",
+    "enabledDesc": "Aus heißt: Es wird gar nichts gesendet, auch nicht über den Standardkanal des Servers. Adresse und Schlüssel bleiben gespeichert.",
+    "envFallback": {
+      "title": "Der Server hat einen Standardkanal",
+      "user": "Du hast eine eigene Adresse hinterlegt, Meldungen laufen darüber. Der Standardkanal des Servers springt nur ein, wenn keine eigene Adresse da ist.",
+      "env": "Du hast keine eigene Adresse hinterlegt, deshalb laufen Meldungen gerade über den Standardkanal des Servers — du bekommst sie auch ohne eigene Einrichtung. Trag unten eine Adresse ein, um deine eigene zu nutzen.",
+      "off": "Der Empfang ist aus, also wird nicht einmal der Standardkanal des Servers genutzt. Gerade wird nichts gesendet."
+    },
+    "urlLabel": "Bark-Adresse",
+    "urlDesc": "Die Push-Adresse aus Bark, etwa https://deine-domain/dein-device-key/. Nur öffentlich erreichbare Adressen – Loopback und interne Netze werden abgelehnt. Leer lassen heißt: kein eigener Kanal.",
+    "urlPlaceholder": "https://example.com/your-device-key/",
+    "keyLabel": "Bark-Schlüssel",
+    "keyDescSet": "Bereits gesetzt ({{masked}}). Leer lassen heißt unverändert; für einen Wechsel einfach den neuen Wert eingeben.",
+    "keyDescEmpty": "Der Wert des Request-Headers bark-key. Nach dem Speichern wird er nur noch maskiert angezeigt.",
+    "keyPlaceholderSet": "Leer lassen, um ihn zu behalten",
+    "keyPlaceholderEmpty": "Bark-Schlüssel eingeben",
+    "groupLabel": "Benachrichtigungsgruppe",
+    "groupDesc": "Unter diesem Namen gruppiert dein Handy die Meldungen. Leer lassen für AiToEarn.",
+    "rulesTitle": "Benachrichtigungsregeln",
+    "rulesDesc": "Wann du gepingt wirst. Weitere Regeln kommen später dazu, aktuell gibt es eine.",
+    "rulesDisabledHint": "Der Empfang ist aus, deshalb greift keine der Regeln unten. Aus heißt: gar nichts wird gesendet, auch nicht über den Standardkanal des Servers.",
+    "rule": {
+      "draft_ready": {
+        "title": "Meldung, wenn die KI mit dem Material fertig ist",
+        "desc": "Du bekommst eine Meldung, sobald die aktuelle Materialerzeugung durch ist – kein Warten vor der Seite."
+      }
+    },
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "saveSuccess": "Benachrichtigungseinstellungen gespeichert",
+    "testTitle": "Testbenachrichtigung senden",
+    "testDesc": "Schickt mit den gespeicherten Einstellungen wirklich eine Meldung aufs Handy. Im Titel steht, dass es ein Test ist. Der Schlüssel kommt nie zum Browser zurück, der Test läuft deshalb immer mit dem gespeicherten Stand: erst speichern, dann testen.",
+    "testAction": "Testbenachrichtigung senden",
+    "testDirtyHint": "Erst Änderungen speichern, dann testen.",
+    "testEnvHint": "Der Versand läuft über den Standardkanal des Servers.",
+    "testOffHint": "Der Empfang ist aus. Erst einschalten und speichern, dann testen.",
+    "testEmptyHint": "Noch kein Kanal verfügbar. Trag Bark-Adresse und Schlüssel ein und speichere.",
+    "testSuccess": "Gesendet",
+    "testSuccessDesc": "Auf dem Handy sollte eine Testbenachrichtigung angekommen sein. Falls nicht, prüfe, ob Bark Mitteilungen senden darf.",
+    "testFailed": "Nicht gesendet",
+    "testFail": {
+      "urlInvalid": "Ungültige Adresse: keine vollständige URL oder das Protokoll ist nicht http/https. Prüfen und neu speichern.",
+      "urlBlocked": "Diese Adresse ist nicht erlaubt: Sie zeigt auf Loopback oder ein internes Netz, der Server ruft sie nicht auf.",
+      "urlUnresolvable": "Domain nicht auflösbar: Zu diesem Hostnamen wurde keine IP gefunden. Auf Tippfehler prüfen.",
+      "timeout": "Zeitüberschreitung: Bark hat nicht innerhalb von 5 Sekunden geantwortet, vermutlich ein Netzwerkproblem.",
+      "unreachable": "Keine Verbindung: Der Server konnte diese Adresse nicht erreichen. Domain, Port und Firewall prüfen.",
+      "unauthorized": "Falscher Schlüssel: Bark hat die Anfrage abgelehnt (401/403). Gib den Schlüssel neu ein.",
+      "rejected": "Abgelehnt: Bark hat mit einem Fehlerstatus geantwortet. Prüfe den Device-Key in der Adresse.",
+      "ruleDisabled": "Diese Regel ist ausgeschaltet. Schalte sie wieder ein und versuch es erneut.",
+      "notConfigured": "Noch nichts eingerichtet: Trage zuerst Bark-Adresse und Schlüssel ein.",
+      "unknown": "Hat nicht geklappt. Versuch es gleich noch einmal."
+    },
+    "urlError": {
+      "required": "Bitte die Bark-Adresse eintragen",
+      "tooLong": "Diese Adresse ist zu lang",
+      "malformed": "Das ist keine vollständige Adresse – mit https:// beginnen",
+      "protocol": "Nur http- und https-Adressen sind erlaubt",
+      "private": "Loopback- und interne Netzwerkadressen sind nicht erlaubt. Nimm eine aus dem Internet erreichbare Bark-Adresse."
+    },
+    "keyError": {
+      "required": "Bitte den Bark-Schlüssel eintragen",
+      "tooLong": "Dieser Schlüssel ist zu lang"
+    },
+    "groupError": {
+      "tooLong": "Dieser Gruppenname ist zu lang"
+    },
+    "error": {
+      "urlInvalid": "Diese Bark-Adresse ist ungültig – prüfe, ob sie vollständig ist",
+      "urlBlocked": "Diese Adresse ist nicht erlaubt: Sie zeigt auf Loopback oder ein internes Netz, der Server ruft sie nicht auf",
+      "urlUnresolvable": "Dieser Hostname ist nicht auflösbar – auf Tippfehler prüfen",
+      "keyRequired": "Wer eine Bark-Adresse einträgt, braucht auch den Schlüssel",
+      "notConfigured": "Bark ist noch nicht eingerichtet – Adresse und Schlüssel eintragen und speichern",
+      "ruleInvalid": "Diese Benachrichtigungsregel ist ungültig",
+      "groupInvalid": "Diese Benachrichtigungsgruppe ist ungültig",
+      "saveFailed": "Konnte nicht gespeichert werden. Versuch es gleich noch einmal."
+    }
+  },
+  "login": {
+    "desc": "Dafür musst du angemeldet sein.",
+    "hint": "Melde dich an, dann kannst du hier Profil und Benachrichtigungen ändern.",
+    "action": "Anmelden"
+  },
+  "form": {
+    "unsaved": "Nicht gespeicherte Änderungen"
   }
 }

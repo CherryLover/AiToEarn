@@ -9,7 +9,7 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(var(--primary-rgb, 139 92 246), 0.08) 50%,
+      color-mix(in oklab, var(--primary) 8%, transparent) 50%,
       transparent 100%
     );
     animation: shimmer 2s ease-in-out infinite;

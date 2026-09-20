@@ -9,6 +9,7 @@ import {
   History,
   Home,
   MonitorSmartphone,
+  Settings,
   Sparkles,
   Upload,
 } from 'lucide-react'
@@ -68,6 +69,13 @@ export const routerData: IRouterDataItem[] = [
     translationKey: 'devices',
     path: '/devices',
     icon: <MonitorSmartphone size={20} />,
+  },
+  {
+    // 设置以前是个弹框，现在是独立页面，主导航里给个正经入口
+    name: 'Settings',
+    translationKey: 'settings',
+    path: '/settings',
+    icon: <Settings size={20} />,
   },
 ]
 
