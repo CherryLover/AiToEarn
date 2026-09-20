@@ -390,7 +390,9 @@ const PluginPublishCard = memo(({ action, className }: IPluginPublishCardProps) 
 
           {/* 状态区 */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs text-amber-600 dark:text-amber-400">
+            {/* 三处提示原来写死 text-amber-600，压在卡片 bg-muted/30 上只有 3.00:1，正文门槛 4.5:1。
+                和 ModelSelect 那支一样换 text-warning-text：5.43:1（亮）/ 8.28:1（暗）。 */}
+            <span className="text-xs text-warning-text">
               {t('pluginPublish.pluginNotInstalled')}
               <button
                 onClick={() => setShowPluginModal(true)}
@@ -458,7 +460,7 @@ const PluginPublishCard = memo(({ action, className }: IPluginPublishCardProps) 
 
           {/* 状态区 */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs text-amber-600 dark:text-amber-400">
+            <span className="text-xs text-warning-text">
               {t('pluginPublish.platformNotLogged', { platform: platformName })}
               <button
                 onClick={() => setShowPluginModal(true)}
@@ -527,7 +529,7 @@ const PluginPublishCard = memo(({ action, className }: IPluginPublishCardProps) 
           {/* 状态区：倒计时标签 + 按钮 */}
           <div className="flex flex-col gap-1.5 sm:gap-2">
             {/* 状态标签 */}
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 border border-cyan-200 dark:bg-cyan-900 dark:text-cyan-200 dark:border-cyan-700 w-fit">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border border-primary/40 bg-primary/10 text-foreground w-fit">
               <Timer className="w-3 h-3" />
               {t('pluginPublish.autoPublishIn', { seconds: countdown, platform: '' })
                 .replace(platformName, '')
@@ -608,7 +610,7 @@ const PluginPublishCard = memo(({ action, className }: IPluginPublishCardProps) 
           <div className="flex flex-col gap-1.5">
             {/* 状态标签 */}
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 border border-cyan-200 dark:bg-cyan-900 dark:text-cyan-200 dark:border-cyan-700">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border border-primary/40 bg-primary/10 text-foreground">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 {stageText}
               </span>
@@ -622,14 +624,16 @@ const PluginPublishCard = memo(({ action, className }: IPluginPublishCardProps) 
 
             {/* 进度条 */}
             <div className="w-full bg-muted rounded-full h-1">
+              {/* 进度条原来写死 cyan-500，压在 bg-muted 轨道上只有 2.21:1（亮），图标/图形门槛 3:1。
+                  换 bg-primary 后 5.48:1（亮）/ 6.56:1（暗），也和站里其它进度条一套。 */}
               <div
-                className="bg-cyan-500 dark:bg-cyan-400 h-1 rounded-full transition-all duration-500"
+                className="bg-primary h-1 rounded-full transition-all duration-500"
                 style={{ width: `${Math.max(progressPercent, 5)}%` }}
               />
             </div>
 
             {/* 警告提示 */}
-            <span className="text-xs text-amber-600 dark:text-amber-400">
+            <span className="text-xs text-warning-text">
               {t('pluginPublish.doNotCloseBrowser')}
             </span>
           </div>
@@ -681,7 +685,9 @@ const PluginPublishCard = memo(({ action, className }: IPluginPublishCardProps) 
           {/* 状态区 */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
             {/* 状态标签 */}
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700 w-fit">
+            {/* 四支状态徽章原来是写死的 *-100/*-800，和同目录 PublishDetailCard 的失败徽章不是一套。
+                统一走 publish.utils.ts 的口径：成功 5.25:1（亮）/ 7.82:1（暗）。 */}
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border border-success/40 bg-success/10 text-success-text w-fit">
               <CheckCircle2 className="w-3 h-3" />
               {t('pluginPublish.publishSuccess')}
             </span>
@@ -820,7 +826,7 @@ const PluginPublishCard = memo(({ action, className }: IPluginPublishCardProps) 
         {/* 状态区 */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
           {/* 状态标签 */}
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700 w-fit">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border border-border bg-muted/60 text-foreground w-fit">
             <Clock className="w-3 h-3" />
             {t('publishDetail.unpublished')}
           </span>

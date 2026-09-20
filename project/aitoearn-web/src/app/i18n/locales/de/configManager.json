@@ -225,7 +225,7 @@
     "failed": "Check failed",
     "dirty": "Unsaved changes",
     "format": "{{format}} file",
-    "modified": "Modified",
+    "modified": "Geändert",
     "notRecommended": "Nicht empfohlen"
   },
   "actions": {
@@ -241,7 +241,20 @@
     "showSensitiveValue": "Wert anzeigen",
     "hideSensitiveValue": "Wert ausblenden",
     "goToJsonField": "Zum JSON-Feld",
-    "goToVisualField": "Zum visuellen Feld"
+    "goToVisualField": "Zum visuellen Feld",
+    "expandAll": "Alle ausklappen",
+    "collapseAll": "Alle einklappen"
+  },
+  "search": {
+    "label": "Einstellungen durchsuchen",
+    "placeholder": "Einstellungen suchen, z. B. redis oder channel.bilibili",
+    "clear": "Suche löschen",
+    "resultTitle": "Suchergebnisse",
+    "resultDesc": "{{count}} Einstellungen in allen Bereichen gefunden.",
+    "resultTruncated": "Zu viele Treffer. Es werden nur die ersten {{count}} angezeigt – bitte den Suchbegriff eingrenzen.",
+    "empty": "Keine passenden Einstellungen",
+    "emptyHint": "Anderen Suchbegriff versuchen oder die Suche löschen, um wieder nach Bereichen zu blättern.",
+    "openSection": "Bereich öffnen"
   },
   "messages": {
     "validateSuccess": "Configuration validated",
@@ -268,13 +281,13 @@
     "codeSuffix": "(Fehlercode {{code}})"
   },
   "common": {
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "emptyValue": "Empty value",
-    "emptyArray": "No items yet",
-    "emptyObject": "No fields",
-    "itemCount": "{{count}} items",
-    "arrayItem": "Item {{index}}"
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "emptyValue": "Leerer Wert",
+    "emptyArray": "Noch keine Einträge",
+    "emptyObject": "Keine Felder",
+    "itemCount": "{{count}} Einträge",
+    "arrayItem": "Eintrag {{index}}"
   },
   "tabs": {
     "visual": "Visuell",
@@ -286,7 +299,7 @@
     "ai": "AI-Dienst"
   },
   "panel": {
-    "fieldSummary": "{{count}} fields",
-    "modifiedSummary": "{{count}} modified"
+    "fieldSummary": "{{count}} Felder",
+    "modifiedSummary": "{{count}} geändert"
   }
 }

@@ -241,7 +241,20 @@
     "showSensitiveValue": "Show value",
     "hideSensitiveValue": "Hide value",
     "goToJsonField": "Go to JSON field",
-    "goToVisualField": "Go to visual field"
+    "goToVisualField": "Go to visual field",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all"
+  },
+  "search": {
+    "label": "Search settings",
+    "placeholder": "Search settings, e.g. redis or channel.bilibili",
+    "clear": "Clear search",
+    "resultTitle": "Search results",
+    "resultDesc": "{{count}} settings matched across all sections.",
+    "resultTruncated": "Too many matches. Showing the first {{count}} — try a more specific keyword.",
+    "empty": "No matching settings",
+    "emptyHint": "Try another keyword, or clear the search to go back to browsing by section.",
+    "openSection": "Open section"
   },
   "messages": {
     "validateSuccess": "Configuration validated",

@@ -173,7 +173,9 @@ const DatePicker = memo(({
                     disabled={isDisabled}
                     className={cn(
                       'size-9 rounded-full flex items-center justify-center text-sm transition-colors cursor-pointer',
-                      !item.isCurrentMonth && 'opacity-40',
+                      // 非本月靠副文色弱化，不叠透明度：opacity-40 实测只有 2.52:1（亮）/ 3.53:1（暗），
+                      // 换成 text-muted-foreground 后 5.48:1 / 6.34:1。date-range-picker 同一行代码同一个值。
+                      !item.isCurrentMonth && !isSelected && 'text-muted-foreground',
                       item.isCurrentMonth && !isSelected && !isDisabled && 'hover:bg-accent',
                       isSelected && 'bg-gradient-back text-gradient-foreground shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25',
                       isToday && !isSelected && 'border border-primary',

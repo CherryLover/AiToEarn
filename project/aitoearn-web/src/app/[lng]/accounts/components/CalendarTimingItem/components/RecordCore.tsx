@@ -742,10 +742,13 @@ const RecordCore = memo(
               {account?.clientType && (
                 <span
                   className={cn(
-                    'inline-block px-1.5 py-0.5 rounded text-[10px] md:text-[11px] font-medium ml-2',
+                    'inline-block px-1.5 py-0.5 rounded text-[10px] md:text-[11px] font-medium ml-2 border',
+                    // 同文件上面已经有 statusBadgeClassName 这套口径了，这两支漏了没跟着换：
+                    // 写死 green 亮色下只有 3.15:1，正文门槛 4.5:1。
+                    // 换过来 web 5.74:1（亮）/ 5.63:1（暗）、插件 5.55:1 / 7.48:1。
                     account.clientType === 'web'
-                      ? 'bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700'
-                      : 'bg-green-50 text-green-600 border border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700',
+                      ? statusBadgeClassName.info
+                      : statusBadgeClassName.success,
                   )}
                 >
                   {getClientTypeLabel(account.clientType)}

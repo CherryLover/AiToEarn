@@ -225,7 +225,7 @@
     "failed": "Check failed",
     "dirty": "Unsaved changes",
     "format": "{{format}} file",
-    "modified": "Modified",
+    "modified": "변경됨",
     "notRecommended": "비추천"
   },
   "actions": {
@@ -241,7 +241,20 @@
     "showSensitiveValue": "값 표시",
     "hideSensitiveValue": "값 숨기기",
     "goToJsonField": "JSON 필드로 이동",
-    "goToVisualField": "시각화 필드로 이동"
+    "goToVisualField": "시각화 필드로 이동",
+    "expandAll": "모두 펼치기",
+    "collapseAll": "모두 접기"
+  },
+  "search": {
+    "label": "설정 항목 검색",
+    "placeholder": "설정 항목 검색 (예: redis, channel.bilibili)",
+    "clear": "검색 지우기",
+    "resultTitle": "검색 결과",
+    "resultDesc": "모든 섹션에서 설정 항목 {{count}}개를 찾았습니다.",
+    "resultTruncated": "결과가 너무 많습니다. 처음 {{count}}개만 표시합니다. 키워드를 더 구체적으로 입력하세요.",
+    "empty": "일치하는 설정 항목이 없습니다",
+    "emptyHint": "다른 키워드를 사용하거나 검색을 지우고 섹션 보기로 돌아가세요.",
+    "openSection": "섹션 열기"
   },
   "messages": {
     "validateSuccess": "Configuration validated",
@@ -268,13 +281,13 @@
     "codeSuffix": "(오류 코드 {{code}})"
   },
   "common": {
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "emptyValue": "Empty value",
-    "emptyArray": "No items yet",
-    "emptyObject": "No fields",
-    "itemCount": "{{count}} items",
-    "arrayItem": "Item {{index}}"
+    "enabled": "사용",
+    "disabled": "사용 안 함",
+    "emptyValue": "값 없음",
+    "emptyArray": "항목 없음",
+    "emptyObject": "필드 없음",
+    "itemCount": "{{count}}개 항목",
+    "arrayItem": "{{index}}번 항목"
   },
   "tabs": {
     "visual": "시각화",
@@ -286,7 +299,7 @@
     "ai": "AI 서비스"
   },
   "panel": {
-    "fieldSummary": "{{count}} fields",
-    "modifiedSummary": "{{count}} modified"
+    "fieldSummary": "필드 {{count}}개",
+    "modifiedSummary": "변경 {{count}}건"
   }
 }

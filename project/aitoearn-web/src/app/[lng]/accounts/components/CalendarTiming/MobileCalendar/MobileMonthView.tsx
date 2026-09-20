@@ -91,8 +91,11 @@ const MobileMonthView = memo<IMobileMonthViewProps>(
               key={day}
               className={cn(
                 'text-center text-xs text-muted-foreground',
-                index === 0 && 'text-red-400', // 周日
-                index === 6 && 'text-red-400', // 周六
+                // 周末表头原来写死 text-red-400，压在页面底上只有 2.65:1（亮），正文门槛 4.5:1。
+                // 站里唯一的红就是 destructive，换过来 5.32:1（亮）/ 7.02:1（暗）。
+                // 同目录 MobileMonthView / MobileWeekView 两处一模一样，一起改。
+                index === 0 && 'text-destructive', // 周日
+                index === 6 && 'text-destructive', // 周六
               )}
             >
               {day}

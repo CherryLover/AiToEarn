@@ -225,7 +225,7 @@
     "failed": "Check failed",
     "dirty": "Unsaved changes",
     "format": "{{format}} file",
-    "modified": "Modified",
+    "modified": "変更あり",
     "notRecommended": "非推奨"
   },
   "actions": {
@@ -241,7 +241,20 @@
     "showSensitiveValue": "値を表示",
     "hideSensitiveValue": "値を隠す",
     "goToJsonField": "JSONフィールドへ移動",
-    "goToVisualField": "表示フィールドへ移動"
+    "goToVisualField": "表示フィールドへ移動",
+    "expandAll": "すべて展開",
+    "collapseAll": "すべて折りたたむ"
+  },
+  "search": {
+    "label": "設定項目を検索",
+    "placeholder": "設定項目を検索（例: redis、channel.bilibili）",
+    "clear": "検索をクリア",
+    "resultTitle": "検索結果",
+    "resultDesc": "すべてのセクションで {{count}} 件の設定項目が一致しました。",
+    "resultTruncated": "一致が多すぎます。先頭の {{count}} 件のみ表示しています。キーワードをより具体的にしてください。",
+    "empty": "一致する設定項目はありません",
+    "emptyHint": "別のキーワードを試すか、検索をクリアしてセクション表示に戻ってください。",
+    "openSection": "セクションを開く"
   },
   "messages": {
     "validateSuccess": "Configuration validated",
@@ -268,13 +281,13 @@
     "codeSuffix": "（エラーコード {{code}}）"
   },
   "common": {
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "emptyValue": "Empty value",
-    "emptyArray": "No items yet",
-    "emptyObject": "No fields",
-    "itemCount": "{{count}} items",
-    "arrayItem": "Item {{index}}"
+    "enabled": "有効",
+    "disabled": "無効",
+    "emptyValue": "値なし",
+    "emptyArray": "項目がありません",
+    "emptyObject": "フィールドがありません",
+    "itemCount": "{{count}} 件",
+    "arrayItem": "項目 {{index}}"
   },
   "tabs": {
     "visual": "ビジュアル",
@@ -286,7 +299,7 @@
     "ai": "AI サービス"
   },
   "panel": {
-    "fieldSummary": "{{count}} fields",
-    "modifiedSummary": "{{count}} modified"
+    "fieldSummary": "{{count}} フィールド",
+    "modifiedSummary": "{{count}} 件の変更"
   }
 }

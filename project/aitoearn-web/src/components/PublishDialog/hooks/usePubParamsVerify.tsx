@@ -760,9 +760,13 @@ export const PubParamsVerifyInfo = memo(({ errItem }: { errItem?: ErrPubParamsIt
   return (
     <>
       {errItem && (
-        <div className="flex items-start gap-2 mb-4 p-2 rounded-md bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 text-xs">
-          <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
-          <p className="text-left text-yellow-800 dark:text-yellow-200">{errItem.parErrMsg}</p>
+        // 发布对话框里三块黄色提醒，ErrorSummary 和 usePlatParamsCoomon 都换成主题变量了，
+        // 只剩这一块还是写死 yellow 色阶，手机端两块并排就是一黄一橙。
+        // 换成同一套告警口径后：图标 4.96:1（亮）/ 7.24:1（暗），原来是 2.84:1；
+        // 正文 4.72:1 / 5.77:1。
+        <div className="flex items-start gap-2 mb-4 p-2 rounded-md border border-warning/30 bg-warning/10 text-xs">
+          <AlertTriangle className="h-4 w-4 text-warning-text flex-shrink-0 mt-0.5" />
+          <p className="text-left text-muted-foreground">{errItem.parErrMsg}</p>
         </div>
       )}
     </>

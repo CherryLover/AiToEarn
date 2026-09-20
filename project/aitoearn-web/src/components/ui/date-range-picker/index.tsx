@@ -199,7 +199,9 @@ export const DateRangeCalendar = memo(({
                 onClick={() => handleDayClick(dateStr)}
                 className={cn(
                   'relative size-9 rounded-full flex items-center justify-center text-sm transition-colors cursor-pointer',
-                  !item.isCurrentMonth && 'opacity-40',
+                  // 和 date-picker 同一行代码同一个值：opacity-40 只有 2.52:1（亮）/ 3.53:1（暗），
+                  // 换成 text-muted-foreground 后 5.48:1 / 6.34:1。
+                  !item.isCurrentMonth && !isSelected && 'text-muted-foreground',
                   item.isCurrentMonth && !isSelected && !isRangeMiddle && 'hover:bg-accent',
                   item.isCurrentMonth && !isSelected && isRangeMiddle && 'text-primary hover:bg-primary/10',
                   isSelected && 'bg-primary text-gradient-foreground shadow-sm shadow-primary/20 hover:bg-primary/90 hover:text-gradient-foreground',

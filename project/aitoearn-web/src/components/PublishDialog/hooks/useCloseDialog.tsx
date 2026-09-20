@@ -23,7 +23,10 @@ export function useCloseDialog({ onClose, t }: UseCloseDialogParams) {
   const closeDialog = useCallback(() => {
     confirm({
       title: t('confirmClose.title'),
-      icon: <AlertCircle className="h-5 w-5 text-yellow-500" />,
+      // 这是关闭确认弹窗里唯一的图标，不是装饰：写死 text-yellow-500 压在弹窗底上
+      // 亮色只有 1.84:1，图标门槛 3:1。换 text-warning-text 后 5.52:1（亮）/ 8.70:1（暗），
+      // 和 RecordCore 取消发布那个确认框一套。
+      icon: <AlertCircle className="h-5 w-5 text-warning-text" />,
       content: t('confirmClose.content'),
       okType: 'destructive',
       centered: true,

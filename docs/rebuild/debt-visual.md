@@ -176,3 +176,40 @@ text-muted-foreground/70 这个写法全站有 24 处，算出来亮色一律是
 - `VideoModelParamsSelect.tsx:69,71` 的「·」分隔符（`/60`，2.47）——纯标点
 - `AspectRatioSelect.tsx:65`、`VideoModelParamsSelect.tsx:133` 未选中的单选圈边框（`/40`，1.76）——偏低但是边框不是文字，下一轮一并看
 - 各页空状态大图标（`/30`~`/50`）、侧边栏装饰小圆点、节日摘要分隔点
+
+---
+
+# 第二批清理结果（2026-09-20）
+
+9 条全部改完，并按「找到一处先搜全站」的规矩把同写法的兄弟元素一起改了。
+数值是把编译后的 CSS 喂给无头浏览器实测的（含 `color-mix(in oklab, …)` 和 `opacity` 叠加），不是手算。
+
+| # | 位置 | 改法 | 亮色 | 暗色 |
+|---|---|---|---|---|
+| 1 | `usePubParamsVerify.tsx:763` | 换站里统一的 `border-warning/30 + bg-warning/10 + text-warning-text` | 图标 2.84 → 4.96、正文 → 4.72 | 7.24 / 5.77 |
+| 2 | `ChannelItem.tsx:68` | 去掉整行 `opacity-70`，离线改用头像/平台图标去色 + 账号名降字重降色 | 2.88 → 5.25（hover 底 5.19） | 4.06 → 6.93 |
+| 3 | `PublishDatePicker/DateTimePicker.tsx:207` | 非本月拆出 `isOtherMonth`，只给副文色不叠透明度（`opacity-30` 只留给按规则禁用的日期） | 2.09 → 5.48 | 2.59 → 6.34 |
+| 4 | `ui/date-picker:176`、`ui/date-range-picker:202` | 同上，两处一起 | 2.54 → 5.48 | 3.48 → 6.34 |
+| 5 | `Chat/ChatMessage/PluginPublishCard/index.tsx` | 三处 `text-amber-600` → `text-warning-text`；**顺带**同文件四支写死徽章和 cyan 进度条也换 | 提示 3.02 → 5.44、成功徽章 → 5.25、进度条 1.0 → 5.48 | 8.29 / 7.76 / 6.56 |
+| 6 | `MobileMonthView:94-95`、`MobileWeekView:102-103` | 周末表头 `text-red-400` → `text-destructive` | 2.77 → 5.32 | 6.05 → 7.02 |
+| 7 | `RecordCore.tsx:747-748` | 改用同文件已有的 `statusBadgeClassName.info / .success` | 插件 3.15 → 5.54、网页 → 5.72 | 7.41 / 5.60 |
+| 8 | `useCloseDialog.tsx:26` | `text-yellow-500` → `text-warning-text` | 1.83 → 5.52 | 8.70 |
+| 9 | `UserLogsModal/index.tsx:255` | 积分 → `text-warning-text`；**顺带**同文件和 `VideoHistoryModal` 的三支状态徽章一起换 | 积分 3.43 → 5.52、徽章 4.57~5.31 | 8.70 / 6.00~8.20 |
+
+## 顺手一起改的（同写法，清单里没单列）
+
+- `Chat/ChatMessage/PublishDetailCard/index.tsx:153/160/174`：同一个 switch 里只有 FAIL 换过变量，另外三支还是写死 `*-100/*-800`
+- `VideoEditModeBadge/index.tsx:6`：同目录 `utils/styles.ts` 的徽章上一轮换了，这一支漏了
+- `AspectRatioSelect.tsx:65`、`VideoModelParamsSelect.tsx:133`：未选中的比例框边框 1.26~1.76 → 5.48（亮）/ 6.34（暗）。这是选中状态指示，不是纯装饰
+- `Chat/Share/generateShareImages.ts` 的 `BG_COLOR_MAP`：这张表按 `className.includes` 逐条匹配，`bg-success/10` 会先命中 `bg-success` 被刷成整块实心深绿。补了 `/10`、`/15`、`/30`、`/60` 的合成值并排在前面，分享图才不会把新徽章画糊
+
+## 判定可留（已在代码里写注释，别再捡）
+
+- `PublishUploadProgress.tsx:173/175` 的对勾和叉：坐在固定的 `bg-black/60` 深色圆片上，不跟主题翻转。现在的 `green-400`/`red-400` 在这块底上是 7.23:1 / 4.55:1，换成亮色的 `text-success-text` 反而掉到 1.98:1
+- `app/config/tagConfig.ts` 的七档标签色：是一组要彼此区分的分类色，上一轮已定过调子，实测 7:1 以上
+- `CalendarFestivalSummary` 的 `text-primary/80`：只是容器默认色，每个节日名都被 `getFestivalTextTone()` 用全不透明的变量覆盖了，不是真的正文
+- 空状态大图标（`/30`~`/50`）、`·` 分隔符（`/60`）、装饰圆点
+
+## 第三批（留给下一轮）
+
+- `app/[lng]/config/` 这一轮没扫（配置页在另一个 Agent 手里同时改）。等那边落定后单独扫一遍。

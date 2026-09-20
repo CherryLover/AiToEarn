@@ -83,8 +83,12 @@ export function countModifiedLeafFields(value: unknown, originalValue: unknown):
  *
  * `configManager.json` 里 `fieldDescriptions` 的键有两种写法：光一个字段名（`port`），
  * 或者带路径（`agent.models`）。后者用 `t('fieldDescriptions.agent.models')` 是取不到的——
- * i18next 默认把点当层级分隔符，会去找不存在的嵌套对象。所以这里一次性拿整块对象再自己查，
- * 先按完整路径找，找不到再退回字段名。
+ * i18next 默认把点当层级分隔符，会去找不存在的嵌套对象。所以这里一次性拿整块对象再自己查。
+ *
+ * **只按完整路径查，单字段名那种写法只认顶层。**
+ * 以前是「找不到就退回最后一段字段名」，结果是深层里任何一个叫 `channel` 的字段
+ * 都会顶着「各平台 OAuth、回调、Logo…」这条说明——比如视频模型项里的 `channel: relay`。
+ * 说明文字宁可空着，也不能给用户编一条不相干的。
  */
 export function getConfigFieldDescription(
   descriptions: Record<string, string>,
@@ -92,5 +96,11 @@ export function getConfigFieldDescription(
   fieldKey: string,
 ): string {
   const fullKey = path.filter((segment): segment is string => typeof segment === 'string').join('.')
-  return descriptions[fullKey] || descriptions[getLastStringSegment(path, fieldKey)] || ''
+  if (descriptions[fullKey])
+    return descriptions[fullKey]
+
+  if (path.length <= 1)
+    return descriptions[getLastStringSegment(path, fieldKey)] || ''
+
+  return ''
 }

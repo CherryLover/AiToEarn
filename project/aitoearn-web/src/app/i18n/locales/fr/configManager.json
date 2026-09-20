@@ -225,7 +225,7 @@
     "failed": "Check failed",
     "dirty": "Unsaved changes",
     "format": "{{format}} file",
-    "modified": "Modified",
+    "modified": "Modifié",
     "notRecommended": "Déconseillé"
   },
   "actions": {
@@ -241,7 +241,20 @@
     "showSensitiveValue": "Afficher la valeur",
     "hideSensitiveValue": "Masquer la valeur",
     "goToJsonField": "Aller au champ JSON",
-    "goToVisualField": "Aller au champ visuel"
+    "goToVisualField": "Aller au champ visuel",
+    "expandAll": "Tout développer",
+    "collapseAll": "Tout réduire"
+  },
+  "search": {
+    "label": "Rechercher un paramètre",
+    "placeholder": "Rechercher un paramètre, par ex. redis ou channel.bilibili",
+    "clear": "Effacer la recherche",
+    "resultTitle": "Résultats de recherche",
+    "resultDesc": "{{count}} paramètres trouvés dans toutes les sections.",
+    "resultTruncated": "Trop de résultats. Seuls les {{count}} premiers sont affichés : précisez votre mot-clé.",
+    "empty": "Aucun paramètre correspondant",
+    "emptyHint": "Essayez un autre mot-clé ou effacez la recherche pour revenir à la navigation par section.",
+    "openSection": "Ouvrir la section"
   },
   "messages": {
     "validateSuccess": "Configuration validated",
@@ -268,13 +281,13 @@
     "codeSuffix": "(code d'erreur {{code}})"
   },
   "common": {
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "emptyValue": "Empty value",
-    "emptyArray": "No items yet",
-    "emptyObject": "No fields",
-    "itemCount": "{{count}} items",
-    "arrayItem": "Item {{index}}"
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "emptyValue": "Valeur vide",
+    "emptyArray": "Aucun élément",
+    "emptyObject": "Aucun champ",
+    "itemCount": "{{count}} éléments",
+    "arrayItem": "Élément {{index}}"
   },
   "tabs": {
     "visual": "Visuel",
@@ -286,7 +299,7 @@
     "ai": "Service IA"
   },
   "panel": {
-    "fieldSummary": "{{count}} fields",
-    "modifiedSummary": "{{count}} modified"
+    "fieldSummary": "{{count}} champs",
+    "modifiedSummary": "{{count}} modifiés"
   }
 }

@@ -181,3 +181,53 @@
 - 不要改 `deploy/` 下任何东西
 - 不要为了让保存成功而绕开只读挂载
 - 不要把「保存会失败」这件事藏起来——失败时把服务端返回的真实原因显示出来就行，不要包装成「稍后重试」
+
+---
+
+# 附二：配置页右侧改成设置页的排版
+
+## 用户原话
+
+> 配置的右侧 也不要用 表格来做了，不好看，都按照 个人设置里的 那种 风格来
+
+## 现在是什么样
+
+`config/components/ConfigField/index.tsx` 第 212、433 行：
+
+```
+grid min-h-8 gap-2 py-0.5 pr-2 lg:grid-cols-[minmax(120px,180px)_minmax(0,1fr)]
+border-b border-border/70 last:border-b-0
+```
+
+两列网格、行高 32px、上下内边距 2px、每行一条细分割线——就是表格。
+
+## 目标是什么样
+
+设置页已经有现成的外壳和字段范式，**直接复用，不要另写一套**：
+
+- `settings/components/SettingsSection.tsx` 导出 `SettingsSection`（分区标题 + 说明 + 卡片）和 `SettingsCard`（卡片，`p-5 md:p-6`，可带小标题和说明）
+- 字段范式看 `settings/components/NotifySection/index.tsx`：
+  - 字段之间 `flex flex-col gap-7`
+  - 每个字段：`FormLabel` + 说明 + 输入框**竖着堆**，标签和说明用 `space-y-1.5` 收在一起
+  - 开关类：`flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6`，左边标签说明、右边开关
+
+## 必须同时解决的问题：页面会很长
+
+服务端配置文件 7KB、上百个字段。照设置页那种留白一路排下去，页面长到没法用——**当初用密集网格是有原因的**。
+
+所以不是单纯换排法，要一起做分组：
+
+- 配置本来就有分区（左侧导航那些），**一个分区 = 一个 `SettingsSection`**
+- 分区里的**嵌套对象 = 一个 `SettingsCard`**，用对象名当卡片小标题
+- 嵌套超过两层的，**第三层起用折叠**（`collapsible.tsx` 已有），默认收起
+- 字段多的卡片也可以整卡折叠，默认展开常用的、收起冷门的
+- 如果现在有搜索/过滤，保留；没有的话**加一个**——上百个字段没有搜索找不到东西
+
+## 其他要求
+
+- **不碰功能**。读取、校验、保存、重启的逻辑一行不动。这轮还是只改样式和布局
+- `ConfigJsonPanel`（JSON 视图）保留，它本来就适合密集展示
+- 每个字段的说明文字：配置本身有 describe 的就用它，没有的**不要编**，留空
+- 六种语言文案补齐
+- 手机宽度下不横向滚动
+- 对比度照 `debt-visual.md` 的规矩：正文 4.5:1、图标 3:1，亮暗都算，叠加后的真实值

@@ -124,6 +124,8 @@ export function ConfigPageContent() {
   const [editMode, setEditMode] = useState<ConfigEditMode>('visual')
   const [jsonText, setJsonText] = useState('')
   const [activeSectionId, setActiveSectionId] = useState('')
+  /** 配置项搜索词。跨分区搜，所以放在页面这一层，切分区或切服务时清掉 */
+  const [searchQuery, setSearchQuery] = useState('')
   const [visualFocusRequest, setVisualFocusRequest] = useState<ConfigPathFocusRequest | null>(null)
   const [jsonFocusRequest, setJsonFocusRequest] = useState<ConfigPathFocusRequest | null>(null)
   const [highlightedVisualPathKey, setHighlightedVisualPathKey] = useState('')
@@ -193,6 +195,8 @@ export function ConfigPageContent() {
 
   const handleSectionSelect = useCallback((sectionId: string) => {
     setActiveSectionId(sectionId)
+    // 点了分区就是要看这个分区，搜索结果还挂在上面只会挡路
+    setSearchQuery('')
     if (typeof window !== 'undefined')
       window.history.replaceState(null, '', `#${sectionId}`)
   }, [])
@@ -273,6 +277,7 @@ export function ConfigPageContent() {
     setServiceStatus('unknown')
     setEditMode('visual')
     setActiveSectionId('')
+    setSearchQuery('')
     setVisualFocusRequest(null)
     setJsonFocusRequest(null)
     setHighlightedVisualPathKey('')
@@ -564,11 +569,15 @@ export function ConfigPageContent() {
     return (
       <ConfigFormPanel
         section={activeSection}
+        sections={sections}
         config={config}
         originalConfig={originalConfig}
         disabled={disabled}
         focusRequest={visualFocusRequest}
         highlightedPathKey={highlightedVisualPathKey}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSectionSelect={handleSectionSelect}
         onFocusRequestHandled={handleVisualFocusRequestHandled}
         onValueChange={handleValueChange}
         onNavigateToJson={handleNavigateToJson}

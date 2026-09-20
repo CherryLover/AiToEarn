@@ -168,6 +168,9 @@ const PublishUploadProgress = memo(
 
                 {/* 中心内容 */}
                 <div className="relative z-10 flex items-center justify-center text-white">
+                  {/* 这两个图标坐在固定的 bg-black/60 深色圆片上，不跟随主题翻转：
+                      现在的 green-400 / red-400 在这块底上是 7.23:1 / 4.55:1，
+                      换成亮色的 text-success-text 反而会掉到 1.98:1。保持写死色是对的。 */}
                   {showIcon ? (
                     isSuccess ? (
                       <Check className="h-3.5 w-3.5 text-green-400" />

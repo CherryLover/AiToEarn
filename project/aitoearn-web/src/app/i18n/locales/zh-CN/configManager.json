@@ -241,7 +241,20 @@
     "showSensitiveValue": "显示敏感值",
     "hideSensitiveValue": "隐藏敏感值",
     "goToJsonField": "前往 JSON 字段",
-    "goToVisualField": "前往可视化字段"
+    "goToVisualField": "前往可视化字段",
+    "expandAll": "展开全部",
+    "collapseAll": "收起全部"
+  },
+  "search": {
+    "label": "搜索配置项",
+    "placeholder": "搜索配置项，比如 redis 或 channel.bilibili",
+    "clear": "清空搜索",
+    "resultTitle": "搜索结果",
+    "resultDesc": "在全部分区里匹配到 {{count}} 个配置项。",
+    "resultTruncated": "匹配太多，只显示前 {{count}} 个，把关键词写得更具体一点。",
+    "empty": "没有匹配的配置项",
+    "emptyHint": "换个关键词试试，或者清空搜索回到分区浏览。",
+    "openSection": "查看分区"
   },
   "messages": {
     "validateSuccess": "配置校验通过",

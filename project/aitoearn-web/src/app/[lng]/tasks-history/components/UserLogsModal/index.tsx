@@ -213,13 +213,16 @@ export function UserLogsModal({ open, onClose }: UserLogsModalProps) {
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-sm">{getTypeText(log.type)}</span>
+                      {/* 三支徽章原来是写死的 *-100/*-700，亮色擦着线过（4.57~5.30:1），
+                          和 VideoHistoryModal 是同一段代码。统一走语义变量：
+                          成功 5.33:1（亮）/ 8.27:1（暗）、失败 4.58 / 6.01、进行中 4.98 / 7.24。 */}
                       <span
-                        className={`text-xs px-2 py-1 rounded-full ${
+                        className={`text-xs px-2 py-1 rounded-full border ${
                           log.status === 'success'
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                            ? 'border-success/40 bg-success/10 text-success-text'
                             : log.status === 'failed'
-                              ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+                              ? 'border-destructive/40 bg-destructive/10 text-destructive'
+                              : 'border-warning/30 bg-warning/10 text-warning-text'
                         }`}
                       >
                         {getStatusText(log.status)}
@@ -252,7 +255,9 @@ export function UserLogsModal({ open, onClose }: UserLogsModalProps) {
                         {t('history.logFields.points')}
                         :
                       </span>
-                      <span className="font-semibold text-orange-600 dark:text-orange-400">
+                      {/* 积分是加粗正文，写死 text-orange-600 压在弹窗底上只有 3.41:1、
+                          卡片 hover 时 3.32:1，门槛 4.5:1。换 text-warning-text 后 5.52:1 / 5.38:1（亮）、8.70:1（暗）。 */}
+                      <span className="font-semibold text-warning-text">
                         {log.points.toFixed(4)}
                       </span>
                     </div>

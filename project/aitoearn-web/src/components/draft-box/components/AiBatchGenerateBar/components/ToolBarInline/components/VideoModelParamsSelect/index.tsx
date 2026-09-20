@@ -130,7 +130,9 @@ export function VideoModelParamsSelect({
                                 <span
                                   className={cn(
                                     'rounded-sm border',
-                                    isActive ? 'border-primary' : 'border-muted-foreground/40',
+                                    // 和 AspectRatioSelect 同一个写法同一个值：/40 只有 1.76:1（亮）。
+                                    // 去掉透明度后 5.48:1（亮）/ 6.34:1（暗）。
+                                    isActive ? 'border-primary' : 'border-muted-foreground',
                                   )}
                                   style={{ width: preview.w, height: preview.h }}
                                 />

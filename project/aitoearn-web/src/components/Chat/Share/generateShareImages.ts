@@ -405,7 +405,23 @@ const TEXT_COLOR_MAP: Record<string, string> = {
   'text-foreground': '#1c1917',
 }
 
+// 注意：下面是按 className.includes 逐条匹配、命中即停，所以带透明度的写法必须排在
+// 不带透明度的前面——否则 `bg-success/10` 会先命中 `bg-success`，在分享图里被刷成
+// 一整块实心深绿，压在同色系文字下面就什么都看不见了。
+// 值是把主题色按该透明度压在白底上合成出来的，和页面上看到的一致。
 const BG_COLOR_MAP: Record<string, string> = {
+  'bg-success/10': '#e8f2ec',
+  'bg-success/15': '#dcece2',
+  'bg-destructive/10': '#f9ebea',
+  'bg-destructive/15': '#f6e0e0',
+  'bg-warning/10': '#fbf1e6',
+  'bg-warning/15': '#f9ebda',
+  'bg-info/10': '#e8edfb',
+  'bg-info/15': '#dde4f9',
+  'bg-primary/10': '#e9f1ef',
+  'bg-primary/15': '#dde9e7',
+  'bg-muted/30': '#fcfcfb',
+  'bg-muted/60': '#f9f8f7',
   'bg-success': '#15803d',
   'bg-destructive': '#c1332d',
   'bg-warning': '#d97706',

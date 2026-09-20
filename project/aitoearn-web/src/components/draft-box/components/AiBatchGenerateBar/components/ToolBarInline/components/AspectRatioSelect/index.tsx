@@ -60,9 +60,12 @@ export function AspectRatioSelect({
                   <span
                     className={cn(
                       'rounded-sm',
+                      // 未选中的比例框只有这一圈边框，/40 实测 1.76:1（亮）/ 2.16:1（暗），
+                      // hover 到 bg-muted 上更低（1.72 / 2.11）。去掉透明度后 5.48 / 6.34、4.99 / 5.79。
+                      // 选中态靠 border-primary + bg-primary/10 + 正文色区分，不靠这圈边框的深浅。
                       isActive
                         ? 'border-[1.5px] border-primary'
-                        : 'border-[1.5px] border-muted-foreground/40',
+                        : 'border-[1.5px] border-muted-foreground',
                     )}
                     style={{ width: w, height: h }}
                   />

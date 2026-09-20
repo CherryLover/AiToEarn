@@ -143,6 +143,9 @@ const PublishDetailCard = memo(
     }, [detail, initialData])
 
     // 渲染状态标签
+    // 四支里只有 FAIL 换过语义变量，另外三支还是写死的 *-100/*-800——同一个 switch 改了一半。
+    // 统一走 publish.utils.ts 的口径：已发布 5.25:1（亮）/ 7.82:1（暗），
+    // 发布中和未发布都用高对比正文色（12:1 以上），靠底色和图标区分。
     const renderStatusBadge = () => {
       if (!detail)
         return null
@@ -150,14 +153,14 @@ const PublishDetailCard = memo(
       switch (detail.status) {
         case PublishStatus.RELEASED:
           return (
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border border-success/40 bg-success/10 text-success-text">
               <CheckCircle2 className="w-3 h-3" />
               {t('publishDetail.published')}
             </span>
           )
         case PublishStatus.PUB_LOADING:
           return (
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 border border-cyan-200 dark:bg-cyan-900 dark:text-cyan-200 dark:border-cyan-700">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border border-primary/40 bg-primary/10 text-foreground">
               <Loader2 className="w-3 h-3 animate-spin" />
               {t('publishDetail.publishing')}
             </span>
@@ -171,7 +174,7 @@ const PublishDetailCard = memo(
           )
         case PublishStatus.UNPUBLISH:
           return (
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border border-border bg-muted/60 text-foreground">
               <Clock className="w-3 h-3" />
               {t('publishDetail.unpublished')}
             </span>

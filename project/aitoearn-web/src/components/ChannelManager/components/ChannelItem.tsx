@@ -65,7 +65,9 @@ export function ChannelItem({
       className={cn(
         'group relative flex min-w-0 items-center gap-3 px-3 py-4 transition-colors hover:bg-muted/20 sm:px-5',
         isDeleting && 'cursor-not-allowed opacity-50',
-        isOffline && 'opacity-70',
+        // 离线是常驻状态不是过渡态，别给整行打 opacity-70：叠加后行里的副文只剩
+        // 2.88:1（亮）/ 4.06:1（暗）。改用头像与平台图标去色 + 账号名降字重降色，
+        // 文字实际值回到 5.25:1（亮）/ 6.93:1（暗），hover 底色上也有 5.19:1。
       )}
     >
       <Avatar className={cn('h-12 w-12 shrink-0 border border-border/70 shadow-sm', isOffline && 'grayscale')}>
@@ -76,7 +78,7 @@ export function ChannelItem({
       </Avatar>
 
       <div className="min-w-0 flex-1">
-        <div data-testid="cm-channel-name" className={cn('truncate text-base font-semibold leading-5 text-foreground', isOffline && 'text-muted-foreground')}>
+        <div data-testid="cm-channel-name" className={cn('truncate text-base font-semibold leading-5 text-foreground', isOffline && 'font-medium text-muted-foreground')}>
           {channel.nickname}
         </div>
         <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">

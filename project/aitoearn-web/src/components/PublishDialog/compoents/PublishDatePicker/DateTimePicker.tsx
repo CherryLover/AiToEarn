@@ -193,7 +193,11 @@ export function DateTimePicker({
           {calendarDays.map((item, index) => {
             const isToday = item.date.isSame(today, 'day')
             const isSelected = selectedDate?.isSame(item.date, 'day')
-            const isDisabled = !item.isCurrentMonth || (disabledDate && disabledDate(item.date))
+            // 拆成两支：非本月只是「不属于这个月」，不该按规则禁用那样压暗，
+            // 原来 opacity-50 叠 opacity-30 之后日期数字基本看不见（2.07:1）。
+            const isOtherMonth = !item.isCurrentMonth
+            const isRuleDisabled = !!(disabledDate && disabledDate(item.date))
+            const isDisabled = isOtherMonth || isRuleDisabled
 
             return (
               <button
@@ -204,11 +208,13 @@ export function DateTimePicker({
                   'h-9 w-full text-sm rounded-md transition-colors cursor-pointer',
                   'hover:bg-accent hover:text-accent-foreground',
                   'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                  !item.isCurrentMonth && 'text-muted-foreground opacity-50',
+                  // 跟手机日历同一个口径：非本月靠副文色弱化，不叠透明度。5.48:1（亮）/ 6.34:1（暗）
+                  isOtherMonth && !isSelected && 'text-muted-foreground',
                   isToday && 'border border-primary',
                   isSelected
                   && 'bg-gradient-back text-gradient-foreground shadow-sm hover:bg-gradient-back hover:text-gradient-foreground',
-                  isDisabled && 'opacity-30 cursor-not-allowed hover:bg-transparent',
+                  isDisabled && 'cursor-not-allowed hover:bg-transparent',
+                  isRuleDisabled && 'opacity-30',
                 )}
               >
                 {item.date.date()}
