@@ -194,7 +194,9 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 export function getPublishStatusClassName(status: PublishStatus): string {
   switch (status) {
     case PublishStatus.Published:
-      return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+      // 跟 devices.utils.ts 同一行代码，那边已经换了这边漏了：
+      // 写死 emerald 亮色下只有 3.43:1，换 success 后 5.55:1（亮）/ 7.48:1（暗）。
+      return 'border-success/40 bg-success/10 text-success-text'
     case PublishStatus.Failed:
       return 'border-destructive/40 bg-destructive/10 text-destructive'
     case PublishStatus.Publishing:
@@ -211,7 +213,8 @@ export function getPublishStatusClassName(status: PublishStatus): string {
 export function getLinkStatusClassName(status: LinkStatus): string {
   switch (status) {
     case LinkStatus.Claimed:
-      return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+      // 同上，和发布状态那支保持一套。
+      return 'border-success/40 bg-success/10 text-success-text'
     case LinkStatus.ClaimFailed:
       return 'border-destructive/40 bg-destructive/10 text-destructive'
     case LinkStatus.None:

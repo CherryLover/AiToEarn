@@ -94,7 +94,7 @@ export default function LoginContent() {
         </motion.div>
 
         {/* 底部条款 */}
-        <p className="mt-10 text-center text-xs text-muted-foreground/70">
+        <p className="mt-10 text-center text-xs text-muted-foreground">
           {t('termsText')}
           {' '}
           <Link

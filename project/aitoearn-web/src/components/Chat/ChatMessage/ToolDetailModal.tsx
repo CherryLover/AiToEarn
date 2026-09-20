@@ -96,7 +96,7 @@ const ToolDetailModalContent = memo(
               {formatResult(step.result)}
             </pre>
           ) : (
-            <div className="bg-muted p-3 rounded-lg text-xs text-muted-foreground/70">
+            <div className="bg-muted p-3 rounded-lg text-xs text-muted-foreground">
               {t('toolDetail.noResult')}
             </div>
           )}

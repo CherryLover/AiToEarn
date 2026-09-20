@@ -495,10 +495,12 @@ export function AccountsTab({ highlightPlatform }: AccountsTabProps) {
 
       {/* 插件使用教程链接 */}
       <div className="flex justify-center pt-2">
+        {/* 同文件其它六处这一轮已经换成 warning/success 变量，只有这个按钮还整串写死。
+            写死 amber 亮色 4.84:1，换成告警口径后 5.18:1（亮）/ 6.55:1（暗），hover 底 4.91 / 5.87。 */}
         <Link
           href="/websit/plugin-guide"
           onClick={handleViewGuide}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors cursor-pointer"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-warning/30 bg-warning/10 text-warning-text hover:bg-warning/15 transition-colors cursor-pointer"
         >
           <BookOpen className="h-4 w-4" />
           <span className="text-sm font-medium">{t('header.viewGuide')}</span>

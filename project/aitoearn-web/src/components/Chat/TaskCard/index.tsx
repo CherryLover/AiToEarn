@@ -57,6 +57,10 @@ export interface ITaskCardProps {
 }
 
 /** 获取状态显示配置 */
+// 四支状态徽章原来是写死的 *-100/*-700，亮色擦着线过（4.51~5.49:1），
+// 和同文件下面那颗已经换成 text-destructive 的收藏红心不是一套色。
+// 统一走语义变量后：requiresAction 5.18:1（亮）/ 6.55:1（暗）、completed 5.55 / 7.48、
+// running 5.74 / 5.63、failed 4.78 / 5.45，正文门槛 4.5:1 都过。
 function getStatusConfig(status: string | undefined, t: (key: string) => string) {
   const normalizedStatus = status?.toLowerCase()
 
@@ -64,30 +68,26 @@ function getStatusConfig(status: string | undefined, t: (key: string) => string)
     case 'requires_action':
       return {
         label: t('task.status.requiresAction') || 'Requires Action',
-        className:
-          'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+        className: 'border-warning/30 bg-warning/10 text-warning-text',
         icon: AlertCircle,
       }
     case 'completed':
       return {
         label: t('task.status.completed') || 'Completed',
-        className:
-          'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800',
+        className: 'border-success/40 bg-success/10 text-success-text',
         icon: CheckCircle2,
       }
     case 'running':
       return {
         label: t('task.status.running') || 'Running',
-        className:
-          'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+        className: 'border-info/30 bg-info/10 text-info',
         icon: Loader2,
       }
     case 'error':
     case 'failed':
       return {
         label: t('task.status.failed') || 'Failed',
-        className:
-          'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800',
+        className: 'border-destructive/30 bg-destructive/10 text-destructive',
         icon: AlertCircle,
       }
     default:

@@ -363,7 +363,7 @@ export function DraftDetail({ projectId, draft, readOnly, onSaved }: DraftDetail
                     <dt className="text-xs text-muted-foreground">{t('drafts.lineage.sources')}</dt>
                     <dd className="mt-1">
                       {meta.sourceAssetPaths.length === 0 ? (
-                        <span className="text-sm text-muted-foreground/70">
+                        <span className="text-sm text-muted-foreground">
                           {t('drafts.lineage.none')}
                         </span>
                       ) : (
@@ -386,7 +386,7 @@ export function DraftDetail({ projectId, draft, readOnly, onSaved }: DraftDetail
                           {meta.promptSnapshot}
                         </pre>
                       ) : (
-                        <span className="text-sm text-muted-foreground/70">
+                        <span className="text-sm text-muted-foreground">
                           {t('drafts.lineage.none')}
                         </span>
                       )}
@@ -425,7 +425,7 @@ function LineageRow({ label, value, mono }: { label: string, value: string, mono
         className={
           value
             ? `min-w-0 break-all text-sm text-foreground${mono ? ' font-mono text-xs' : ''}`
-            : 'text-sm text-muted-foreground/70'
+            : 'text-sm text-muted-foreground'
         }
       >
         {value || t('drafts.lineage.none')}

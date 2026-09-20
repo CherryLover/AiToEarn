@@ -108,8 +108,10 @@ const ModalContent = memo(({ onOpenChange, item, onApplyPrompt }: ModalContentPr
               >
                 {copied ? (
                   <>
-                    <Check className="h-4 w-4 text-green-500" />
-                    <span className="text-green-500">{commonT('downloadApp.copied')}</span>
+                    {/* 写死 green-500 压弹窗底亮色只有 2.28:1，图标要 3:1、文字要 4.5:1，两个都不过。
+                        换 success-text 后 6.35:1（亮）/ 9.18:1（暗）。 */}
+                    <Check className="h-4 w-4 text-success-text" />
+                    <span className="text-success-text">{commonT('downloadApp.copied')}</span>
                   </>
                 ) : (
                   <>

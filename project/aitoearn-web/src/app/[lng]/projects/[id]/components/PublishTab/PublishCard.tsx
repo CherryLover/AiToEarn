@@ -347,8 +347,11 @@ export function PublishCard(props: PublishCardProps) {
 
         {/* 草稿没按小节写，正文是整篇原文：发之前得人工删一刀 */}
         {bodyFallback && (
-          <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2">
-            <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2">
+            {/* 框里原来一半主题变量一半写死色：amber 图标压 bg-amber-500/10 只有 2.95:1，图标门槛 3:1。
+                换成站里统一的告警口径后图标 5.18:1（亮）/ 6.55:1（暗），
+                标题 text-foreground 15.72 / 12.07，正文 text-muted-foreground 4.93 / 5.22。 */}
+            <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning-text" />
             <div className="min-w-0">
               <p className="text-sm font-medium text-foreground">
                 {t('publish.card.bodyFallbackTitle')}
@@ -408,7 +411,7 @@ export function PublishCard(props: PublishCardProps) {
                 </div>
               )
             : (
-                <p className="text-sm text-muted-foreground/70">{t('publish.card.emptyField')}</p>
+                <p className="text-sm text-muted-foreground">{t('publish.card.emptyField')}</p>
               )}
         </section>
 
@@ -464,8 +467,9 @@ export function PublishCard(props: PublishCardProps) {
             toast 会飘走，所以这儿再留一份，并且把服务端给回来的那几行原样显示出来，人才知道回草稿改哪儿。
           */}
           {skippedGroups.length > 0 && (
-            <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2">
-              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2">
+              {/* 同上，跟上面那个告警框一套。 */}
+              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning-text" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground">{t('publish.skipped.title')}</p>
                 <ul className="mt-1 flex flex-col gap-1.5">
@@ -478,7 +482,7 @@ export function PublishCard(props: PublishCardProps) {
                           {t(group.messageKey, { num: group.count, reason: group.reason })}
                         </p>
                         {paths.length > 0 && (
-                          <p className="mt-0.5 break-all font-mono text-[0.7rem] text-muted-foreground/80">
+                          <p className="mt-0.5 break-all font-mono text-[0.7rem] text-muted-foreground">
                             {paths.join('  ·  ')}
                           </p>
                         )}

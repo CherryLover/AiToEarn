@@ -81,21 +81,29 @@ const ErrorSummary = memo(
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-4">
         {/* 标题栏 - 可点击收起/展开 */}
-        <CollapsibleTrigger className="flex w-full items-center gap-2 p-3 rounded-t-md bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 hover:bg-yellow-100 dark:hover:bg-yellow-950/50 transition-colors cursor-pointer">
+        {/*
+          整块原来是写死的 yellow/amber 色阶，亮色下多处不过线：
+          图标 text-yellow-600 压 bg-yellow-50 只有 2.84:1（图标门槛 3:1），
+          平台名 text-yellow-600 2.94:1、warning 图标 text-amber-600 3.07:1（正文门槛 4.5:1）。
+          统一换站里的告警口径 border-warning/30 + bg-warning/10 + text-warning-text 之后：
+          图标和次要文字 5.18:1（亮）/ 6.55:1（暗），标题 text-foreground 15.72 / 12.07，
+          正文 text-muted-foreground 4.93 / 5.22，行底 bg-warning/5 上分别是 5.47 / 7.25 和 5.20 / 5.78。
+        */}
+        <CollapsibleTrigger className="flex w-full items-center gap-2 p-3 rounded-t-md bg-warning/10 border border-warning/30 hover:bg-warning/15 transition-colors cursor-pointer">
           {isOpen ? (
-            <ChevronDown className="h-4 w-4 text-yellow-600 dark:text-yellow-500 shrink-0" />
+            <ChevronDown className="h-4 w-4 text-warning-text shrink-0" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-yellow-600 dark:text-yellow-500 shrink-0" />
+            <ChevronRight className="h-4 w-4 text-warning-text shrink-0" />
           )}
-          <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 shrink-0" />
-          <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+          <AlertTriangle className="h-4 w-4 text-warning-text shrink-0" />
+          <span className="text-sm font-medium text-foreground">
             {t('errorSummary.title', { count: accountsWithIssues.length })}
           </span>
         </CollapsibleTrigger>
 
         {/* 账号问题列表 */}
-        <CollapsibleContent className="border border-t-0 border-yellow-200 dark:border-yellow-800 rounded-b-md overflow-hidden">
-          <div className="divide-y divide-yellow-200 dark:divide-yellow-800">
+        <CollapsibleContent className="border border-t-0 border-warning/30 rounded-b-md overflow-hidden">
+          <div className="divide-y divide-warning/30">
             {accountsWithIssues.map(({ pubItem, errors, warnings }) => {
               const platConfig = platformInfoMap.get(pubItem.account.type)
 
@@ -103,20 +111,19 @@ const ErrorSummary = memo(
                 <div
                   key={pubItem.account.id}
                   className={cn(
-                    'p-3 bg-yellow-50/50 dark:bg-yellow-950/20',
-                    onAccountClick
-                    && 'cursor-pointer hover:bg-yellow-100/50 dark:hover:bg-yellow-950/40 transition-colors',
+                    'p-3 bg-warning/5',
+                    onAccountClick && 'cursor-pointer hover:bg-warning/10 transition-colors',
                   )}
                   onClick={() => onAccountClick?.(pubItem.account.id)}
                 >
                   {/* 账号信息 */}
                   <div className="flex items-center gap-2 mb-2">
                     <AvatarPlat account={pubItem.account} size="small" />
-                    <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200 truncate">
+                    <span className="text-sm font-medium text-foreground truncate">
                       {pubItem.account.nickname}
                     </span>
                     {platConfig && (
-                      <span className="text-xs text-yellow-600 dark:text-yellow-400 shrink-0">
+                      <span className="text-xs text-warning-text shrink-0">
                         {platConfig.name}
                       </span>
                     )}
@@ -125,8 +132,8 @@ const ErrorSummary = memo(
                   {/* 错误信息列表 - 黄色 */}
                   {errors.map((errMsg, index) => (
                     <div key={`error-${index}`} className="ml-8 flex items-start gap-1.5 mb-1">
-                      <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
-                      <span className="text-xs text-yellow-700 dark:text-yellow-300">{errMsg}</span>
+                      <AlertTriangle className="h-3.5 w-3.5 text-warning-text shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground">{errMsg}</span>
                     </div>
                   ))}
 
@@ -136,8 +143,8 @@ const ErrorSummary = memo(
                       key={`warning-${index}`}
                       className="ml-8 flex items-start gap-1.5 mb-1 last:mb-0"
                     >
-                      <Info className="h-3.5 w-3.5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
-                      <span className="text-xs text-amber-700 dark:text-amber-400">{warnMsg}</span>
+                      <Info className="h-3.5 w-3.5 text-warning-text shrink-0 mt-0.5" />
+                      <span className="text-xs text-muted-foreground">{warnMsg}</span>
                     </div>
                   ))}
                 </div>

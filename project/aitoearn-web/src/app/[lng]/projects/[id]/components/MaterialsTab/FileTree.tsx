@@ -177,7 +177,7 @@ function FileTreeNode(props: FileTreeNodeProps) {
         <ul>
           {children.length === 0 ? (
             <li
-              className="py-1 text-xs text-muted-foreground/70"
+              className="py-1 text-xs text-muted-foreground"
               style={{ paddingLeft: `${(depth + 1) * 14 + 22}px` }}
             >
               {isLoading ? t('materials.tree.loading') : t('materials.tree.emptyDir')}

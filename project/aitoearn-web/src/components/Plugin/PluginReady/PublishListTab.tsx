@@ -36,8 +36,10 @@ function getStatusClassName(status: PlatformTaskStatus): string {
   switch (status) {
     // 五个分支统一走主题变量。写死的 *-100/*-700 没有 dark: 变体，
     // 暗色下会在深色卡片上留三块亮底药丸，和另外两支主题色的对不上。
+    // COMPLETED 跟 PublishDetailModal 那份保持一套：两个面板并排看过，
+    // 这边用 primary（5.23:1）、那边用 success（5.55:1），是两种绿。统一成 success。
     case PlatformTaskStatus.COMPLETED:
-      return 'bg-primary/10 text-primary hover:bg-primary/10'
+      return 'bg-success/10 text-success-text hover:bg-success/10'
     case PlatformTaskStatus.PUBLISHING:
       return 'bg-info/10 text-info hover:bg-info/10'
     case PlatformTaskStatus.ERROR:

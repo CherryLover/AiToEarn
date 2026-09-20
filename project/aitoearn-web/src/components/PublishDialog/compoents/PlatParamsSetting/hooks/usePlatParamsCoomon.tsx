@@ -67,9 +67,11 @@ export default function usePlatParamsCommon(
         </>
       ),
       centerExtend: currWarningItem && (
-        <div className="flex items-start gap-2 px-3 py-2.5 bg-amber-50 dark:bg-amber-950/30 border-t border-amber-200 dark:border-amber-800/50">
-          <Info className="h-4 w-4 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
-          <span className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+        // 跟同一个发布对话框里的 ErrorSummary 一套告警口径，别一个主题变量一个写死 amber。
+        // 图标 5.17:1（亮）/ 6.60:1（暗），正文 4.91:1 / 5.26:1。
+        <div className="flex items-start gap-2 px-3 py-2.5 bg-warning/10 border-t border-warning/30">
+          <Info className="h-4 w-4 text-warning-text shrink-0 mt-0.5" />
+          <span className="text-xs text-muted-foreground leading-relaxed">
             {currWarningItem?.parErrMsg}
           </span>
         </div>

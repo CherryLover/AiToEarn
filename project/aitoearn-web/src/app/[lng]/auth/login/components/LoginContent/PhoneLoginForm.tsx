@@ -128,7 +128,7 @@ export function PhoneLoginForm({ onLoginSuccess, redirectUrl, inviteCode: _invit
             maxLength={11}
             placeholder={t('phonePlaceholder')}
             {...form.register('phone')}
-            className="h-12 rounded-l-none rounded-r-xl border-input bg-background px-4 text-base placeholder:text-muted-foreground/70 focus:border-ring focus:ring-0"
+            className="h-12 rounded-l-none rounded-r-xl border-input bg-background px-4 text-base placeholder:text-muted-foreground focus:border-ring focus:ring-0"
           />
         </div>
         {form.formState.errors.phone && (
@@ -147,7 +147,7 @@ export function PhoneLoginForm({ onLoginSuccess, redirectUrl, inviteCode: _invit
             autoComplete="off"
             placeholder={t('enterCode')}
             {...form.register('code')}
-            className="h-12 rounded-xl border-input bg-background px-4 text-base placeholder:text-muted-foreground/70 focus:border-ring focus:ring-0"
+            className="h-12 rounded-xl border-input bg-background px-4 text-base placeholder:text-muted-foreground focus:border-ring focus:ring-0"
           />
           {form.formState.errors.code && (
             <p className="mt-1 text-xs text-destructive">

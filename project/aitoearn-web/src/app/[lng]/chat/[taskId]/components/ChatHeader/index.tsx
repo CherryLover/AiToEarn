@@ -175,7 +175,9 @@ export function ChatHeader({
               <Heart
                 className={cn(
                   'w-5 h-5 transition-colors',
-                  isFavorited && 'text-red-500 fill-red-500',
+                  // 跟 TaskCard 的红心一套：写死 red-500 亮色下只有 3.60:1，
+                  // 换主题变量后 5.32:1（亮）/ 7.02:1（暗）。
+                  isFavorited && 'text-destructive fill-destructive',
                 )}
               />
             )}
@@ -196,8 +198,10 @@ export function ChatHeader({
             className="ml-1 text-sm text-muted-foreground flex items-center gap-1 h-8 px-2 cursor-pointer"
             aria-label={t('task.rate')}
           >
+            {/* 跟 star-rating.tsx 一套：写死 amber-400 压在页面上只有 1.60:1，图标门槛 3:1。
+                换 chart-4 后 4.78:1（亮）/ 7.44:1（暗）。 */}
             <Star
-              className={`w-5 h-5 ${rating ? 'text-amber-400' : 'text-muted-foreground'}`}
+              className={`w-5 h-5 ${rating ? 'text-chart-4' : 'text-muted-foreground'}`}
               {...(rating ? { fill: 'currentColor' } : {})}
             />
             <span>{t('task.rate') || '评分'}</span>

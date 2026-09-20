@@ -129,7 +129,8 @@ const PlatformSelector = memo(
           </span>
           {t('detail.platformsSelected', { count: selectedPlatforms.length })}
           {disabledSelectedCount > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-amber-500">
+            /* 写死 amber-500 压在胶囊底上亮色只有 1.99:1，图标门槛 3:1。换 warning-text 后 5.35:1 / 7.85:1。 */
+            <span className="inline-flex items-center gap-0.5 text-warning-text">
               <TriangleAlert className="h-3 w-3" />
               <span className="text-[10px]">{disabledSelectedCount}</span>
             </span>
@@ -169,13 +170,13 @@ const PlatformSelector = memo(
           <PopoverContent className="w-64 p-3" side="top" align="start">
             {/* 不兼容警告 banner */}
             {disabledSelectedCount > 0 && (
-              <div className="flex items-start gap-1.5 mb-2 p-2 rounded-md bg-amber-50 text-amber-700 text-xs dark:bg-amber-950/30 dark:text-amber-400">
+              <div className="flex items-start gap-1.5 mb-2 p-2 rounded-md border border-warning/30 bg-warning/10 text-warning-text text-xs">
                 <TriangleAlert className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
                 <div>
                   <div>
                     {t('detail.platformIncompatibleCount', { count: disabledSelectedCount })}
                   </div>
-                  <div className="text-amber-600/70 dark:text-amber-400/70">
+                  <div className="text-muted-foreground">
                     {disabledSelectedNames.join(', ')}
                   </div>
                 </div>
@@ -211,7 +212,11 @@ const PlatformSelector = memo(
                       tabIndex={0}
                       className={cn(
                         'flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors select-none',
-                        isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+                        // 这一行原来挂 opacity-50，会把里面的告警图标再乘一遍：
+                        // 就算把图标换成 warning-text，叠完亮色也只有 2.18:1。
+                        // 禁用态已经靠 cursor-not-allowed + 平台图标 grayscale + 名称 line-through + 副文色表达，
+                        // 不需要再叠透明度。去掉之后图标 5.76:1（亮）/ 7.95:1（暗）、文字 5.48:1 / 6.34:1。
+                        isDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
                         !isDisabled && isSelected
                           ? 'bg-primary/10 text-foreground'
                           : !isDisabled
@@ -227,7 +232,7 @@ const PlatformSelector = memo(
                       }}
                     >
                       {isDisabled ? (
-                        <TriangleAlert className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+                        <TriangleAlert className="h-3.5 w-3.5 text-warning-text flex-shrink-0" />
                       ) : (
                         <Checkbox
                           checked={isSelected}
@@ -250,7 +255,8 @@ const PlatformSelector = memo(
                       return (
                         <div key={plat} className="col-span-2">
                           {button}
-                          <div className="px-2 pb-1 text-[10px] text-amber-600/80 dark:text-amber-400/70 leading-tight">
+                          {/* 写死 amber-600/80 亮色只有 2.51:1，去掉那层透明度换 warning-text 后 5.76:1 / 7.95:1。 */}
+                          <div className="px-2 pb-1 text-[10px] text-warning-text leading-tight">
                             {disabledReasons.map((reason, i) => (
                               <div key={i}>{reason}</div>
                             ))}

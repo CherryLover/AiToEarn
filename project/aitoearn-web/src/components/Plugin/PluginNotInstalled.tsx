@@ -112,11 +112,12 @@ export function PluginNotInstalled() {
         </Button>
       </div>
 
-      {/* 查看安装教程链接 */}
+      {/* 查看安装教程链接。跟 AccountsTab 那个教程按钮是同一串写死的 amber，一起换成告警口径：
+          亮色 4.84:1 → 5.18:1，暗色 6.55:1，hover 底 4.91 / 5.87。 */}
       <Link
         href="/websit/plugin-guide"
         onClick={handleViewGuide}
-        className="mt-6 flex items-center justify-center gap-2 w-full max-w-xs px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors cursor-pointer"
+        className="mt-6 flex items-center justify-center gap-2 w-full max-w-xs px-4 py-3 rounded-lg border border-warning/30 bg-warning/10 text-warning-text hover:bg-warning/15 transition-colors cursor-pointer"
       >
         <BookOpen className="h-5 w-5" />
         <span className="font-medium">{t('header.viewInstallGuide')}</span>

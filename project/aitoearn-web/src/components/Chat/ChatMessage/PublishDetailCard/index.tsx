@@ -237,7 +237,7 @@ const PublishDetailCard = memo(
             className,
           )}
         >
-          <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-1.5 text-destructive/50" />
+          <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-1.5 text-destructive" />
           <span className="text-xs">{error || t('publishDetail.loading')}</span>
           <Button
             variant="ghost"

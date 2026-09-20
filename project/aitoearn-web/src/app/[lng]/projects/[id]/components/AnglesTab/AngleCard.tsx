@@ -35,8 +35,11 @@ interface AngleCardProps {
 const STATUS_BADGE_CLASS: Record<AngleStatus, string> = {
   [AngleStatus.Candidate]: 'border-border bg-muted/60 text-muted-foreground',
   [AngleStatus.Testing]: 'border-transparent bg-brand-cyan/15 text-brand-cyan',
-  [AngleStatus.Effective]: 'border-transparent bg-green-500/15 text-green-600 dark:text-green-400',
-  [AngleStatus.Retired]: 'border-dashed border-border bg-transparent text-muted-foreground/70',
+  // 这一支原来漏了没跟着换：写死 green 亮色下只有 2.90:1，另外三支早就是主题变量了。
+  // 换成和 devices.utils.ts 一样的口径后 5.55:1（亮）/ 7.48:1（暗）。
+  [AngleStatus.Effective]: 'border-success/40 bg-success/10 text-success-text',
+  // 淘汰态靠虚线边框 + 删除线表达，不再叠 /70：叠完只有 2.04:1，去掉后 5.48:1（亮）/ 6.34:1（暗）。
+  [AngleStatus.Retired]: 'border-dashed border-border bg-transparent text-muted-foreground',
 }
 
 export function AngleCard(props: AngleCardProps) {
@@ -50,7 +53,9 @@ export function AngleCard(props: AngleCardProps) {
     <div
       className={cn(
         'rounded-xl border border-border bg-card px-4 py-3 transition-colors',
-        isRetired && 'opacity-70',
+        // 淘汰态别再整张卡打 opacity-70：那会把卡里所有文字再乘一遍，
+        // 副文掉到 2.96:1、徽章掉到 2.04:1。改用虚线边框表达，文字色保持原值。
+        isRetired && 'border-dashed',
       )}
       data-testid={`angle-card-${angle.slug}`}
     >
@@ -83,12 +88,12 @@ export function AngleCard(props: AngleCardProps) {
         )}
       </div>
 
-      <p className={cn('mt-2 text-sm', angle.desc ? 'text-muted-foreground' : 'text-muted-foreground/70')}>
+      <p className={cn('mt-2 text-sm', angle.desc ? 'text-muted-foreground' : 'text-muted-foreground italic')}>
         {angle.desc || t('angles.card.noDesc')}
       </p>
 
       {sourcePaths.length > 0 && (
-        <p className="mt-2 truncate font-mono text-xs text-muted-foreground/80">
+        <p className="mt-2 truncate font-mono text-xs text-muted-foreground">
           {t('angles.card.sources', { num: sourcePaths.length })}
           {' '}
           {sourcePaths.slice(0, 3).join('、')}

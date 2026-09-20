@@ -71,7 +71,7 @@ function WorkflowStepItem({ step, onClick }: IWorkflowStepItemProps) {
         ) : isCompleted ? (
           <CheckCircle2 className="w-3 h-3 text-success-text" />
         ) : (
-          <Wrench className="w-3 h-3 text-muted-foreground/70" />
+          <Wrench className="w-3 h-3 text-muted-foreground" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -86,7 +86,7 @@ function WorkflowStepItem({ step, onClick }: IWorkflowStepItemProps) {
             : formatToolName(step.toolName || t('workflow.processing' as any))}
         </div>
         {step.content && (
-          <pre className="text-[10px] text-muted-foreground/70 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
+          <pre className="text-[10px] text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
             {step.content.substring(0, 80)}
             {step.content.length > 80 ? '...' : ''}
           </pre>

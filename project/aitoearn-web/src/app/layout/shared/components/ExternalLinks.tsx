@@ -42,7 +42,7 @@ export function ExternalLinks({ collapsed = false, isMobile = false }: ExternalL
           href={DOCS_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground/70 hover:bg-accent hover:text-foreground transition-colors"
+          className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           title="Docs"
         >
           <BookOpen className="w-3.5 h-3.5" />
@@ -51,7 +51,7 @@ export function ExternalLinks({ collapsed = false, isMobile = false }: ExternalL
           href={`https://github.com/${GITHUB_REPO}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground/70 hover:bg-accent hover:text-foreground transition-colors"
+          className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           title={`GitHub Stars: ${starCount}`}
         >
           <GitHubIcon className="w-3.5 h-3.5" />
@@ -98,7 +98,7 @@ export function ExternalLinks({ collapsed = false, isMobile = false }: ExternalL
         href={DOCS_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/60 text-[11px] font-medium text-muted-foreground/80 hover:bg-accent hover:text-foreground hover:border-border transition-all"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/60 text-[11px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-all"
       >
         <BookOpen className="w-3 h-3" />
         Docs
@@ -109,7 +109,7 @@ export function ExternalLinks({ collapsed = false, isMobile = false }: ExternalL
         rel="noopener noreferrer"
         className="inline-flex items-center rounded-full border border-border/60 overflow-hidden hover:border-border transition-all"
       >
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
           <GitHubIcon className="w-3 h-3" />
           Star
         </span>

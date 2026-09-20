@@ -367,7 +367,7 @@ const MobileContent = memo(
                 value={params.title}
                 placeholder={t('createMaterial.titlePlaceholder')}
                 onChange={e => updateParams({ title: e.target.value })}
-                className="flex-1 min-w-0 text-base font-medium bg-transparent border-none shadow-none outline-none placeholder:text-muted-foreground/50 focus-visible:ring-0"
+                className="flex-1 min-w-0 text-base font-medium bg-transparent border-none shadow-none outline-none placeholder:text-muted-foreground focus-visible:ring-0"
               />
               {effectiveLimits.titleMax && (
                 <span

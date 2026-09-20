@@ -173,8 +173,10 @@ export function ModelSelect({
                 })}
           </div>
         </div>
+        {/* 写死 amber-600 压在弹窗底上亮色只有 3.19:1，正文门槛 4.5:1。
+            换 warning-text 后 5.76:1（亮）/ 7.95:1（暗）。 */}
         {isTimeLimitedModel && (
-          <div className="flex items-start gap-1.5 border-t border-border px-3 py-2 text-[11px] leading-relaxed text-amber-600 dark:text-amber-400">
+          <div className="flex items-start gap-1.5 border-t border-border px-3 py-2 text-[11px] leading-relaxed text-warning-text">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
             <span>{labels.timeLimitedModelTip}</span>
           </div>

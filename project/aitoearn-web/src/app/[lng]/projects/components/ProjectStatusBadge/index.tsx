@@ -18,13 +18,15 @@ export function ProjectStatusBadge({ status, className }: ProjectStatusBadgeProp
   const { t } = useTransClient('projects')
   const isArchived = status === ProjectStatus.Archived
 
-  // 进行中沿用方向卡片的绿色口径，已归档用中性灰
+  // 进行中沿用方向卡片的绿色口径，已归档用中性灰。
+  // 原来跟着方向卡片一起写死 green-500/15 + green-600，亮色压卡片只有 2.90:1、压页面 2.79:1；
+  // 两边一起换成 success 口径后 5.55:1（亮·卡片）/ 5.33:1（亮·页面）、7.48:1 / 8.27:1（暗）。
   return (
     <Badge
       variant={isArchived ? 'secondary' : 'outline'}
       className={cn(
         'shrink-0 font-medium',
-        !isArchived && 'border-transparent bg-green-500/15 text-green-600 dark:text-green-400',
+        !isArchived && 'border-success/40 bg-success/10 text-success-text',
         className,
       )}
       data-testid={`project-status-${status}`}

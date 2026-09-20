@@ -75,7 +75,9 @@ export function FavoriteButton({
           className={cn(
             iconSizeClass,
             'transition-colors',
-            isFavorited && 'text-red-500 fill-red-500',
+            // 跟 TaskCard / ChatHeader 的红心一套：写死 red-500 亮色只有 3.60:1，
+            // 换主题变量后 5.32:1（亮）/ 7.02:1（暗）。
+            isFavorited && 'text-destructive fill-destructive',
           )}
         />
       )}

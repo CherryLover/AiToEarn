@@ -36,6 +36,13 @@ function genUid() {
 }
 
 // 通知图标配置
+// 五种提示统一走 bg-card/95 这一层不透明底 + 语义色边框/图标/进度条，
+// 颜色信息靠边框、图标、进度条带，不靠底色染。
+// 原来写死的 *-50/95 底色在亮色下把图标压死了：warning 图标 2.84:1、success 图标 3.15:1，图标门槛 3:1。
+// 换成主题变量后压在 bg-card/95 上：success 6.34、warning 5.75、error 5.55、info 6.69（亮），
+// 暗色 9.22 / 7.99 / 6.45 / 6.72，正文 text-foreground 17.45（亮）/ 14.73（暗）。
+// 注意不能直接把底色换成 bg-success/10 这类半透明：通知浮在页面内容之上，
+// 底色透到 10% 会让正文压在任意内容上，可读性反而更差。
 const notificationConfig: Record<
   NotificationType,
   {
@@ -46,24 +53,23 @@ const notificationConfig: Record<
 > = {
   success: {
     icon: <CheckCircle2 className="w-5 h-5" />,
-    containerClass: 'border-green-200 dark:border-green-800/50 bg-green-50/95 dark:bg-green-950/95',
-    iconClass: 'text-green-600 dark:text-green-400',
+    containerClass: 'border-success/30 bg-card/95',
+    iconClass: 'text-success-text',
   },
   error: {
     icon: <XCircle className="w-5 h-5" />,
-    containerClass: 'border-red-200 dark:border-red-800/50 bg-red-50/95 dark:bg-red-950/95',
-    iconClass: 'text-red-600 dark:text-red-400',
+    containerClass: 'border-destructive/30 bg-card/95',
+    iconClass: 'text-destructive',
   },
   warning: {
     icon: <AlertCircle className="w-5 h-5" />,
-    containerClass:
-      'border-yellow-200 dark:border-yellow-800/50 bg-yellow-50/95 dark:bg-yellow-950/95',
-    iconClass: 'text-yellow-600 dark:text-yellow-500',
+    containerClass: 'border-warning/30 bg-card/95',
+    iconClass: 'text-warning-text',
   },
   info: {
     icon: <Info className="w-5 h-5" />,
-    containerClass: 'border-blue-200 dark:border-blue-800/50 bg-blue-50/95 dark:bg-blue-950/95',
-    iconClass: 'text-blue-600 dark:text-blue-400',
+    containerClass: 'border-info/30 bg-card/95',
+    iconClass: 'text-info',
   },
   loading: {
     icon: <Loader2 className="w-5 h-5 animate-spin" />,
@@ -333,10 +339,11 @@ export const NotificationCenter: React.FC = () => {
                 <div
                   className={cn(
                     'h-full',
-                    item.type === 'success' && 'bg-green-500',
-                    item.type === 'error' && 'bg-red-500',
-                    item.type === 'warning' && 'bg-yellow-500',
-                    item.type === 'info' && 'bg-blue-500',
+                    // 进度条跟着上面那套语义色走，别再留一套写死的 *-500。
+                    item.type === 'success' && 'bg-success',
+                    item.type === 'error' && 'bg-destructive',
+                    item.type === 'warning' && 'bg-warning',
+                    item.type === 'info' && 'bg-info',
                     item.type === 'loading' && 'bg-primary',
                   )}
                   style={{

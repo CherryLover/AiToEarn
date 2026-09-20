@@ -34,7 +34,7 @@ export function LogoSection({ collapsed, onToggle }: LogoSectionProps) {
           {/* 展开按钮 - 默认隐藏，hover 时显示 */}
           <button
             onClick={onToggle}
-            className="absolute inset-0 flex items-center justify-center rounded-md border-none bg-transparent text-muted-foreground/70 opacity-0 transition-opacity hover:bg-brand-cyan/10 hover:text-brand-cyan group-hover:opacity-100"
+            className="absolute inset-0 flex items-center justify-center rounded-md border-none bg-transparent text-muted-foreground opacity-0 transition-opacity hover:bg-brand-cyan/10 hover:text-brand-cyan group-hover:opacity-100"
             data-testid="sidebar-toggle-btn"
           >
             <PanelLeftOpen size={18} />
@@ -52,7 +52,7 @@ export function LogoSection({ collapsed, onToggle }: LogoSectionProps) {
           </Link>
           <button
             onClick={onToggle}
-            className="flex h-8 w-8 items-center justify-center rounded-md border-none bg-transparent text-muted-foreground/70 transition-colors hover:bg-brand-cyan/10 hover:text-brand-cyan"
+            className="flex h-8 w-8 items-center justify-center rounded-md border-none bg-transparent text-muted-foreground transition-colors hover:bg-brand-cyan/10 hover:text-brand-cyan"
             data-testid="sidebar-toggle-btn"
           >
             <PanelLeftClose size={18} />

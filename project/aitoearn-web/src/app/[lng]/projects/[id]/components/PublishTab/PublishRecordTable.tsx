@@ -159,7 +159,7 @@ export function PublishRecordTable(props: PublishRecordTableProps) {
                                     </a>
                                   )
                                 : (
-                                    <span className="text-xs text-muted-foreground/70">
+                                    <span className="text-xs text-muted-foreground">
                                       {t('publish.records.noLink')}
                                     </span>
                                   )}

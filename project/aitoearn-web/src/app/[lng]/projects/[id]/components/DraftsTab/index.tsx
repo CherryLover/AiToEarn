@@ -108,7 +108,7 @@ export function DraftsTab({ projectId, projectName, readOnly }: DraftsTabProps) 
                     <FileText className="mt-0.5 size-4 shrink-0" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm">{draft.name}</span>
-                      <span className="mt-0.5 block truncate text-xs text-muted-foreground/80">
+                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">
                         {formatDate(draft.updatedAt)}
                       </span>
                     </span>

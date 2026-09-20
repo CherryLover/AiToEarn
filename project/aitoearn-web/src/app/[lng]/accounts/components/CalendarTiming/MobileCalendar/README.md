@@ -149,7 +149,7 @@ Map<string, PublishRecordItem[]>
 - 选中日期: `bg-(--primary-color) text-white`
 - 今天日期: `text-blue-500`（未选中时）
 - 过去日期: `text-muted-foreground`
-- 非当月日期: `text-muted-foreground/40`
+- 非当月日期: `text-muted-foreground` + `font-normal`（靠字重弱化，不叠透明度）
 
 ## 交互说明
 

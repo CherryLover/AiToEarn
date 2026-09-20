@@ -117,8 +117,8 @@ const MobileMonthView = memo<IMobileMonthViewProps>(
                 className={cn(
                   'relative flex min-h-14 flex-col items-center justify-center rounded-xl py-1.5 cursor-pointer transition-colors',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  // 非当月日期
-                  !isCurrentMonth && 'text-muted-foreground/40',
+                  // 非当月日期：靠字重弱化，不再叠透明度（/40 实测只有 1.74:1）
+                  !isCurrentMonth && 'text-muted-foreground',
                   // 当月日期样式
                   isCurrentMonth
                   && (isSelected
@@ -141,7 +141,14 @@ const MobileMonthView = memo<IMobileMonthViewProps>(
                   />
                 )}
                 {/* 日期数字 */}
-                <span className="text-sm font-semibold tabular-nums">{date.date()}</span>
+                <span
+                  className={cn(
+                    'text-sm tabular-nums',
+                    isCurrentMonth ? 'font-semibold' : 'font-normal',
+                  )}
+                >
+                  {date.date()}
+                </span>
                 <CalendarLunarText
                   lunar={lunar}
                   selected={isSelected}

@@ -77,7 +77,9 @@ function StatusIcon({ status }: { status: DraftGenerationTask['status'] }) {
     case 'generating':
       return <Loader2 className="h-4 w-4 animate-spin text-primary" />
     case 'success':
-      return <CheckCircle2 className="h-4 w-4 text-green-500" />
+      // 失败那支早就是 text-destructive 了，成功这支漏了：
+      // 写死 green-500 压在弹窗底上亮色只有 2.28:1，图标门槛 3:1。换 success-text 后 6.35:1 / 9.18:1。
+      return <CheckCircle2 className="h-4 w-4 text-success-text" />
     case 'failed':
       return <AlertCircle className="h-4 w-4 text-destructive" />
   }

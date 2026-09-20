@@ -205,7 +205,7 @@ export function EmailLoginForm({
           {/* 分隔线 */}
           <div className="my-6 flex items-center gap-4">
             <div className="h-px flex-1 bg-border" />
-            <span className="text-sm text-muted-foreground/70">{t('or')}</span>
+            <span className="text-sm text-muted-foreground">{t('or')}</span>
             <div className="h-px flex-1 bg-border" />
           </div>
         </>
@@ -218,7 +218,7 @@ export function EmailLoginForm({
             type="email"
             placeholder={t('emailPlaceholder')}
             {...form.register('email')}
-            className="h-12 rounded-xl border-input bg-background px-4 text-base placeholder:text-muted-foreground/70 focus:border-ring focus:ring-0"
+            className="h-12 rounded-xl border-input bg-background px-4 text-base placeholder:text-muted-foreground focus:border-ring focus:ring-0"
           />
           {form.formState.errors.email && (
             <p className="mt-1 text-xs text-destructive">
@@ -236,7 +236,7 @@ export function EmailLoginForm({
               autoComplete="off"
               placeholder={t('enterCode')}
               {...form.register('code')}
-              className="h-12 rounded-xl border-input bg-background px-4 text-base placeholder:text-muted-foreground/70 focus:border-ring focus:ring-0"
+              className="h-12 rounded-xl border-input bg-background px-4 text-base placeholder:text-muted-foreground focus:border-ring focus:ring-0"
             />
             {form.formState.errors.code && (
               <p className="mt-1 text-xs text-destructive">

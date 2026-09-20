@@ -117,11 +117,18 @@ button {
  *        `--warning-text`：页面 8.70 · 卡片 7.95 · `bg-warning/10` 6.60 · `bg-warning/15` 5.91
  *        `--success-text`：页面 10.0 · 卡片 9.18 · `bg-success/10` 7.47
  *
- * 另外两条容易踩的：
+ * 另外三条容易踩的：
  *   - 父元素上的 `opacity-*` 会把子元素的实际对比度一起打折，算的时候要按叠加后的颜色算，
  *     不能拿色值本身的数字交差。`opacity-60` 的图标，亮色下基本都到不了 3:1。
  *   - `--muted-foreground` 现在压在 `bg-muted` 上是 5.0:1，正文能用了；
  *     但语义上它仍然是副文，正文优先用 `--foreground`。
+ *   - **文字不要再给 `--muted-foreground` 叠透明度**（`text-muted-foreground/70` 这类）。
+ *     亮色下 `/80` = 3.59、`/70` = 2.82~2.97、`/65` = 2.69、`/50` = 2.08、`/40` = 1.76，
+ *     够不到正文的 4.5，连图标的 3.0 都过不了。也别为此新开一档「更浅的副文色」：
+ *     `--muted-foreground` 压在最深的那层底色（`bg-muted` #f5f4f2）上只有 5.0，
+ *     往浅里调到 4.5 就只剩 #6f6862 → #756f69 这点余量，再分一档肉眼看不出来，只多一个变量。
+ *     要弱化层级就用字号、字重、斜体，别动颜色。低透明度只留给纯装饰：
+ *     空状态大图标、装饰圆点、遮罩、边框。
  */
 :root {
   --gradientBackColor: linear-gradient(to right in oklch, var(--brand-purple), var(--brand-cyan));

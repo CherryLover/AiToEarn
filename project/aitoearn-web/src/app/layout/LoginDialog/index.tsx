@@ -81,7 +81,7 @@ const LoginDialogContent = memo(() => {
         </div>
 
         {/* 底部条款 */}
-        <p className="pb-2 text-center text-xs text-muted-foreground/70">
+        <p className="pb-2 text-center text-xs text-muted-foreground">
           {t('termsText')}
           {' '}
           <Link

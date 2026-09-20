@@ -69,10 +69,12 @@ export function PluginEntry({ collapsed }: SidebarCommonProps) {
       case PluginStatus.UNKNOWN:
       default:
         return {
-          iconColor: 'text-muted-foreground/70',
+          // 这两支原来漏了没跟着换：再叠一层 /70 后侧边栏底上只有 2.82:1，状态文字是正文，门槛 4.5:1。
+          // 去掉 /70 后 5.04:1（亮）/ 6.31:1（暗）。dotColor 是装饰小圆点，保留低透明度。
+          iconColor: 'text-muted-foreground',
           dotColor: 'bg-muted-foreground/70',
           statusText: t('pluginStatus.notInstalled'),
-          statusColor: 'text-muted-foreground/70',
+          statusColor: 'text-muted-foreground',
         }
     }
   }
