@@ -1,6 +1,13 @@
 {
-  "title": "設定管理",
-  "description": "Manage runtime settings. Saved changes take effect after the service restarts.",
+  "meta": {
+    "title": "設定管理",
+    "description": "Server サービスと AI サービスの実行時設定を表示・編集します。セクション別の閲覧、フォームまたは JSON での編集、検証、保存、再起動。",
+    "keywords": "設定管理, 実行時設定, サービス設定, JSON 設定, サービス再起動"
+  },
+  "page": {
+    "title": "設定管理",
+    "subtitle": "サービスの実行時設定を 1 画面に 1 セクションずつ表示・編集します。保存した変更はサービス再起動後に有効になります。"
+  },
   "sections": {
     "relay": {
       "label": "Relay",
@@ -255,7 +262,10 @@
     "healthTimeout": "Service recovery check timed out",
     "healthTimeoutDescription": "The restart request was sent, but the account list API did not recover in time. Please check the service manually.",
     "jsonInvalid": "JSON 設定が無効です",
-    "jsonRootObject": "ルート値は JSON オブジェクトである必要があります。"
+    "jsonRootObject": "ルート値は JSON オブジェクトである必要があります。",
+    "noResponse": "リクエストがサーバーに届かなかったか、サーバーが応答しませんでした。",
+    "serverNoReason": "サーバーはエラーコードのみを返し、理由を示しませんでした。",
+    "codeSuffix": "（エラーコード {{code}}）"
   },
   "common": {
     "enabled": "Enabled",

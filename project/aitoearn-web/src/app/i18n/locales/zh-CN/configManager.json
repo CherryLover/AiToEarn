@@ -1,6 +1,13 @@
 {
-  "title": "配置管理",
-  "description": "管理系统运行配置，保存后需要重启服务才能生效。",
+  "meta": {
+    "title": "配置管理",
+    "description": "查看和修改 Server 服务与 AI 服务的运行配置：按分区浏览、可视化表单或 JSON 编辑、校验、保存和重启。",
+    "keywords": "配置管理, 运行配置, 服务配置, JSON 配置, 重启服务"
+  },
+  "page": {
+    "title": "配置管理",
+    "subtitle": "查看和修改服务运行配置，一屏一个分区，保存后需要重启服务才生效。"
+  },
   "sections": {
     "relay": {
       "label": "Relay 中转",
@@ -255,7 +262,10 @@
     "healthTimeout": "服务恢复检查超时",
     "healthTimeoutDescription": "重启请求已发送，但账号列表接口未在预期时间内恢复，请手动检查服务状态。",
     "jsonInvalid": "JSON 配置格式错误",
-    "jsonRootObject": "根节点必须是 JSON 对象。"
+    "jsonRootObject": "根节点必须是 JSON 对象。",
+    "noResponse": "请求没有到达服务端，或者服务端没有响应。",
+    "serverNoReason": "服务端只回了错误码，没有说明原因。",
+    "codeSuffix": "（错误码 {{code}}）"
   },
   "common": {
     "enabled": "已启用",

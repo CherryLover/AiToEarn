@@ -1,6 +1,10 @@
 /**
  * ConfigField - 配置字段递归表单控件
  * 将配置对象转换成设置列表，降低参数区视觉噪音。
+ *
+ * 从 `app/layout/ConfigManagerDialog/components/ConfigField` 原样搬来，
+ * 只加了一件事：标签下面显示 `configManager.fieldDescriptions` 里的说明文字
+ * （契约要求「每个输入框都要有标签和说明文字」，那块文案本来就在，只是一直没人用）。
  */
 'use client'
 
@@ -21,6 +25,7 @@ import { cn } from '@/utils/className'
 import {
   countLeafFields,
   countModifiedLeafFields,
+  getConfigFieldDescription,
   getConfigFieldLabel,
   getLastStringSegment,
   isConfigValueModified,
@@ -30,6 +35,25 @@ import { createEmptyValue, isRecord, joinPath } from '../../utils/configPath'
 
 const selectOptions: Record<string, string[]> = {
   environment: ['development', 'production'],
+}
+
+/**
+ * 一次性把 `fieldDescriptions` 整块拿出来。
+ * 必须整块拿：那里面有 `agent.models` 这种带点的键，逐个 `t()` 查会被当成嵌套层级，永远查不到。
+ */
+function useConfigFieldDescriptions(): Record<string, string> {
+  const { t } = useTransClient('configManager')
+
+  return useMemo(() => {
+    const raw: unknown = t('fieldDescriptions', { returnObjects: true })
+    if (typeof raw !== 'object' || raw === null || Array.isArray(raw))
+      return {}
+
+    return Object.fromEntries(
+      Object.entries(raw as Record<string, unknown>)
+        .filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
+    )
+  }, [t])
 }
 
 const compactControlClassName = 'h-7 min-h-7 w-full rounded-sm border-transparent bg-transparent px-2 py-0 text-sm shadow-none group-hover/config-item:border-input group-hover/config-item:bg-background hover:border-input hover:bg-background focus:border-ring focus:bg-background focus:ring-1 focus:ring-ring focus:ring-offset-0 focus-visible:border-ring focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-ring'
@@ -89,6 +113,7 @@ function PathJumpButton({ path, onNavigateToJson }: {
 function SettingLabel({
   inputId,
   label,
+  description,
   modified,
   depth,
   path,
@@ -96,6 +121,8 @@ function SettingLabel({
 }: {
   inputId?: string
   label: string
+  /** 字段说明，没有就不占位 */
+  description?: string
   modified: boolean
   depth: number
   path: ConfigPath
@@ -127,12 +154,15 @@ function SettingLabel({
             )
           : <div className={labelClassName}>{label}</div>}
         {modified && (
-          <Badge variant="outline" className={cn(compactBadgeClassName, 'border-warning/30 bg-warning/10 text-warning')}>
+          <Badge variant="outline" className={cn(compactBadgeClassName, 'border-warning/30 bg-warning/10 text-warning-text')}>
             {t('status.modified')}
           </Badge>
         )}
         <PathJumpButton path={path} onNavigateToJson={onNavigateToJson} />
       </div>
+      {description && (
+        <p className="mt-0.5 pr-2 text-xs leading-4 text-muted-foreground">{description}</p>
+      )}
     </div>
   )
 }
@@ -164,8 +194,10 @@ function PrimitiveField({
   onNavigateToJson,
 }: ConfigFieldProps) {
   const { t } = useTransClient('configManager')
+  const fieldDescriptions = useConfigFieldDescriptions()
   const [showSensitiveValue, setShowSensitiveValue] = useState(false)
   const label = getConfigFieldLabel(t, path, fieldKey)
+  const description = getConfigFieldDescription(fieldDescriptions, path, fieldKey)
   const pathKey = joinPath(path)
   const inputId = getInputId(pathKey)
   const lastKey = getLastStringSegment(path, fieldKey)
@@ -186,6 +218,7 @@ function PrimitiveField({
       <SettingLabel
         inputId={inputId}
         label={label}
+        description={description}
         modified={modified}
         depth={depth}
         path={path}
@@ -409,7 +442,7 @@ function PrimitiveArrayItem({
           {index + 1}
         </span>
         {modified && (
-          <Badge variant="outline" className={cn(compactBadgeClassName, 'border-warning/30 bg-warning/10 text-warning')}>
+          <Badge variant="outline" className={cn(compactBadgeClassName, 'border-warning/30 bg-warning/10 text-warning-text')}>
             {t('status.modified')}
           </Badge>
         )}
@@ -525,7 +558,7 @@ function ObjectArrayItem({
           </span>
           <span className="truncate text-xs font-semibold text-foreground">{title}</span>
           {modified && (
-            <Badge variant="outline" className={cn(compactBadgeClassName, 'border-warning/30 bg-warning/10 text-warning')}>
+            <Badge variant="outline" className={cn(compactBadgeClassName, 'border-warning/30 bg-warning/10 text-warning-text')}>
               {modifiedCount}
             </Badge>
           )}
@@ -573,7 +606,9 @@ function ArrayField({
   onNavigateToJson,
 }: ConfigFieldProps & { value: unknown[] }) {
   const { t } = useTransClient('configManager')
+  const fieldDescriptions = useConfigFieldDescriptions()
   const label = getConfigFieldLabel(t, path, fieldKey)
+  const description = getConfigFieldDescription(fieldDescriptions, path, fieldKey)
   const pathKey = joinPath(path)
   const sampleValue = value[0] ?? ''
   const originalArray = Array.isArray(originalValue) ? originalValue : []
@@ -599,7 +634,7 @@ function ArrayField({
         className={nodeTriggerClassName}
         style={getTreeIndentStyle(depth)}
       >
-        <SettingLabel label={label} modified={modified} depth={depth} path={path} onNavigateToJson={onNavigateToJson} />
+        <SettingLabel label={label} description={description} modified={modified} depth={depth} path={path} onNavigateToJson={onNavigateToJson} />
         <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground">
           <Badge variant="secondary" className={compactBadgeClassName}>{t('common.itemCount', { count: value.length })}</Badge>
           <Badge variant="outline" className={compactBadgeClassName}>{t('panel.fieldSummary', { count: leafCount })}</Badge>
@@ -692,7 +727,9 @@ function ObjectField({
   onNavigateToJson,
 }: ConfigFieldProps & { value: Record<string, unknown> }) {
   const { t } = useTransClient('configManager')
+  const fieldDescriptions = useConfigFieldDescriptions()
   const label = getConfigFieldLabel(t, path, fieldKey)
+  const description = getConfigFieldDescription(fieldDescriptions, path, fieldKey)
   const entries = useMemo(() => Object.entries(value), [value])
   const originalRecord = isRecord(originalValue) ? originalValue : {}
   const pathKey = joinPath(path)
@@ -718,10 +755,10 @@ function ObjectField({
         className={nodeTriggerClassName}
         style={getTreeIndentStyle(depth)}
       >
-        <SettingLabel label={label} modified={modified} depth={depth} path={path} onNavigateToJson={onNavigateToJson} />
+        <SettingLabel label={label} description={description} modified={modified} depth={depth} path={path} onNavigateToJson={onNavigateToJson} />
         <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground">
           <Badge variant="secondary" className={compactBadgeClassName}>{t('panel.fieldSummary', { count: leafCount })}</Badge>
-          {modifiedCount > 0 && <Badge variant="outline" className={cn(compactBadgeClassName, 'border-warning/30 bg-warning/10 text-warning')}>{modifiedCount}</Badge>}
+          {modifiedCount > 0 && <Badge variant="outline" className={cn(compactBadgeClassName, 'border-warning/30 bg-warning/10 text-warning-text')}>{modifiedCount}</Badge>}
           <ExpandIcon open={open} />
         </div>
       </CollapsibleTrigger>

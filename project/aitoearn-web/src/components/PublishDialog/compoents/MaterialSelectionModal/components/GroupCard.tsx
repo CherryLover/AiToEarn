@@ -58,7 +58,8 @@ export function GroupCard({ group, onClick }: GroupCardProps) {
 
         {/* 默认标签 */}
         {isDefault && (
-          <Badge className="absolute top-2 left-2 bg-amber-500/90 hover:bg-amber-500/90 text-white text-xs border-0 backdrop-blur-sm">
+          // 写死 amber 底配白字只有 2.00:1。强调色走 --warning，它自带配套的深色前景。
+          <Badge className="absolute top-2 left-2 bg-warning/90 hover:bg-warning/90 text-warning-foreground text-xs border-0 backdrop-blur-sm">
             {t('mediaManagement.default')}
           </Badge>
         )}

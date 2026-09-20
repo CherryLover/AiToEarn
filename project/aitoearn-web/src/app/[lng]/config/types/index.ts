@@ -1,4 +1,9 @@
-import type { MutableRefObject } from 'react'
+/**
+ * 配置管理页内部类型
+ * 从原来的全局弹窗（`app/layout/ConfigManagerDialog`）整体搬过来，
+ * 去掉了弹窗滚动容器相关的字段：页面版一次只渲染一个分区，滚动交给页面本身。
+ */
+
 import type { ConfigFileFormat } from '@/api/config-editor/config-editor.types'
 
 export type ConfigPathSegment = string | number
@@ -27,19 +32,16 @@ export interface ConfigEditorStatus {
 }
 
 export interface ConfigFormPanelProps {
-  sections: ConfigSectionView[]
+  /** 当前选中的分区，一次只渲染一个 */
+  section: ConfigSectionView
   config: Record<string, unknown>
   originalConfig: Record<string, unknown> | null
   disabled: boolean
-  scrollContainerRef: MutableRefObject<HTMLDivElement | null>
   focusRequest: ConfigPathFocusRequest | null
   highlightedPathKey: string
-  initialScrollTop: number
   onFocusRequestHandled: (requestId: number) => void
   onValueChange: (path: ConfigPath, value: ConfigValue) => void
   onNavigateToJson: (path: ConfigPath) => void
-  onScrollTopChange: (scrollTop: number) => void
-  onSectionClick: (sectionId: string) => void
 }
 
 export interface ConfigFieldProps {

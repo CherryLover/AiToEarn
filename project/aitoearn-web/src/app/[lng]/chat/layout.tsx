@@ -128,7 +128,7 @@ function MobileAnnouncementTip() {
         <button
           type="button"
           onClick={handleDismiss}
-          className="p-1 rounded hover:bg-muted text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer shrink-0"
+          className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
           aria-label="关闭"
         >
           <X className="w-3.5 h-3.5" />

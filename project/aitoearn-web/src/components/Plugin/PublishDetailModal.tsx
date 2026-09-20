@@ -55,7 +55,7 @@ function getPlatformName(platform: PlatType) {
 function getStatusClassName(status: PlatformTaskStatus) {
   switch (status) {
     case PlatformTaskStatus.COMPLETED:
-      return 'bg-success/10 text-success'
+      return 'bg-success/10 text-success-text'
     case PlatformTaskStatus.PUBLISHING:
       return 'bg-info/10 text-info'
     case PlatformTaskStatus.ERROR:
@@ -337,7 +337,7 @@ function UserActionPanel({ taskId, platformTask }: { taskId: string, platformTas
           type="button"
           size="sm"
           variant="outline"
-          className="w-full cursor-pointer border-warning/30 text-warning hover:bg-warning/10 hover:text-warning md:w-fit"
+          className="w-full cursor-pointer border-warning/30 text-warning-text hover:bg-warning/10 hover:text-warning-text md:w-fit"
           disabled={canceling}
           onClick={handleCancelPublish}
         >

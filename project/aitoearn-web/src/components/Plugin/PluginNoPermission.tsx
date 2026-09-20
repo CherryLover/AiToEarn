@@ -45,7 +45,7 @@ export function PluginNoPermission() {
     <div className="flex flex-col items-center py-8 px-4">
       {/* 图标 */}
       <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-warning/10">
-        <AlertTriangle className="h-10 w-10 text-warning" />
+        <AlertTriangle className="h-10 w-10 text-warning-text" />
       </div>
 
       {/* 标题 */}
@@ -59,7 +59,7 @@ export function PluginNoPermission() {
       </p>
 
       {hostAccessGranted === false && (
-        <Alert className="mb-6 max-w-sm border-warning/30 bg-warning/10 text-foreground [&>svg]:text-warning">
+        <Alert className="mb-6 max-w-sm border-warning/30 bg-warning/10 text-foreground [&>svg]:text-warning-text">
           <AlertTriangle className="h-4 w-4" />
           <div>
             <AlertTitle>{t('header.siteAccessRequiredTitle')}</AlertTitle>
@@ -84,7 +84,7 @@ export function PluginNoPermission() {
       <Link
         href="/websit/plugin-guide#authorize"
         onClick={handleViewGuide}
-        className="mt-6 flex w-full max-w-xs cursor-pointer items-center justify-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-warning transition-colors hover:bg-warning/15"
+        className="mt-6 flex w-full max-w-xs cursor-pointer items-center justify-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-warning-text transition-colors hover:bg-warning/15"
       >
         <BookOpen className="h-5 w-5" />
         <span className="font-medium">{t('header.viewGuide')}</span>

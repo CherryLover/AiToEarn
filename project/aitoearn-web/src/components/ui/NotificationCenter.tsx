@@ -316,7 +316,9 @@ export const NotificationCenter: React.FC = () => {
                 onClick={() => handleClose(item.uid)}
                 className={cn(
                   'flex-shrink-0 p-1 rounded-md cursor-pointer',
-                  'text-muted-foreground/60 hover:text-foreground',
+                  // 别再往 text-muted-foreground 上叠 /60：叠加后亮色只有 2.4:1，图标门槛 3:1 不过。
+                  // 不叠是 5.0~5.5:1（亮）/ 5.9~6.5:1（暗），四种底色都算过了。
+                  'text-muted-foreground hover:text-foreground',
                   'hover:bg-black/5 dark:hover:bg-white/10',
                   'transition-colors duration-150',
                 )}

@@ -372,7 +372,7 @@ export default function PluginGuideContent() {
               </div>
 
               <Alert className="mb-6 bg-warning/10 dark:bg-warning/12 border-warning/30">
-                <HelpCircle className="h-4 w-4 text-warning" />
+                <HelpCircle className="h-4 w-4 text-warning-text" />
                 <div className="min-w-0 flex-1">
                   <AlertTitle className="mb-2 leading-snug text-foreground">
                     {t('manualInstall.tip')}
@@ -565,7 +565,7 @@ export default function PluginGuideContent() {
                 />
 
                 <Alert className="bg-warning/10 dark:bg-warning/12 border-warning/30">
-                  <HelpCircle className="h-4 w-4 text-warning" />
+                  <HelpCircle className="h-4 w-4 text-warning-text" />
                   <div className="min-w-0 flex-1">
                     <AlertTitle className="mb-2 leading-snug text-foreground">
                       {t('steps.step7b.importantNote')}
@@ -624,7 +624,7 @@ export default function PluginGuideContent() {
               <div className="mt-8 p-6 rounded-2xl bg-gradient-to-r from-brand-purple/8 to-brand-cyan/8 border border-primary/20 shadow-sm">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-purple to-brand-cyan flex items-center justify-center shrink-0 shadow-md shadow-primary/20">
-                    <CheckCircle2 className="w-6 h-6 text-white" />
+                    <CheckCircle2 className="w-6 h-6 text-gradient-foreground" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-foreground mb-2">

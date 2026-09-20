@@ -83,15 +83,17 @@ export function DeviceCard({ device, onChanged }: DeviceCardProps) {
             <span
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs',
+                // 在线态原来写死 emerald：亮色下 emerald-600 压在 emerald-500/10 上只有 3.43:1，
+                // 徽章正文要 4.5:1，而且离线态用的是主题变量，一个组件里两套色。改成主题 success 后 5.54:1（亮）/ 7.47:1（暗）。
                 isOnline
-                  ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                  ? 'border-success/40 bg-success/10 text-success-text'
                   : 'border-border bg-muted text-muted-foreground',
               )}
             >
               <span
                 className={cn(
                   'size-1.5 rounded-full',
-                  isOnline ? 'bg-emerald-500' : 'bg-muted-foreground',
+                  isOnline ? 'bg-success' : 'bg-muted-foreground',
                 )}
               />
               {isOnline ? t('device.status.online') : t('device.status.offline')}

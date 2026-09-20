@@ -81,7 +81,7 @@ function DesktopAnnouncementTip() {
       <button
         type="button"
         onClick={handleDismiss}
-        className="p-0.5 rounded hover:bg-muted text-muted-foreground/50 hover:text-muted-foreground transition-colors cursor-pointer shrink-0"
+        className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
         aria-label="关闭"
       >
         <X className="w-3 h-3" />
@@ -150,7 +150,9 @@ export function ChatHeader({
         <h1 className="text-base font-medium text-foreground line-clamp-1">
           {title || defaultTitle}
         </h1>
-        <Pencil className="w-4 h-4 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+        {/* 不要再挂 opacity-60：叠加后只有 2.41:1（亮），图标门槛 3:1 不过。
+            现在静止 5.25:1（亮）/ 6.93:1（暗）；父级 hover:opacity-80 时是 3.48:1 / 4.90:1，仍然过线。 */}
+        <Pencil className="w-4 h-4 text-muted-foreground shrink-0" />
       </button>
 
       {/* PC 端公告提示 */}

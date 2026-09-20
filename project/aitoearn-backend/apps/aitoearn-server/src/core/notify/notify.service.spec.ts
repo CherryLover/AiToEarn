@@ -186,13 +186,19 @@ describe('bark 推送（.env 兜底通道）', () => {
       expect(received).toHaveLength(1)
     })
 
-    it('同主机的 302 还是跟：内网自建的 Bark 自己跳一下不能被打死', async () => {
+    it('同主机的 302 也不放过：主机名没变，下一跳照样按严格规则拒', async () => {
+      // 这条以前是「同主机就继承内网放行」，实测被绕：对端回一个同主机名的 302，
+      // 这中间把域名改成解析到 169.254.169.254，请求就带着 bark-key 进了云元数据。
+      // 代价是同机部署的 Bark 自己跳一下推不出去了——比起给内网留一条跳板，这个代价该付。
       handler = ({ url }) => (url === '/device-key/'
         ? { status: 302, headers: { location: '/device-key/moved/' } }
         : { status: 200, body: '{}' })
 
-      await expect(new NotifyService().send({ title: '标题', body: '正文' })).resolves.toBe(true)
-      expect(received.map(item => item.url)).toEqual(['/device-key/', '/device-key/moved/'])
+      const result = await new NotifyService().deliver({ title: '标题', body: '正文' })
+
+      expect(result).toEqual({ success: false, failure: 'url_blocked' })
+      // 第二跳一个包都没发出去
+      expect(received.map(item => item.url)).toEqual(['/device-key/'])
     })
 
     it('协议不是 http/https 的地址直接拒，不发包', async () => {

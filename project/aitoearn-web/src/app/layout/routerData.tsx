@@ -10,6 +10,7 @@ import {
   Home,
   MonitorSmartphone,
   Settings,
+  SlidersHorizontal,
   Sparkles,
   Upload,
 } from 'lucide-react'
@@ -76,6 +77,13 @@ export const routerData: IRouterDataItem[] = [
     translationKey: 'settings',
     path: '/settings',
     icon: <Settings size={20} />,
+  },
+  {
+    // 配置管理同理：以前是全局弹框，现在是独立页面，入口放在设置旁边
+    name: 'Config Management',
+    translationKey: 'configManagement',
+    path: '/config',
+    icon: <SlidersHorizontal size={20} />,
   },
 ]
 

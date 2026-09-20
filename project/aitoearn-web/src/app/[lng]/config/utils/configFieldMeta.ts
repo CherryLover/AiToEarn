@@ -77,3 +77,20 @@ export function countModifiedLeafFields(value: unknown, originalValue: unknown):
 
   return isConfigValueModified(value, originalValue) ? 1 : 0
 }
+
+/**
+ * 取字段的说明文字。
+ *
+ * `configManager.json` 里 `fieldDescriptions` 的键有两种写法：光一个字段名（`port`），
+ * 或者带路径（`agent.models`）。后者用 `t('fieldDescriptions.agent.models')` 是取不到的——
+ * i18next 默认把点当层级分隔符，会去找不存在的嵌套对象。所以这里一次性拿整块对象再自己查，
+ * 先按完整路径找，找不到再退回字段名。
+ */
+export function getConfigFieldDescription(
+  descriptions: Record<string, string>,
+  path: ConfigPath,
+  fieldKey: string,
+): string {
+  const fullKey = path.filter((segment): segment is string => typeof segment === 'string').join('.')
+  return descriptions[fullKey] || descriptions[getLastStringSegment(path, fieldKey)] || ''
+}

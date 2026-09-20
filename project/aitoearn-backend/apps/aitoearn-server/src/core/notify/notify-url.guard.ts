@@ -12,6 +12,7 @@ import { isIP } from 'node:net'
  * | `isBlockedAddress` / `isBlockedIpv4` / `isBlockedIpv6` / `embeddedIpv4` | `isBlockedIpAddress` / 同名函数 |
  * | `resolveAllowedUrl` | `parseNotifyUrl` + `resolveAllowedAddress` |
  * | `notify.http.ts` 的 `postGuardedJson` / `sendHop` / `pinnedLookup` | `postNotifyRequest` / `sendOnce` / `pinnedLookup` |
+ * | `notify.http.ts` 的 `REDIRECT_STATUS`（哪些码算跳转） | `REDIRECT_STATUS`，**必须是同一个集合** |
  *
  * **为什么还没合并成一份**：正确做法是提到 `libs/common` 里两边一起 import，但那要动两个应用之外的
  * 目录，牵连面比这一轮该承担的大（libs 是所有应用共享的，改一次全量重编 + 全量回归）。
@@ -226,8 +227,8 @@ export interface ResolveAllowedUrlOptions {
    * `/opt/stack/aitoearn/.env` 的，线上就有把 Bark 装在同机、写成 `http://127.0.0.1:.../` 的用法，
    * 一刀切拦掉等于把既有部署打死。判断依据是「配置来源可不可信」，不是「地址长什么样」。
    *
-   * **但它只跟着同一个主机名走**：换了主机的重定向一律重新按严格规则判，见 `notify.http.ts`。
-   * 这个开关**永远不许透出到任何接口参数上**，用户填的地址没有商量余地。
+   * **但它只对 `.env` 里那个初始地址生效**：任何一跳重定向都重新按严格规则判，同主机名也不例外，
+   * 见 `notify.http.ts`。这个开关**永远不许透出到任何接口参数上**，用户填的地址没有商量余地。
    */
   allowPrivateAddress?: boolean
 }

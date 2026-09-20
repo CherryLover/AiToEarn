@@ -86,7 +86,7 @@ export function PluginReady({ highlightPlatform, onViewDetail }: PluginReadyProp
                   <PluginUpdatePopover currentVersion={pluginVersion}>
                     <button
                       type="button"
-                      className="inline-flex cursor-pointer items-center rounded-full border border-warning/20 bg-warning/10 px-3 py-1 text-xs font-medium text-warning transition-colors hover:bg-warning/15"
+                      className="inline-flex cursor-pointer items-center rounded-full border border-warning/20 bg-warning/10 px-3 py-1 text-xs font-medium text-warning-text transition-colors hover:bg-warning/15"
                     >
                       {t('version.updatableTag')}
                     </button>
@@ -94,7 +94,7 @@ export function PluginReady({ highlightPlatform, onViewDetail }: PluginReadyProp
                 ) : (
                   <Badge
                     variant="outline"
-                    className="rounded-full border-success/20 bg-success/10 px-3 py-1 text-xs font-medium text-success"
+                    className="rounded-full border-success/20 bg-success/10 px-3 py-1 text-xs font-medium text-success-text"
                   >
                     {t('version.title')}
                     {' '}

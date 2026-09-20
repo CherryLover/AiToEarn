@@ -1,6 +1,13 @@
 {
-  "title": "Configuration",
-  "description": "Manage runtime settings. Saved changes take effect after the service restarts.",
+  "meta": {
+    "title": "Configuration",
+    "description": "View and edit the runtime configuration of the server and AI services: browse by section, edit in a form or as JSON, validate, save and restart.",
+    "keywords": "configuration, runtime config, service settings, JSON config, restart service"
+  },
+  "page": {
+    "title": "Configuration",
+    "subtitle": "View and edit the service runtime configuration, one section at a time. Saved changes take effect after the service restarts."
+  },
   "sections": {
     "relay": {
       "label": "Relay",
@@ -255,7 +262,10 @@
     "healthTimeout": "Service recovery check timed out",
     "healthTimeoutDescription": "The restart request was sent, but the account list API did not recover in time. Please check the service manually.",
     "jsonInvalid": "Invalid JSON configuration",
-    "jsonRootObject": "The root value must be a JSON object."
+    "jsonRootObject": "The root value must be a JSON object.",
+    "noResponse": "The request never reached the server, or the server did not respond.",
+    "serverNoReason": "The server returned an error code without a reason.",
+    "codeSuffix": "(error code {{code}})"
   },
   "common": {
     "enabled": "Enabled",

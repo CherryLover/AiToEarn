@@ -65,8 +65,12 @@ export function SelectableMediaCard({
               'opacity-100 group-hover:opacity-100 transition-opacity',
             )}
           >
-            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-              <Play className="w-5 h-5 text-blue-500 ml-0.5" />
+            {/*
+              浮在缩略图上的圆片：底色和图标都走主题变量。
+              写死 bg-white/90 在暗色下是一块白疤，写死 text-blue-500 压在白圆上只有 3.52:1。
+            */}
+            <div className="w-12 h-12 rounded-full bg-background/90 flex items-center justify-center shadow-lg">
+              <Play className="w-5 h-5 text-foreground ml-0.5" />
             </div>
           </div>
         )}
@@ -78,10 +82,10 @@ export function SelectableMediaCard({
               'absolute top-2 right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all shadow-sm',
               selected
                 ? 'bg-primary border-primary scale-110'
-                : 'bg-white/90 border-border hover:border-primary hover:scale-105',
+                : 'bg-background/90 border-muted-foreground/30 hover:border-primary hover:scale-105',
             )}
           >
-            {selected && <Check className="w-4 h-4 text-white" />}
+            {selected && <Check className="w-4 h-4 text-primary-foreground" />}
           </div>
         )}
 
@@ -94,7 +98,7 @@ export function SelectableMediaCard({
           >
             <div
               className={cn(
-                'w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg',
+                'w-12 h-12 rounded-full bg-background/90 flex items-center justify-center shadow-lg',
                 'opacity-0 group-hover:opacity-100 transition-opacity',
               )}
             >
@@ -107,13 +111,14 @@ export function SelectableMediaCard({
         <div
           className={cn(
             'absolute bottom-2 left-2 w-6 h-6 rounded-full flex items-center justify-center backdrop-blur-sm shadow-sm',
-            isVideo ? 'bg-blue-500/90' : 'bg-green-500/90',
+            // 蓝/绿写死配白字：绿底只有 2.12:1。换成主题里的 info / primary，两边都带自己的前景色。
+            isVideo ? 'bg-info/90 text-info-foreground' : 'bg-primary/90 text-primary-foreground',
           )}
         >
           {isVideo ? (
-            <Video className="w-3 h-3 text-white" />
+            <Video className="w-3 h-3" />
           ) : (
-            <ImageIcon className="w-3 h-3 text-white" />
+            <ImageIcon className="w-3 h-3" />
           )}
         </div>
 

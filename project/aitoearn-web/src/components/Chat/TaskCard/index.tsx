@@ -229,7 +229,7 @@ export function TaskCard({
               <button
                 onClick={handleFavoriteToggle}
                 disabled={isFavoriteLoading}
-                className="flex items-center justify-center w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors opacity-60 hover:opacity-100 cursor-pointer"
+                className="flex items-center justify-center w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 aria-label={isFavorited ? t('task.unfavorite') : t('task.favorite')}
               >
                 {isFavoriteLoading ? (
@@ -238,7 +238,10 @@ export function TaskCard({
                   <Heart
                     className={cn(
                       'w-4 h-4 transition-colors',
-                      isFavorited && 'text-red-500 fill-red-500',
+                      // 高亮态也走主题变量，别和父级的 text-muted-foreground 混用两套色。
+                      // 按钮上原来挂着 opacity-60，叠加后红心只剩 2.74:1（亮）/ 3.17:1（暗），图标门槛 3:1 不过。
+                      // 去掉那层不透明度后是 5.56:1（亮）/ 6.42:1（暗）——这才是实际渲染出来的值。
+                      isFavorited && 'text-destructive fill-destructive',
                     )}
                   />
                 )}
@@ -254,13 +257,17 @@ export function TaskCard({
             <TooltipTrigger asChild>
               <button
                 onClick={handleRateClick}
-                className="flex items-center justify-center w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors opacity-60 hover:opacity-100 cursor-pointer"
+                className="flex items-center justify-center w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 aria-label={t('task.rate')}
               >
                 <Star
                   className={cn(
                     'w-4 h-4 transition-colors',
-                    rating && 'text-amber-400 fill-amber-400',
+                    // 同 star-rating：写死 amber-400 亮色下只有 1.67:1，--warning 当文字也只有 3.19:1；
+                    // --chart-4 是调色板里唯一亮暗都过 4.5:1 的金色。
+                    // 这里给的是叠加后的真实值：按钮原来的 opacity-60 会把星星压到 2.37:1（亮）/ 3.36:1（暗），
+                    // 所以那层不透明度去掉了，现在是 5.00:1（亮）/ 6.80:1（暗）。
+                    rating && 'text-chart-4 fill-chart-4',
                   )}
                 />
               </button>
@@ -273,7 +280,7 @@ export function TaskCard({
             <TooltipTrigger asChild>
               <button
                 onClick={handleShareClick}
-                className="flex items-center justify-center w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors opacity-60 hover:opacity-100 cursor-pointer"
+                className="flex items-center justify-center w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 aria-label={t('task.share')}
               >
                 <Share2 className="w-4 h-4" />
@@ -288,7 +295,7 @@ export function TaskCard({
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex items-center justify-center w-7 h-7 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-60 hover:opacity-100 cursor-pointer"
+                className="flex items-center justify-center w-7 h-7 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                 aria-label={t('task.delete')}
               >
                 {isDeleting ? (

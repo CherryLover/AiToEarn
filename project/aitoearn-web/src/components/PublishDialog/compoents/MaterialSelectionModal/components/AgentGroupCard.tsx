@@ -37,7 +37,11 @@ export function AgentGroupCard({ onClick, count }: AgentGroupCardProps) {
         'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
       )}
     >
-      {/* 封面区域 - 渐变背景 */}
+      {/*
+        封面区域 - 品牌渐变背景。
+        渐变上的文字一律用 text-gradient-foreground（亮色白、暗色深），叠色底用 bg-foreground/20：
+        它在亮色里压暗、在暗色里提亮，两边都把文字推离底色。写死 text-white 在暗色下只有 2.2:1。
+      */}
       <div className="relative aspect-[16/10] overflow-hidden">
         {/* 渐变背景 */}
         <div className="absolute inset-0 bg-gradient-to-br from-brand-purple via-primary to-brand-cyan" />
@@ -52,16 +56,18 @@ export function AgentGroupCard({ onClick, count }: AgentGroupCardProps) {
         {/* 中心图标 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="relative">
-            <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform duration-300">
-              <Bot className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-xl bg-foreground/20 backdrop-blur-sm flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform duration-300">
+              <Bot className="w-6 h-6 text-gradient-foreground" />
             </div>
             {/* 闪光图标 */}
-            <Sparkles className="absolute -top-0.5 -right-0.5 w-4 h-4 text-yellow-300" />
+            {/* 和上面的 Bot 同一条规矩：渐变上的图标走 text-gradient-foreground，
+                写死 text-yellow-300 在暗色的亮绿渐变上只有 1.69:1。 */}
+            <Sparkles className="absolute -top-0.5 -right-0.5 w-4 h-4 text-gradient-foreground" />
           </div>
         </div>
 
         {/* AI 标签 */}
-        <Badge className="absolute top-2 left-2 bg-white/20 hover:bg-white/20 text-white text-xs border-0 backdrop-blur-sm">
+        <Badge className="absolute top-2 left-2 bg-foreground/20 hover:bg-foreground/20 text-gradient-foreground text-xs border-0 backdrop-blur-sm">
           <Sparkles className="w-3 h-3 mr-1" />
           AI
         </Badge>
@@ -70,7 +76,7 @@ export function AgentGroupCard({ onClick, count }: AgentGroupCardProps) {
         {count !== undefined && count > 0 && (
           <Badge
             variant="secondary"
-            className="absolute bottom-2 right-2 backdrop-blur-sm bg-black/30 hover:bg-black/30 text-white border-0 text-xs"
+            className="absolute bottom-2 right-2 backdrop-blur-sm bg-foreground/20 hover:bg-foreground/20 text-gradient-foreground border-0 text-xs"
           >
             {count}
             {' '}

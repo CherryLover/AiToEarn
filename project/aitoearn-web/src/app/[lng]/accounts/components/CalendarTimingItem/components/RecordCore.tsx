@@ -106,12 +106,12 @@ interface PublishStatusMeta {
 
 const statusBadgeClassName = {
   info: 'border-info/25 bg-info/10 text-info',
-  success: 'border-success/25 bg-success/10 text-success',
-  warning: 'border-warning/25 bg-warning/10 text-warning',
+  success: 'border-success/25 bg-success/10 text-success-text',
+  warning: 'border-warning/25 bg-warning/10 text-warning-text',
   muted: 'bg-muted text-muted-foreground border-border',
 }
 
-const cancelPublishMenuItemClassName = 'cursor-pointer text-warning focus:bg-warning/10 focus:text-warning'
+const cancelPublishMenuItemClassName = 'cursor-pointer text-warning-text focus:bg-warning/10 focus:text-warning-text'
 const deleteRecordMenuItemClassName = 'cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive'
 
 function hasDouyinUserAction(
@@ -499,7 +499,7 @@ const RecordCore = memo(
         title: t('record.cancelPublishConfirmTitle'),
         content: t('record.cancelPublishConfirmContent'),
         okText: t('buttons.cancelPublish'),
-        icon: <CircleOff className="h-4 w-4 text-warning" />,
+        icon: <CircleOff className="h-4 w-4 text-warning-text" />,
         onOk: async () => {
           setPopoverOpen(false)
           const res = await cancelChannelPublishTaskApi(getPublishRecordTaskId(activeRecord))

@@ -24,7 +24,7 @@ export function MaterialValidationAlert({ issues }: MaterialValidationAlertProps
       aria-live="polite"
     >
       <div className="flex items-center gap-2 border-b border-warning/30 px-3 py-2 text-sm font-medium text-foreground">
-        <TriangleAlert className="h-4 w-4 shrink-0 text-warning" />
+        <TriangleAlert className="h-4 w-4 shrink-0 text-warning-text" />
         {t('createMaterial.validationIssueTitle', { count: issues.length })}
       </div>
 
@@ -42,7 +42,7 @@ export function MaterialValidationAlert({ issues }: MaterialValidationAlertProps
               <ul className="mt-1 space-y-1 text-xs text-foreground">
                 {issue.messages.map(message => (
                   <li key={message} className="flex gap-1.5">
-                    <TriangleAlert className="mt-0.5 h-3 w-3 shrink-0 text-warning" />
+                    <TriangleAlert className="mt-0.5 h-3 w-3 shrink-0 text-warning-text" />
                     <span>{message}</span>
                   </li>
                 ))}

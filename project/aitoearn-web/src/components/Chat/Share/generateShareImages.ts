@@ -85,7 +85,7 @@ async function generateImageFromAllMessages(
     '--card': '#ffffff',
     '--card-foreground': '#1c1917',
     '--muted': '#f5f4f2',
-    '--muted-foreground': '#78716c',
+    '--muted-foreground': '#6f6862',
     '--border': '#e7e5e4',
     '--primary': '#1f6f5c',
     '--primary-foreground': '#ffffff',
@@ -99,8 +99,10 @@ async function generateImageFromAllMessages(
     '--radius': '0.625rem',
     '--success': '#15803d',
     '--success-foreground': '#ffffff',
+    '--success-text': '#126e34',
     '--warning': '#d97706',
     '--warning-foreground': '#1c1917',
+    '--warning-text': '#9a5404',
     '--info': '#1d4ed8',
     '--info-foreground': '#ffffff',
     '--brand-cyan': '#1f6f5c',
@@ -113,13 +115,15 @@ async function generateImageFromAllMessages(
     '--color-card': '#ffffff',
     '--color-card-foreground': '#1c1917',
     '--color-muted': '#f5f4f2',
-    '--color-muted-foreground': '#78716c',
+    '--color-muted-foreground': '#6f6862',
     '--color-border': '#e7e5e4',
     '--color-primary': '#1f6f5c',
     '--color-primary-foreground': '#ffffff',
     '--color-success': '#15803d',
+    '--color-success-text': '#126e34',
     '--color-destructive': '#c1332d',
     '--color-warning': '#d97706',
+    '--color-warning-text': '#9a5404',
     '--color-info': '#1d4ed8',
     '--color-brand-cyan': '#1f6f5c',
     '--color-brand-purple': '#14594a',
@@ -387,13 +391,17 @@ async function generateAndInsertQRCode(container: HTMLElement, shareUrl: string)
  * 用于解决 oklch 颜色在 html2canvas 中无法渲染的问题
  */
 const TEXT_COLOR_MAP: Record<string, string> = {
+  // `text-success` / `text-warning` 是当底色用的那一档，当文字要用 `-text` 变体，见 globals.css 第 4 条。
+  // 两种写法都留着：老 class 万一还有残留，也不该在分享图里渲染成透明。
+  'text-success-text': '#126e34',
   'text-success': '#15803d',
   'text-destructive': '#c1332d',
+  'text-warning-text': '#9a5404',
   'text-warning': '#d97706',
   'text-info': '#1d4ed8',
   'text-primary': '#1f6f5c',
-  'text-muted': '#78716c',
-  'text-muted-foreground': '#78716c',
+  'text-muted': '#6f6862',
+  'text-muted-foreground': '#6f6862',
   'text-foreground': '#1c1917',
 }
 

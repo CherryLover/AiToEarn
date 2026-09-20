@@ -30,10 +30,13 @@ import { isIP, isIPv4 } from 'node:net'
  * | `parseNotifyUrl` + `resolveAllowedAddress` | `notify-url.guard.ts` 的 `resolveAllowedUrl` |
  * | `postNotifyRequest` + `sendOnce` + `pinnedLookup` | `notify.http.ts` 的 `postGuardedJson` / `sendHop` / `pinnedLookup` |
  * | `PostNotifyOptions.allowPrivateAddress` | `PostGuardedOptions.allowPrivateAddress` |
+ * | `REDIRECT_STATUS`（哪些码算跳转） | `notify.http.ts` 的 `REDIRECT_STATUS`，**必须是同一个集合** |
  *
- * **网段名单和放行规则是逐条对齐过的，改之前先去看那边。** 已经栽过一次：server 的 `.env`
- * 兜底通道当时图省事走的是原生 `fetch`，自动跟随重定向且一跳都不校验，同一个 302 场景这边拦得住、
- * 那边照跟——两个服务对同一个地址给出了不同答案，这就是洞。
+ * **网段名单、放行规则、跳转码名单都是逐条对齐过的，改之前先去看那边。** 已经栽过两次：
+ * 一次是 server 的 `.env` 兜底通道图省事走原生 `fetch`，自动跟随重定向且一跳都不校验，
+ * 同一个 302 场景这边拦得住、那边照跟；一次是这边把「任何 3xx 带 Location」都当跳转，
+ * 300 / 304 / 305 / 306 / 309 这边真的会再发一次带 `bark-key` 的请求、那边一个包都不发。
+ * 两次都是同一个形状：两个服务对同一个响应给出了不同答案，差出来的那条路就是洞。
  *
  * **为什么还没合并成一份**：正确做法是把这套判断提到 `libs/common` 里两边一起 import，
  * 但那要动两个应用之外的目录（libs 是所有应用共享的，改一次全量重编 + 全量回归），
@@ -49,8 +52,9 @@ import { isIP, isIPv4 } from 'node:net'
  * 3. **用解析结果连接**：拿到通过校验的 IP 之后，把它钉死在 socket 的 `lookup` 上。
  *    不钉的话，校验用的那次解析和真正连接用的那次解析是两次独立的 DNS 查询，
  *    攻击方把 TTL 设成 0 就能让第二次返回内网地址（DNS rebinding）
- * 4. **每一跳重定向都重新判**：`https://evil.example/` 返回 302 指向 `http://169.254.169.254/`，
- *    只判第一跳等于没判。所以这里不让底层自动跟随重定向，自己一跳一跳来
+ * 4. **每一跳重定向都重新判，而且没有任何豁免**：`https://evil.example/` 返回 302 指向
+ *    `http://169.254.169.254/`，只判第一跳等于没判。所以这里不让底层自动跟随重定向，
+ *    自己一跳一跳来；`.env` 兜底通道的内网放行也只对初始地址有效，同主机名的 302 一样不继承
  */
 
 /** 一次推送最多等 5 秒（含 DNS、连接、重定向在内的总时长）。推送是旁支，不能让它把主流程的请求挂住 */
@@ -396,7 +400,9 @@ function sendOnce(
       // 这一行就是第 3 层防护：只连刚校验过的那个 IP，不给第二次 DNS 解析任何机会。
       // `all` 要分开处理：Node 开了 autoSelectFamily 之后是带 all:true 调进来的，回调要给数组
       lookup: pinnedLookup(pinned),
-      // 不复用连接池：池里的 socket 是按 host:port 找的，会绕过上面钉死的 lookup
+      // 不复用连接池：池里的 socket 是按「主机名:端口」找的，**不看这次校验出来的 IP**，
+      // 有一条旧连接就把上面那行 lookup 整个绕过去。server 侧当初漏了这一行，
+      // 实测同一组输入两个服务把请求发去了不同主机。**这一行不能删。**
       agent: false,
     }, (response) => {
       let received = 0
@@ -424,6 +430,20 @@ function sendOnce(
   })
 }
 
+/**
+ * 算作「跳转」的状态码，**和 aitoearn-server 的 `notify.http.ts` 里那份逐个一致**。
+ *
+ * 跟一跳等于把 `bark-key` 头再往一个由对端指定的地址发一次，所以「什么算跳转」本身就是攻击面：
+ * 两个服务对同一个响应必须给同一个答案，差出来的那条路就是洞。这里原先按
+ * 「任何 3xx 带 Location 就跟」判，实测 300 / 304 / 305 / 306 / 309 这五个码
+ * 这边会真的再发一次带 key 的请求，server 侧一个包都不发。
+ *
+ * 这五个码从协议上也本来就不该跟：300 多选、304 未修改（压根不是重定向）、
+ * 305 用代理（已废弃，「拿这个代理去发你的请求」正是攻击方想要的）、306 已作废、309 未分配。
+ * 不在名单里的一律当终态，交给下面的状态码分类去收场。
+ */
+const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308])
+
 export interface PostNotifyOptions {
   headers: Record<string, string>
   body: string
@@ -435,7 +455,7 @@ export interface PostNotifyOptions {
    * `/opt/stack/aitoearn/.env` 的，可能本来就是内网自建的 Bark，不是攻击面。
    * 用户在设置页填的地址永远走校验，这个开关不许透出到任何接口参数上。
    *
-   * **注意它只跟着「同一个主机名」走**：换了主机的重定向一律重新按严格规则判，
+   * **它只对传进来的这个初始地址生效，一跳重定向都不继承**（连同主机名也不继承），
    * 见 `postNotifyRequest` 里的说明。
    */
   allowPrivateAddress?: boolean
@@ -453,25 +473,34 @@ export async function postNotifyRequest(rawUrl: string, options: PostNotifyOptio
 
   let target = parseNotifyUrl(rawUrl)
   /**
-   * 内网放行只跟着「同一个主机名」走。
+   * 内网放行**只对 `.env` 里那个初始地址生效，任何一跳重定向都不继承**。
    *
-   * 运维填的内网 Bark 自己跳一下（比如补个斜杠）要还能用，所以同主机的重定向继承放行；
-   * 但**一换主机就必须重新按严格规则判**——Location 是对端返回的内容，
-   * 「运维信任这个地址」不等于「运维信任这个地址让我去打的任何地方」，
-   * 不然 `.env` 那条通道就成了打元数据服务的跳板。
+   * 以前是「同主机名就继承」，实测被绕：兜底地址 `http://ops-bark.test/ops/` 先解析到公网，
+   * 对端回一个同主机名的 302（`http://ops-bark.test/second/`），这中间把域名改成解析到
+   * `169.254.169.254`，服务就照直连了上去，`bark-key` 跟着进了云元数据。
+   * 主机名一样不代表它解析到的地方一样，而 Location 本来就是对端说了算的内容——
+   * 「运维信任这个地址」不等于「运维信任这个地址让我去打的任何地方」
+   * （contract-settings 第五节：兜底通道每一跳都要校验）。
+   *
+   * 同机部署的 Bark 照样能用：初始地址是内网就直接放行，只是它一旦 302 到别处，
+   * 下一跳就按最严格的规则判。
    */
-  let allowPrivateAddress = options.allowPrivateAddress ?? false
+  const allowPrivateInitialAddress = options.allowPrivateAddress ?? false
 
   for (let hop = 0; hop <= NOTIFY_MAX_REDIRECTS; hop++) {
     const remaining = deadline - Date.now()
     if (remaining <= 0)
       throw new NotifyRequestError('timeout')
 
-    const pinned = await resolveAllowedAddress(target, { timeoutMs: remaining, allowPrivateAddress })
+    const pinned = await resolveAllowedAddress(target, {
+      timeoutMs: remaining,
+      allowPrivateAddress: hop === 0 && allowPrivateInitialAddress,
+    })
 
     const result = await sendOnce(target, pinned, options, deadline - Date.now())
 
-    const isRedirect = result.status >= 300 && result.status < 400 && result.location
+    // 只有名单里的五个码才算跳转，别的 3xx 一律当终态：见 `REDIRECT_STATUS` 上面的说明
+    const isRedirect = REDIRECT_STATUS.has(result.status) && result.location
     if (!isRedirect) {
       if (result.status === 401 || result.status === 403)
         throw new NotifyRequestError('unauthorized', result.status)
@@ -489,7 +518,6 @@ export async function postNotifyRequest(rawUrl: string, options: PostNotifyOptio
       throw new NotifyRequestError('invalid_url')
     }
 
-    allowPrivateAddress = allowPrivateAddress && next.hostname === target.hostname
     target = parseNotifyUrl(next.toString())
   }
 

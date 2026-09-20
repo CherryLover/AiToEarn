@@ -34,12 +34,14 @@ function getPlatformName(platform: PluginPlatformType): string {
  */
 function getStatusClassName(status: PlatformTaskStatus): string {
   switch (status) {
+    // 五个分支统一走主题变量。写死的 *-100/*-700 没有 dark: 变体，
+    // 暗色下会在深色卡片上留三块亮底药丸，和另外两支主题色的对不上。
     case PlatformTaskStatus.COMPLETED:
-      return 'bg-green-100 text-green-700 hover:bg-green-100'
+      return 'bg-primary/10 text-primary hover:bg-primary/10'
     case PlatformTaskStatus.PUBLISHING:
-      return 'bg-blue-100 text-blue-700 hover:bg-blue-100'
+      return 'bg-info/10 text-info hover:bg-info/10'
     case PlatformTaskStatus.ERROR:
-      return 'bg-red-100 text-red-700 hover:bg-red-100'
+      return 'bg-destructive/10 text-destructive hover:bg-destructive/10'
     case PlatformTaskStatus.CANCELED:
       return 'bg-muted text-muted-foreground hover:bg-muted'
     default:

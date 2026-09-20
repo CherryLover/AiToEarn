@@ -121,8 +121,8 @@ interface SectionHeadingProps {
 function SectionHeading({ id, title, description, icon }: SectionHeadingProps) {
   return (
     <div id={id} className="scroll-mt-24">
-      <div className="flex items-start gap-4 rounded-2xl border border-border/60 bg-linear-to-r from-sky-500/6 via-background to-transparent p-5 shadow-sm">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-sky-500/15 to-emerald-500/15 text-sky-700 dark:text-sky-300">
+      <div className="flex items-start gap-4 rounded-2xl border border-border/60 bg-linear-to-r from-primary/6 via-background to-transparent p-5 shadow-sm">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-brand-purple/15 to-brand-cyan/15 text-primary">
           {icon}
         </div>
         <div className="space-y-1">
@@ -148,9 +148,9 @@ interface StepCardProps {
 function StepCard({ step, title, description, children }: StepCardProps) {
   return (
     <Card className="overflow-hidden border-border/60 shadow-sm">
-      <div className="border-b border-border/50 bg-linear-to-r from-sky-500/8 to-transparent px-5 py-4 md:px-6">
+      <div className="border-b border-border/50 bg-linear-to-r from-primary/8 to-transparent px-5 py-4 md:px-6">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-sky-600 to-emerald-500 text-sm font-semibold text-white shadow-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-brand-purple to-brand-cyan text-sm font-semibold text-gradient-foreground shadow-sm">
             {step}
           </div>
           <div className="space-y-1">
@@ -182,9 +182,9 @@ function TableOfContents({ t }: { t: (key: string) => string }) {
           <a
             key={item.id}
             href={`#${item.id}`}
-            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground/80 transition-colors hover:bg-sky-500/8 hover:text-foreground"
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground/80 transition-colors hover:bg-primary/8 hover:text-foreground"
           >
-            <ChevronRight className="h-3.5 w-3.5 text-sky-600 dark:text-sky-300" />
+            <ChevronRight className="h-3.5 w-3.5 text-primary" />
             {item.label}
           </a>
         ))}
@@ -266,8 +266,8 @@ export default function PluginUpdateDocsContent() {
   return (
     <div className="relative min-h-screen bg-background">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-[-8rem] top-24 h-72 w-72 rounded-full bg-sky-500/8 blur-3xl" />
-        <div className="absolute right-[-6rem] top-[28rem] h-80 w-80 rounded-full bg-emerald-500/8 blur-3xl" />
+        <div className="absolute left-[-8rem] top-24 h-72 w-72 rounded-full bg-primary/8 blur-3xl" />
+        <div className="absolute right-[-6rem] top-[28rem] h-80 w-80 rounded-full bg-brand-purple/8 blur-3xl" />
       </div>
 
       <MediaPreview
@@ -277,11 +277,11 @@ export default function PluginUpdateDocsContent() {
         onClose={closePreview}
       />
 
-      <header className="relative overflow-hidden border-b border-border/60 bg-linear-to-b from-sky-500/6 via-background to-background">
+      <header className="relative overflow-hidden border-b border-border/60 bg-linear-to-b from-primary/6 via-background to-background">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:px-6 md:py-16 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/6 px-4 py-2 text-sm font-medium text-foreground/80">
-              <Sparkles className="h-4 w-4 text-sky-600 dark:text-sky-300" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/6 px-4 py-2 text-sm font-medium text-foreground/80">
+              <Sparkles className="h-4 w-4 text-primary" />
               {t('hero.eyebrow')}
             </div>
 
@@ -362,26 +362,28 @@ export default function PluginUpdateDocsContent() {
               icon={<ShieldCheck className="h-5 w-5" />}
             />
 
-            <Alert className="border-amber-500/25 bg-amber-500/8">
-              <HelpCircle className="h-4 w-4 text-amber-700 dark:text-amber-300" />
-              <AlertTitle className="text-amber-900 dark:text-amber-100">
-                {t('backupNotice.title')}
-              </AlertTitle>
-              <AlertDescription className="space-y-2 text-amber-800/90 dark:text-amber-100/80">
-                <p>{t('backupNotice.content1')}</p>
-                <p>{t('backupNotice.content2')}</p>
-              </AlertDescription>
+            <Alert className="bg-warning/10 dark:bg-warning/12 border-warning/30">
+              <HelpCircle className="h-4 w-4 text-warning-text" />
+              <div className="min-w-0 flex-1">
+                <AlertTitle className="mb-2 leading-snug text-foreground">
+                  {t('backupNotice.title')}
+                </AlertTitle>
+                <AlertDescription className="space-y-2 text-foreground/80">
+                  <p>{t('backupNotice.content1')}</p>
+                  <p>{t('backupNotice.content2')}</p>
+                </AlertDescription>
+              </div>
             </Alert>
 
             <Card className="border-border/60 p-5 shadow-sm md:p-6">
               <div className="mb-4 flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+                <CheckCircle2 className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-semibold">{t('checklist.title')}</h3>
               </div>
               <ul className="space-y-3">
                 {checklistItems.map(item => (
                   <li key={item} className="flex gap-3 text-sm leading-6 text-muted-foreground md:text-base">
-                    <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                    <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
                     <span>{item}</span>
                   </li>
                 ))}

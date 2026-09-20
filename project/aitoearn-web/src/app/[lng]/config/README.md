@@ -1,0 +1,39 @@
+# 配置管理页
+
+路由 `/[lng]/config`。原来是全局弹窗 `src/app/layout/ConfigManagerDialog/`，这一版搬成独立页面。
+
+## 目录结构
+
+| 目录/文件                       | 说明                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| `page.tsx`                      | 路由入口与 SEO 元数据。                                                  |
+| `ConfigPageContent.tsx`         | 页面外壳与全部流程：服务切换、加载、校验、保存、重启、恢复检查。         |
+| `config.utils.ts`               | relay 占位节点补全/剔除，以及失败原因的提取与拼装。                      |
+| `components/ConfigSection.tsx`  | 分区外壳（标题 + 说明 + 卡片），排版与设置页一致。                       |
+| `components/ConfigSectionNav/`  | 左侧分区导航，手机宽度下换行成胶囊。                                     |
+| `components/ConfigFormPanel/`   | 当前分区的参数表单。                                                     |
+| `components/ConfigField/`       | 递归字段渲染：对象、数组、字符串、数字、布尔值转成表单控件。             |
+| `components/ConfigJsonPanel/`   | JSON 模式编辑区，叠加字段定位按钮与行级高亮。                            |
+| `utils/configSections.ts`       | 按服务类型维护分区定义、字段数量与修改数量统计。                         |
+| `utils/configFieldMeta.ts`      | 字段标签、说明、修改状态、敏感字段与叶子字段统计。                       |
+| `utils/configPath.ts`           | 配置路径读写、稳定序列化与字段名格式化。                                 |
+| `types/`                        | 页面内部类型。                                                           |
+
+## 边界
+
+- 外壳与交互约定照设置页（`src/app/[lng]/settings/`）来：左侧分区导航 + 右侧内容区、显式保存按钮、标签带说明文字、反馈走 toast、手机宽度下不横向滚动。
+- 一次只渲染一个分区，不再像弹窗那样整页滚动 + 滚动监听高亮；当前分区写进 URL hash，可以直接跳到某个分区（例如 `/config#redis`）。
+- 顶部主切换用于选择 Server 服务或 AI 服务；有未保存修改时禁用切换，避免丢改动。
+- 可视化字段与 JSON 字段支持双向定位：从 JSON 跳回可视化时会先切到该字段所在分区，再滚过去并短暂高亮。
+- `apiKey`、`secret`、`password`、`token`、`accessKey` 等敏感字段默认遮蔽展示，保留显示/隐藏按钮。
+- 后端配置文件缺少 `relay` 节点时，前端补一个可编辑占位；占位没被改过不会提交。
+- 旧弹窗目录 `src/app/layout/ConfigManagerDialog/` 只剩一个跳转壳子，不再包含任何配置编辑实现。
+
+## 已知问题（这一轮不修）
+
+当前部署把配置文件以只读方式挂进容器（`docker-compose.yml` 里的 `:ro`），**保存必然失败**；
+就算写进去了，`deploy.sh` 下次部署也会用 `.env` + `overrides/*.yaml` 重新渲染覆盖。
+
+这是两套配置模型打架，要改得先认真设计权限和审计，不在「搬 UI」这一轮范围内。
+这一轮唯一相关的要求是：**失败时把服务端返回的真实原因显示出来**，不要包装成「稍后重试」。
+实现见 `config.utils.ts` 的 `formatConfigFailure`。

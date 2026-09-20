@@ -74,7 +74,7 @@ function renderXhsLoginTip(
 
   if (xhsLoginStage === 'homeOnly') {
     return (
-      <span className="text-xs leading-5 text-warning">
+      <span className="text-xs leading-5 text-warning-text">
         {t('header.xhsHomeLoggedInOnlyTip')}
       </span>
     )
@@ -82,14 +82,14 @@ function renderXhsLoginTip(
 
   if (xhsLoginStage === 'creatorOnly') {
     return (
-      <span className="text-xs leading-5 text-warning">
+      <span className="text-xs leading-5 text-warning-text">
         {t('header.xhsCreatorLoggedInOnlyTip')}
       </span>
     )
   }
 
   return (
-    <span className="text-xs leading-5 text-warning">
+    <span className="text-xs leading-5 text-warning-text">
       <Trans
         i18nKey="header.xhsNotLoggedInTip"
         ns="plugin"
@@ -321,8 +321,8 @@ export function AccountsTab({ highlightPlatform }: AccountsTabProps) {
     <div className="flex flex-col gap-4 flex-1">
       {/* 顶部状态栏 */}
       <div className="flex items-center gap-2 rounded-lg bg-success/10 px-4 py-3">
-        <CheckCircle className="h-5 w-5 text-success" />
-        <span className="text-sm text-success">{t('header.activeDescription')}</span>
+        <CheckCircle className="h-5 w-5 text-success-text" />
+        <span className="text-sm text-success-text">{t('header.activeDescription')}</span>
       </div>
 
       {/* 平台账号列表 */}
@@ -396,7 +396,7 @@ export function AccountsTab({ highlightPlatform }: AccountsTabProps) {
                   <div className="flex items-center gap-2">
                     <Badge
                       variant="outline"
-                      className="border-success/20 bg-success/10 text-success"
+                      className="border-success/20 bg-success/10 text-success-text"
                     >
                       {t('status.connected')}
                     </Badge>
@@ -420,7 +420,7 @@ export function AccountsTab({ highlightPlatform }: AccountsTabProps) {
                           {xhsLoginStage === 'homeOnly' && (
                             <Badge
                               variant="outline"
-                              className="border-warning/20 bg-warning/10 text-warning"
+                              className="border-warning/20 bg-warning/10 text-warning-text"
                             >
                               {t('header.xhsNoteDetailReady')}
                             </Badge>
@@ -455,7 +455,7 @@ export function AccountsTab({ highlightPlatform }: AccountsTabProps) {
                                   className="inline-flex cursor-help items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
                                   aria-label={t('header.xhsCreatorQuickLoginLabel')}
                                 >
-                                  <CircleHelp className="h-3.5 w-3.5 text-warning" />
+                                  <CircleHelp className="h-3.5 w-3.5 text-warning-text" />
                                   <span>{t('header.xhsCreatorQuickLoginLabel')}</span>
                                 </button>
                               </TooltipTrigger>

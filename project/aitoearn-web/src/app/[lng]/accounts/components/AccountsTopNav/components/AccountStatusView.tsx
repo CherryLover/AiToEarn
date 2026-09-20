@@ -7,7 +7,7 @@ function AccountStatusView({ account }: { account: SocialAccount }) {
   const { t } = useTransClient('account')
   if (account.status === AccountStatus.USABLE) {
     return (
-      <span className="flex items-center gap-1 text-xs text-success">
+      <span className="flex items-center gap-1 text-xs text-success-text">
         <CheckCircleOutlined className="text-xs" />
         {t('online')}
       </span>
@@ -15,7 +15,7 @@ function AccountStatusView({ account }: { account: SocialAccount }) {
   }
 
   return (
-    <span className="flex items-center gap-1 text-xs text-warning">
+    <span className="flex items-center gap-1 text-xs text-warning-text">
       <WarningOutlined className="text-xs" />
       {t('offline')}
     </span>

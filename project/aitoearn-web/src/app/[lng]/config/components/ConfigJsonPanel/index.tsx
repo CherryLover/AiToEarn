@@ -1,6 +1,9 @@
 /**
  * ConfigJsonPanel - JSON 配置编辑区
  * 在可编辑 Textarea 上叠加字段定位按钮与行级高亮。
+ *
+ * 从 `app/layout/ConfigManagerDialog/components/ConfigJsonPanel` 原样搬来，
+ * 只改了高度：弹窗里靠 `h-full` 撑满，页面里没有固定高度的父容器，改成按视口给个下限。
  */
 'use client'
 
@@ -244,7 +247,7 @@ export function ConfigJsonPanel({
   }, [focusRequest, lineActions, onFocusRequestHandled, onScrollTopChange])
 
   return (
-    <div className="relative h-full min-h-[420px] rounded-md bg-muted/30">
+    <div className="relative h-[60vh] min-h-[420px] rounded-xl bg-muted/30">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-md">
         {hoveredLineTop !== null && (
           <div

@@ -48,17 +48,19 @@ export function Steps({
     return 'wait'
   }
 
+  // 图标不写死颜色，继承外层圆圈的 text-*-foreground；
+  // 暗色下 --primary 是亮绿 #5cbfa3，白字只有 2.23:1。
   const getStepIcon = (index: number, status: StepStatus) => {
     if (status === 'finish') {
-      return <Check className="w-5 h-5 text-white" />
+      return <Check className="w-5 h-5" />
     }
     if (status === 'process') {
       if (processIcon === 'number')
         return <span className="text-sm font-medium">{index + 1}</span>
-      return <Loader2 className="w-5 h-5 text-white animate-spin" />
+      return <Loader2 className="w-5 h-5 animate-spin" />
     }
     if (status === 'error') {
-      return <X className="w-5 h-5 text-white" />
+      return <X className="w-5 h-5" />
     }
     return <span className="text-sm font-medium">{index + 1}</span>
   }
@@ -67,11 +69,11 @@ export function Steps({
     const base = 'flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors'
     switch (status) {
       case 'finish':
-        return cn(base, 'bg-primary border-primary text-white')
+        return cn(base, 'bg-primary border-primary text-primary-foreground')
       case 'process':
-        return cn(base, 'bg-primary border-primary text-white')
+        return cn(base, 'bg-primary border-primary text-primary-foreground')
       case 'error':
-        return cn(base, 'bg-destructive border-destructive text-white')
+        return cn(base, 'bg-destructive border-destructive text-destructive-foreground')
       default:
         return cn(base, 'bg-background border-muted-foreground/30 text-muted-foreground')
     }

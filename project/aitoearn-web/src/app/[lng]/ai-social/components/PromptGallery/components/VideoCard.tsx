@@ -58,7 +58,8 @@ export const VideoCard = memo(({ item, onClick, size = 'horizontal' }: VideoCard
           <div
             className={cn(
               'flex h-14 w-14 items-center justify-center rounded-full',
-              'bg-white/90 text-foreground shadow-lg',
+              // 底色跟着主题走：写死 bg-white/90 配 text-foreground，暗色下白图标压白圆只有 1.02:1。
+              'bg-background/90 text-foreground shadow-lg',
               'transition-transform duration-300 group-hover:scale-110',
             )}
           >

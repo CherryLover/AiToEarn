@@ -1,6 +1,13 @@
 {
-  "title": "Configuration",
-  "description": "Manage runtime settings. Saved changes take effect after the service restarts.",
+  "meta": {
+    "title": "Configuration",
+    "description": "Consultez et modifiez la configuration d'exécution des services Server et IA : navigation par section, édition en formulaire ou en JSON, validation, enregistrement et redémarrage.",
+    "keywords": "configuration, configuration d'exécution, paramètres du service, configuration JSON, redémarrer le service"
+  },
+  "page": {
+    "title": "Configuration",
+    "subtitle": "Consultez et modifiez la configuration d'exécution du service, une section à la fois. Les modifications enregistrées prennent effet après le redémarrage."
+  },
   "sections": {
     "relay": {
       "label": "Relay",
@@ -255,7 +262,10 @@
     "healthTimeout": "Service recovery check timed out",
     "healthTimeoutDescription": "The restart request was sent, but the account list API did not recover in time. Please check the service manually.",
     "jsonInvalid": "Configuration JSON invalide",
-    "jsonRootObject": "La valeur racine doit être un objet JSON."
+    "jsonRootObject": "La valeur racine doit être un objet JSON.",
+    "noResponse": "La requête n'a pas atteint le serveur, ou le serveur n'a pas répondu.",
+    "serverNoReason": "Le serveur a renvoyé un code d'erreur sans en indiquer la raison.",
+    "codeSuffix": "(code d'erreur {{code}})"
   },
   "common": {
     "enabled": "Enabled",

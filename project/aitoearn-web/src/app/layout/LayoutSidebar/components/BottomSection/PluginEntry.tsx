@@ -34,29 +34,29 @@ export function PluginEntry({ collapsed }: SidebarCommonProps) {
   const getStatusInfo = () => {
     if (pluginStatus === PluginStatus.READY && pluginNeedsUpdate) {
       return {
-        iconColor: 'text-warning',
+        iconColor: 'text-warning-text',
         dotColor: 'bg-warning',
         statusText: t('pluginStatus.updateAvailable'),
-        statusColor: 'text-warning',
+        statusColor: 'text-warning-text',
       }
     }
 
     switch (pluginStatus) {
       case PluginStatus.READY:
         return {
-          iconColor: 'text-success',
+          iconColor: 'text-success-text',
           dotColor: 'bg-success',
           statusText: t('pluginStatus.ready'),
-          statusColor: 'text-success',
+          statusColor: 'text-success-text',
         }
       case PluginStatus.INSTALLED_NO_PERMISSION:
         return {
-          iconColor: 'text-warning',
+          iconColor: 'text-warning-text',
           dotColor: 'bg-warning',
           statusText: hostAccessGranted === false
             ? t('pluginStatus.siteAccessRequired')
             : t('pluginStatus.noPermission'),
-          statusColor: 'text-warning',
+          statusColor: 'text-warning-text',
         }
       case PluginStatus.CHECKING:
         return {

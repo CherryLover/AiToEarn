@@ -154,7 +154,9 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             onClick={handleOk}
             disabled={loading}
             className={cn(
-              okType === 'destructive' && 'bg-destructive text-white hover:bg-destructive/90',
+              // 前景色必须跟着主题变量走：暗色下 --destructive 是亮红 #f98080，
+              // 写死 text-white 只有 2.49:1，字看不清。见 globals.css 顶部的对比度表。
+              okType === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
             )}
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}

@@ -69,7 +69,7 @@ function WorkflowStepItem({ step, onClick }: IWorkflowStepItemProps) {
         {step.isActive ? (
           <Loader2 className="w-3 h-3 text-primary animate-spin" />
         ) : isCompleted ? (
-          <CheckCircle2 className="w-3 h-3 text-success" />
+          <CheckCircle2 className="w-3 h-3 text-success-text" />
         ) : (
           <Wrench className="w-3 h-3 text-muted-foreground/70" />
         )}
@@ -78,7 +78,7 @@ function WorkflowStepItem({ step, onClick }: IWorkflowStepItemProps) {
         <div
           className={cn(
             'font-medium truncate',
-            step.isActive ? 'text-primary' : isCompleted ? 'text-success' : 'text-muted-foreground',
+            step.isActive ? 'text-primary' : isCompleted ? 'text-success-text' : 'text-muted-foreground',
           )}
         >
           {step.type === 'tool_call'
@@ -165,7 +165,7 @@ function WorkflowSection({ workflowSteps, isActive, defaultExpanded }: IWorkflow
           </>
         ) : (
           <>
-            <CheckCircle2 className="w-3.5 h-3.5 text-success" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-success-text" />
             <span className="font-medium flex-1 text-left">
               {completedSteps}
               /

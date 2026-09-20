@@ -96,7 +96,8 @@ export function isActiveTask(status: ExecutionTaskStatus): boolean {
 export function getTaskStatusClassName(status: ExecutionTaskStatus): string {
   switch (status) {
     case ExecutionTaskStatus.Succeeded:
-      return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+      // 这一支原来漏了没跟着换：写死 emerald 亮色下只有 3.43:1，其余四支早就是主题变量了。
+      return 'border-success/40 bg-success/10 text-success-text'
     case ExecutionTaskStatus.Failed:
       return 'border-destructive/40 bg-destructive/10 text-destructive'
     case ExecutionTaskStatus.Running:

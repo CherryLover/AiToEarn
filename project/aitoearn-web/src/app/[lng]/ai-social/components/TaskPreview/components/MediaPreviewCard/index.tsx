@@ -53,8 +53,9 @@ export function MediaPreviewCard({ media, onClick, className }: MediaPreviewCard
         {/* 视频播放图标 */}
         {isVideo && (
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-              <Play className="w-5 h-5 text-blue-500 ml-0.5" />
+            {/* 和素材选择器里的同款圆片一样，底色和图标都走主题变量，不写死白底蓝图标。 */}
+            <div className="w-12 h-12 rounded-full bg-background/90 flex items-center justify-center shadow-lg">
+              <Play className="w-5 h-5 text-foreground ml-0.5" />
             </div>
           </div>
         )}
@@ -63,13 +64,14 @@ export function MediaPreviewCard({ media, onClick, className }: MediaPreviewCard
         <div
           className={cn(
             'absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-sm shadow-sm',
-            isVideo ? 'bg-blue-500/90' : 'bg-green-500/90',
+            // 蓝/绿写死配白字：绿底只有 2.12:1。换成主题里的 info / primary，两边都带自己的前景色。
+            isVideo ? 'bg-info/90 text-info-foreground' : 'bg-primary/90 text-primary-foreground',
           )}
         >
           {isVideo ? (
-            <Video className="w-3.5 h-3.5 text-white" />
+            <Video className="w-3.5 h-3.5" />
           ) : (
-            <ImageIcon className="w-3.5 h-3.5 text-white" />
+            <ImageIcon className="w-3.5 h-3.5" />
           )}
         </div>
 

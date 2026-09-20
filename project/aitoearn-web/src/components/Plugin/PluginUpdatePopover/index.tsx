@@ -92,7 +92,7 @@ export function PluginUpdatePopover({
           </div>
 
           <div className="flex items-start gap-2 rounded-lg border border-warning/20 bg-warning/10 px-2.5 py-2">
-            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning-text" />
             <p className="text-[11px] leading-4 text-muted-foreground">
               {t('version.googleStoreNotice')}
             </p>

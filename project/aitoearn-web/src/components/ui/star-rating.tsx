@@ -68,7 +68,10 @@ export function StarRating({
             className={cn(
               'p-1 rounded transition-colors',
               isInteractive && 'cursor-pointer hover:bg-muted',
-              isActive ? 'text-amber-400' : 'text-muted-foreground',
+              // 两个分支都走主题变量。写死的 text-amber-400 在亮色底上只有 1.52:1，星星基本看不见；
+              // --warning 是给「当底色用」设计的，当文字用在亮色底上也只有 2.90:1。
+              // --chart-4 是调色板里唯一一个亮暗两边都过 4.5:1 的金色（亮 #8a6a3a / 暗 #c9a36a）。
+              isActive ? 'text-chart-4' : 'text-muted-foreground',
               disabled && 'cursor-not-allowed opacity-50',
             )}
             aria-label={`${starValue} star`}

@@ -234,7 +234,8 @@ export function MediaUpload({
                 onClick={() => handlePreview(index)}
                 className="flex items-center gap-3 h-full w-full px-3 bg-background text-left cursor-pointer"
               >
-                <div className="flex items-center justify-center w-7 h-7 rounded-md bg-blue-500/10 text-blue-500">
+                {/* 底色和字都走主题变量：写死 blue-500 配 blue-500/10 亮色只有 3.15:1。 */}
+                <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary/10 text-primary">
                   <span className="text-[11px] font-semibold">VID</span>
                 </div>
                 <div className="flex flex-col justify-center min-w-0">

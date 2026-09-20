@@ -51,8 +51,10 @@ button {
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-text: var(--success-text);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-text: var(--warning-text);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
   --color-brand-purple: var(--brand-purple);
@@ -82,10 +84,11 @@ button {
 /*
  * 主题变量（设置页重做这一轮定的全站配色）
  *
- * 定色表：背景 #FAFAF9 / 卡片 #FFFFFF / 主色 #1F6F5C / 强调 #D97706 / 文字 #1C1917 / 副文 #78716C
+ * 定色表：背景 #FAFAF9 / 卡片 #FFFFFF / 主色 #1F6F5C / 强调 #D97706 / 文字 #1C1917 / 副文 #6F6862
  * 调子安静，中性色走暖石灰一档，不抢内容。
+ * 副文原定 #78716C，压在 `bg-muted` 上只有 4.36:1，徽章正文用它不够，这一轮压深到 #6F6862。
  *
- * 三件必须先知道的事：
+ * 四件必须先知道的事：
  *
  * 1. 这里的 `--accent` 是 shadcn 的「悬停底色」，**不是**定色表里的「强调色」。
  *    强调色是 `--brand-accent`（同时喂给 `--warning`）。把 #D97706 塞进 `--accent` 的话，
@@ -98,11 +101,27 @@ button {
  * 3. 暗色不是把亮色调暗就完事：`--gradient-foreground`（渐变上的文字）在暗色里必须翻成深色，
  *    因为暗色下的渐变底色是亮绿，白字只有 2.2:1。
  *
- * 对比度（WCAG AA，正文要求 4.5:1）：
- *   亮色 文字/背景 16.7 · 副文/背景 4.6 · 主色/背景 5.8 · 白字/主色 6.0 · 深字/强调 5.5
- *   暗色 文字/背景 16.0 · 副文/背景 6.9 · 主色/背景 7.9 · 深字/主色 7.3 · 深字/强调 8.7
- *   已知边界：副文压在 `bg-muted` 上是 4.4:1，差一点点。那个组合只用在图标和次要标签上，
- *   正文一律用 `--foreground`，不要拿 `text-muted-foreground` 写正文。
+ * 4. `--warning` / `--success` 是**当底色用**的（配 `--warning-foreground` / `--success-foreground`）。
+ *    要当文字色用就走 `--warning-text` / `--success-text`，别直接写 `text-warning` / `text-success`。
+ *    原因：亮色下 `#d97706` 压在 `bg-warning/10` 上只有 2.75:1、压页面 3.05:1，
+ *    `#15803d` 压在 `bg-success/10` 上只有 4.21:1，全都不到 4.5。
+ *    亮色这两个变量取的是同色相压暗一档的版本，暗色本来就够亮、直接指回原值。
+ *    底色、边框、ring 继续用 `--warning` / `--success`，只有文字和图标换。
+ *
+ * 对比度（WCAG AA，正文要求 4.5:1，图标 3:1）。`/10`、`/15` 这些都是取压页面和压卡片里更差的那个，
+ * 数值是浏览器按编译后的 `color-mix(in oklab, …)` 实测的，不是拿 sRGB 手算的近似：
+ *   亮色 文字/背景 16.7 · 副文/背景 5.3 · 副文/`bg-muted` 5.0 · 主色/背景 5.8 · 白字/主色 6.0 · 深字/强调 5.5
+ *        `--warning-text`：页面 5.52 · 卡片 5.76 · `bg-warning/10` 4.94 · `bg-warning/15` 4.70
+ *        `--success-text`：页面 6.08 · 卡片 6.35 · `bg-success/10` 5.29
+ *   暗色 文字/背景 16.0 · 副文/背景 6.9 · 副文/`bg-muted` 5.8 · 主色/背景 7.9 · 深字/主色 7.3 · 深字/强调 8.7
+ *        `--warning-text`：页面 8.70 · 卡片 7.95 · `bg-warning/10` 6.60 · `bg-warning/15` 5.91
+ *        `--success-text`：页面 10.0 · 卡片 9.18 · `bg-success/10` 7.47
+ *
+ * 另外两条容易踩的：
+ *   - 父元素上的 `opacity-*` 会把子元素的实际对比度一起打折，算的时候要按叠加后的颜色算，
+ *     不能拿色值本身的数字交差。`opacity-60` 的图标，亮色下基本都到不了 3:1。
+ *   - `--muted-foreground` 现在压在 `bg-muted` 上是 5.0:1，正文能用了；
+ *     但语义上它仍然是副文，正文优先用 `--foreground`。
  */
 :root {
   --gradientBackColor: linear-gradient(to right in oklch, var(--brand-purple), var(--brand-cyan));
@@ -128,7 +147,7 @@ button {
   --secondary: #f5f4f2;
   --secondary-foreground: #1c1917;
   --muted: #f5f4f2;
-  --muted-foreground: #78716c;
+  --muted-foreground: #6f6862;
   /* 悬停底色，见上面第 1 条 */
   --accent: #f0eeeb;
   --accent-foreground: #1c1917;
@@ -136,8 +155,12 @@ button {
   --destructive-foreground: #ffffff;
   --success: #15803d;
   --success-foreground: #ffffff;
+  /* 当文字用的那一档，见顶部第 4 条。压在 bg-success/10 上 5.29，压在页面/卡片上 6.08/6.35 */
+  --success-text: #126e34;
   --warning: var(--brand-accent);
   --warning-foreground: var(--brand-accent-foreground);
+  /* 同上。压在 bg-warning/10 上 4.94，压在页面/卡片上 5.52/5.76 */
+  --warning-text: #9a5404;
   --info: #1d4ed8;
   --info-foreground: #ffffff;
   --border: #e7e5e4;
@@ -185,8 +208,12 @@ button {
   --destructive-foreground: #231a0c;
   --success: #4ade80;
   --success-foreground: #10241f;
+  /* 暗色不用另调：#4ade80 压在 bg-success/10 上 7.47、页面上 10.0，本来就过线 */
+  --success-text: var(--success);
   --warning: var(--brand-accent);
   --warning-foreground: var(--brand-accent-foreground);
+  /* 同上：#f0a93b 压在 bg-warning/10 上 6.60、页面上 8.70 */
+  --warning-text: var(--warning);
   --info: #7ea6ff;
   --info-foreground: #0f1b33;
   --border: #3a3634;
