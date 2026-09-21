@@ -5,14 +5,15 @@ import { z } from 'zod'
 /**
  * 从一份草稿建发布工单。
  *
- * **`mode` 这一轮只收 `manual`**：自动发布要执行端插件，插件是另一条线，还没有。
+ * **`mode` 收 `auto` 和 `manual`**：传 auto 时服务端会先确认名下有设备同时声明了
+ * 目标平台和 `job:publish` 能力，没有就直接拒绝，不悄悄降级成 manual。
  * 这里把 `auto` 拒掉，而不是悄悄降级成 manual——悄悄降级会让人以为系统替他发了。
  */
 const CreateFromDraftDtoSchema = z.object({
   draftPath: z.string().min(1).max(512).describe('草稿目录，相对项目根，如 drafts/2026-09-18-xhs-export-friction'),
   platform: z.string().min(1).max(40).describe('发到哪个平台，如 xhs'),
   accountId: z.string().max(64).optional().describe('发到哪个号；手动发布可以不填，你自己挑'),
-  mode: z.enum(ExecutionTaskMode).describe('这一轮只接受 manual；传 auto 直接拒绝，自动发布要等插件'),
+  mode: z.enum(ExecutionTaskMode).describe('auto 派给设备执行，需要有设备声明了对应能力；manual 打包给人自己发'),
 })
 export class CreateFromDraftDto extends createZodDto(CreateFromDraftDtoSchema, 'CreateFromDraftDto') {}
 

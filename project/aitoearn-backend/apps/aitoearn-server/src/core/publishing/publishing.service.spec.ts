@@ -8,9 +8,16 @@ vi.mock('../../config', () => ({
 
 vi.mock('@yikart/mongodb', () => ({
   AngleRepository: class AngleRepository {},
+  DeviceRepository: class DeviceRepository {},
   ExecutionTaskRepository: class ExecutionTaskRepository {},
   ExecutionTaskMode: { AUTO: 'auto', MANUAL: 'manual' },
-  ExecutionTaskType: { PUBLISH: 'publish', CLAIM_LINK: 'claim_link', COLLECT_METRICS: 'collect_metrics', ECHO: 'echo' },
+  ExecutionTaskType: {
+    PUBLISH: 'publish',
+    CLAIM_LINK: 'claim_link',
+    COLLECT_METRICS: 'collect_metrics',
+    SYNC_CREATOR_NOTES: 'sync_creator_notes',
+    ECHO: 'echo',
+  },
   PublishedPostRepository: class PublishedPostRepository {},
   PublishedPostPublishStatus: {
     PENDING: 'pending',
@@ -92,6 +99,8 @@ function createService(options: {
   executionTaskRepository?: Record<string, unknown>
   executionTasksService?: Record<string, unknown>
   angleRepository?: Record<string, unknown>
+  /** 名下有几台机器同时声明了目标平台和 job:publish */
+  capableDeviceCount?: number
 } = {}) {
   const stored = options.stored ?? []
   const tasks: { id: string, deleted: boolean }[] = []
@@ -221,6 +230,11 @@ function createService(options: {
     ...options.angleRepository,
   }
 
+  // 默认「名下没有会自动发布的机器」：auto 模式该被拒绝，测 auto 的用例自己覆盖这个值
+  const deviceRepository = {
+    countCapableByUserId: vi.fn(async () => options.capableDeviceCount ?? 0),
+  }
+
   const projectsService = {
     getWritableProject: vi.fn(async (id: string) => {
       if (id !== PROJECT_ID && id !== OTHER_PROJECT_ID)
@@ -246,13 +260,14 @@ function createService(options: {
   const service = new PublishingService(
     publishedPostRepository as never,
     executionTaskRepository as never,
+    deviceRepository as never,
     angleRepository as never,
     projectsService as never,
     draftSnapshotService as never,
     executionTasksService as never,
   )
 
-  return { service, stored, tasks, taskStatus, publishedPostRepository, executionTaskRepository, executionTasksService, draftSnapshotService }
+  return { service, stored, tasks, taskStatus, publishedPostRepository, executionTaskRepository, deviceRepository, executionTasksService, draftSnapshotService }
 }
 
 beforeEach(() => {
@@ -260,8 +275,8 @@ beforeEach(() => {
 })
 
 describe('从草稿建发布工单', () => {
-  it('mode=auto 直接拒绝，这一轮没有自动发布', async () => {
-    const { service, stored, executionTasksService } = createService()
+  it('mode=auto 时名下没有会干这活的机器，直接拒绝', async () => {
+    const { service, stored, executionTasksService } = createService({ capableDeviceCount: 0 })
 
     await expect(service.createFromDraft(PROJECT_ID, USER_ID, {
       draftPath: 'drafts/2026-09-18-xhs-export-friction',
@@ -272,6 +287,33 @@ describe('从草稿建发布工单', () => {
     // 拒得够早：既没读草稿也没建任何东西
     expect(stored).toHaveLength(0)
     expect(executionTasksService.create).not.toHaveBeenCalled()
+  })
+
+  it('判断「会不会干」要平台能力和 job:publish 两项都有，少一项就是不会干', async () => {
+    const { service, deviceRepository } = createService({ capableDeviceCount: 0 })
+
+    await expect(service.createFromDraft(PROJECT_ID, USER_ID, {
+      draftPath: 'drafts/2026-09-18-xhs-export-friction',
+      platform: 'xhs',
+      mode: 'auto',
+    } as never)).rejects.toMatchObject({ code: ResponseCode.PublishedPostAutoModeNotSupported })
+
+    expect(deviceRepository.countCapableByUserId).toHaveBeenCalledWith(USER_ID, ['xhs', 'job:publish'])
+  })
+
+  it('有机器会干时，mode=auto 建出来的工单就是 auto，不悄悄降级成 manual', async () => {
+    const { service, executionTasksService } = createService({ capableDeviceCount: 1 })
+
+    await service.createFromDraft(PROJECT_ID, USER_ID, {
+      draftPath: 'drafts/2026-09-18-xhs-export-friction',
+      platform: 'xhs',
+      mode: 'auto',
+    } as never)
+
+    expect(executionTasksService.create).toHaveBeenCalledWith(
+      USER_ID,
+      expect.objectContaining({ type: 'publish', mode: 'auto' }),
+    )
   })
 
   it('快照进记录、进工单载荷，两边互相引用，跳过的图片如实报出来', async () => {

@@ -943,6 +943,10 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'en-US': 'Task has already been claimed by another device',
     'zh-CN': '工单已被其他设备领走',
   },
+  [ResponseCode.ExecutionTaskNoCapableDevice]: {
+    'en-US': 'No paired device declares the capability this task needs',
+    'zh-CN': '名下没有设备声明了这活需要的能力，先在插件的设备页勾上对应平台，或者更新插件',
+  },
   [ResponseCode.ExecutionTaskNotLeasedByDevice]: {
     'en-US': 'Current device does not hold the lease of this task',
     'zh-CN': '当前设备不是这个工单的租约持有者',
@@ -1010,8 +1014,8 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'zh-CN': '草稿的标题和正文都是空的，没东西可发',
   },
   [ResponseCode.PublishedPostAutoModeNotSupported]: {
-    'en-US': 'Automatic publishing is not available yet, only manual mode is supported',
-    'zh-CN': '暂时只支持手动发布，自动发布要等执行端插件',
+    'en-US': 'No paired device can publish to this platform automatically, use manual mode',
+    'zh-CN': '名下没有会自动发布到这个平台的设备，先在插件里勾上这个平台，或者改用手动发布',
   },
   [ResponseCode.PublishedPostDuplicate]: {
     'en-US': 'This post has already been registered',

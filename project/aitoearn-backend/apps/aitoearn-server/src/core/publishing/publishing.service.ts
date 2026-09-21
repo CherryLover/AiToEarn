@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { AppException, ResponseCode, UserType } from '@yikart/common'
 import {
   AngleRepository,
+  DeviceRepository,
   ExecutionTaskMode,
   ExecutionTaskRepository,
   ExecutionTaskType,
@@ -54,6 +55,7 @@ export class PublishingService {
   constructor(
     private readonly publishedPostRepository: PublishedPostRepository,
     private readonly executionTaskRepository: ExecutionTaskRepository,
+    private readonly deviceRepository: DeviceRepository,
     private readonly angleRepository: AngleRepository,
     private readonly projectsService: ProjectsService,
     private readonly draftSnapshotService: DraftSnapshotService,
@@ -70,9 +72,18 @@ export class PublishingService {
   async createFromDraft(projectId: string, userId: string, dto: CreateFromDraftDto): Promise<PublishJobCreated> {
     const project = await this.projectsService.getWritableProject(projectId, userId)
 
-    // 红线：自动发布要执行端插件，这一轮没有。不悄悄降级成 manual，免得人以为系统替他发了
-    if (dto.mode !== ExecutionTaskMode.MANUAL)
-      throw new AppException(ResponseCode.PublishedPostAutoModeNotSupported)
+    // 自动发布要有机器真的会干这活。没有就直接拒绝，**不悄悄降级成 manual**——
+    // 降级的话人会以为系统替他发了。判断依据是设备上报的能力：
+    // 平台能力（如 xhs）说明这台机器登录着那个平台，job:publish 说明插件这个版本实现了发布。
+    // 少了任何一项，工单建出来也只会重试到用尽然后 failed，中间没有任何反馈。
+    if (dto.mode === ExecutionTaskMode.AUTO) {
+      const capable = await this.deviceRepository.countCapableByUserId(userId, [
+        dto.platform,
+        `job:${ExecutionTaskType.PUBLISH}`,
+      ])
+      if (capable === 0)
+        throw new AppException(ResponseCode.PublishedPostAutoModeNotSupported)
+    }
 
     const draft = await this.draftSnapshotService.read(project.dirName, dto.draftPath)
     const angleId = await this.resolveAngleId(project.id, draft.angleSlug)
@@ -96,7 +107,7 @@ export class PublishingService {
         projectId: project.id,
         angleId,
         type: ExecutionTaskType.PUBLISH,
-        mode: ExecutionTaskMode.MANUAL,
+        mode: dto.mode,
         requiredCapability: dto.platform,
         payload: {
           platform: dto.platform,

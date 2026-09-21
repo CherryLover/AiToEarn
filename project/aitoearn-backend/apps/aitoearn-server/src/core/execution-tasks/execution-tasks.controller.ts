@@ -5,6 +5,7 @@ import { ApiDoc, ParseObjectIdPipe } from '@yikart/common'
 import {
   CompleteManualTaskDto,
   CreateEchoTaskDto,
+  CreateExecutionTaskDto,
   ExecutionTaskListQueryDto,
 } from './execution-tasks.dto'
 import { ExecutionTasksService } from './execution-tasks.service'
@@ -51,6 +52,21 @@ export class ExecutionTasksController {
     @Body() dto: CreateEchoTaskDto,
   ): Promise<ExecutionTaskDetailVo> {
     const task = await this.executionTasksService.createEcho(token.id, dto)
+    return toExecutionTaskDetailVo(task)
+  }
+
+  @ApiDoc({
+    summary: '建一个工单',
+    description: '载荷按类型校验。auto 模式下会先确认名下有设备声明了所需能力和 job:<类型>，没有就直接拒绝，不会建一个注定失败的工单',
+    body: CreateExecutionTaskDto.schema,
+    response: ExecutionTaskDetailVo,
+  })
+  @Post('/create')
+  async create(
+    @GetToken() token: TokenInfo,
+    @Body() dto: CreateExecutionTaskDto,
+  ): Promise<ExecutionTaskDetailVo> {
+    const task = await this.executionTasksService.createChecked(token.id, dto)
     return toExecutionTaskDetailVo(task)
   }
 

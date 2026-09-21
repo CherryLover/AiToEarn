@@ -44,8 +44,10 @@ describe('建 manual 工单时推一条提醒', () => {
       }),
     }
     const gateway = { notifyTaskAvailable: vi.fn() }
+    // manual 工单不走「有没有机器会干」那道检查，这里给个恒为 0 的桩就够了
+    const deviceRepository = { countCapableByUserId: vi.fn(async () => 0) }
 
-    return new ExecutionTasksService(repository as never, gateway as never, notify as never)
+    return new ExecutionTasksService(repository as never, deviceRepository as never, gateway as never, notify as never)
   }
 
   beforeEach(() => {

@@ -1,6 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common'
 import { AppException, ResponseCode, UserType } from '@yikart/common'
 import {
+  DeviceRepository,
   ExecutionTask,
   ExecutionTaskMode,
   ExecutionTaskRepository,
@@ -14,7 +15,7 @@ import { config } from '../../config'
 import { DeviceDoc } from '../devices/devices.service'
 import { NotifyService } from '../notify/notify.service'
 import { DeviceWsGateway } from './device-ws.gateway'
-import { CreateEchoTaskDto, ReportTaskDto } from './execution-tasks.dto'
+import { CreateEchoTaskDto, CreateExecutionTaskDto, ReportTaskDto } from './execution-tasks.dto'
 import { parseTaskPayload, parseTaskResult } from './task-payloads'
 
 const generateLeaseId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 24)
@@ -51,6 +52,7 @@ export class ExecutionTasksService {
 
   constructor(
     private readonly executionTaskRepository: ExecutionTaskRepository,
+    private readonly deviceRepository: DeviceRepository,
     private readonly gateway: DeviceWsGateway,
     @Optional() private readonly notifyService?: NotifyService,
   ) {}
@@ -81,6 +83,44 @@ export class ExecutionTasksService {
     this.notifyTaskAvailable(task)
     this.notifyManualTaskPending(task)
     return task
+  }
+
+  /**
+   * 通用建单，多一道「有没有机器会干这活」的检查。
+   *
+   * auto 模式下，建一个没人会干的工单，结果是设备领走 → 回报「不会干」→ 重试到用尽 → failed，
+   * 中间几分钟里网页上看着一切正常。与其这样，不如建单时就拒绝，把话说清楚。
+   *
+   * 检查的是两项能力同时具备：
+   * - `requiredCapability`（如 `xhs`）——这台机器登录着那个平台
+   * - `job:<type>`——插件这个版本实现了这类工单
+   *
+   * manual 模式不检查：它本来就不进领取流程，是打包给人自己干的。
+   */
+  async createChecked(userId: string, dto: CreateExecutionTaskDto) {
+    const mode = dto.mode ?? ExecutionTaskMode.AUTO
+    if (mode === ExecutionTaskMode.AUTO) {
+      const needed = [`job:${dto.type}`]
+      if (dto.requiredCapability)
+        needed.push(dto.requiredCapability)
+
+      const capable = await this.deviceRepository.countCapableByUserId(userId, needed)
+      if (capable === 0)
+        throw new AppException(ResponseCode.ExecutionTaskNoCapableDevice)
+    }
+
+    return await this.create(userId, {
+      projectId: dto.projectId,
+      angleId: dto.angleId,
+      type: dto.type,
+      payload: dto.payload,
+      mode,
+      targetDeviceId: dto.targetDeviceId,
+      requiredCapability: dto.requiredCapability,
+      priority: dto.priority,
+      maxAttempts: dto.maxAttempts,
+      availableAt: dto.availableAt,
+    })
   }
 
   /** 打通链路用的最小工单：设备原样返回 message 就算成 */

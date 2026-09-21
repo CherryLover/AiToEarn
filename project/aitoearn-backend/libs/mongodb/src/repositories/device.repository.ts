@@ -39,6 +39,21 @@ export class DeviceRepository extends BaseRepository<Device> {
     )
   }
 
+  /**
+   * 用户名下有几台设备同时声明了这些能力。
+   * 派自动工单前用它判断「这活到底有没有机器会干」——
+   * 建一个没人会干的工单，结果是重试到用尽然后 failed，中间什么反馈都没有。
+   */
+  async countCapableByUserId(userId: string, capabilities: string[]): Promise<number> {
+    if (capabilities.length === 0)
+      return await this.countByUserId(userId)
+    return await this.count({
+      userId,
+      revokedAt: { $exists: false },
+      capabilities: { $all: capabilities },
+    })
+  }
+
   /** 用户名下还没吊销的设备数量 */
   async countByUserId(userId: string): Promise<number> {
     return await this.count({ userId, revokedAt: { $exists: false } })

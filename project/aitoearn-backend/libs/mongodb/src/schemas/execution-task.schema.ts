@@ -13,8 +13,14 @@ export enum ExecutionTaskType {
   PUBLISH = 'publish',
   /** 去平台找回刚发的帖子链接 */
   CLAIM_LINK = 'claim_link',
-  /** 采集某条帖子的数据 */
+  /**
+   * 采集某条帖子的数据。
+   * 保留定义但没有实现：实测小红书没有可寻址的单帖入口，按帖子逐条采这个模型不成立。
+   * 将来别的平台如果真能按帖子采再说，现在走 SYNC_CREATOR_NOTES。
+   */
   COLLECT_METRICS = 'collect_metrics',
+  /** 把一个创作平台账号的作品列表整张读回来 */
+  SYNC_CREATOR_NOTES = 'sync_creator_notes',
   /** 打通用，原样返回 */
   ECHO = 'echo',
 }

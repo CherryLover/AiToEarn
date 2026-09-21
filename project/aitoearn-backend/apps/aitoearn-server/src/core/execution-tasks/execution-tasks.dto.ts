@@ -24,9 +24,10 @@ export class ReportTaskDto extends createZodDto(ReportTaskDtoSchema, 'ReportTask
 
 // ========== 管理侧 ==========
 
-const CreateEchoTaskDtoSchema = z.object({
+/** 所有工单都有的派单选项，建单接口共用这一份 */
+const DispatchOptionsSchema = z.object({
   projectId: z.string().min(1).describe('属于哪个项目'),
-  message: z.string().min(1).max(500).default('ping').describe('随便写点什么，设备会原样返回'),
+  angleId: z.string().optional().describe('属于哪个发布方向，归因用'),
   mode: z.enum(ExecutionTaskMode).default(ExecutionTaskMode.AUTO).describe('auto 走设备，manual 不进领取流程'),
   targetDeviceId: z.string().optional().describe('指定必须由哪台设备执行，不传表示任意合格设备'),
   requiredCapability: z.string().optional().describe('需要设备具备的能力'),
@@ -34,7 +35,23 @@ const CreateEchoTaskDtoSchema = z.object({
   maxAttempts: z.coerce.number().int().min(1).max(10).optional().describe('最大尝试次数，不传用配置里的默认值'),
   availableAt: z.coerce.date().optional().describe('到点才可领取，不传表示立刻'),
 })
+
+const CreateEchoTaskDtoSchema = DispatchOptionsSchema.extend({
+  message: z.string().min(1).max(500).default('ping').describe('随便写点什么，设备会原样返回'),
+})
 export class CreateEchoTaskDto extends createZodDto(CreateEchoTaskDtoSchema, 'CreateEchoTaskDto') {}
+
+/**
+ * 通用建单。载荷按 type 各自校验（见 task-payloads.ts），对不上直接拒绝。
+ *
+ * **建单时会检查名下有没有设备真的会干这活**：auto 模式下，
+ * 设备要同时声明目标能力和 `job:<type>`，否则工单建出来也只会重试到用尽然后 failed。
+ */
+const CreateExecutionTaskDtoSchema = DispatchOptionsSchema.extend({
+  type: z.enum(ExecutionTaskType).describe('工单类型'),
+  payload: z.record(z.string(), z.unknown()).describe('载荷，格式按类型，服务端会校验'),
+})
+export class CreateExecutionTaskDto extends createZodDto(CreateExecutionTaskDtoSchema, 'CreateExecutionTaskDto') {}
 
 const ExecutionTaskListQueryDtoSchema = PaginationDtoSchema.extend({
   projectId: z.string().optional().describe('按项目筛'),

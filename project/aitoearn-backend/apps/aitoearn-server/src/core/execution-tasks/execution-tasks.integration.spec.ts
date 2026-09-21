@@ -104,6 +104,15 @@ function matchCondition(value: unknown, condition: unknown): boolean {
           return false
         break
       }
+      case '$all': {
+        // 数组字段要「这些值一个不少」，能力匹配靠它
+        const required = operand as unknown[]
+        const actual = Array.isArray(value) ? value : []
+        const hit = required.every(item => actual.some(one => looseEqual(one, item)))
+        if (!hit)
+          return false
+        break
+      }
       case '$ne':
         if (looseEqual(value, operand))
           return false
@@ -265,7 +274,7 @@ function createHarness() {
 
   const devicesService = new DevicesService(deviceRepository, redis as never)
   const gateway = { notifyTaskAvailable: vi.fn(() => 0) }
-  const executionTasksService = new ExecutionTasksService(executionTaskRepository, gateway as never)
+  const executionTasksService = new ExecutionTasksService(executionTaskRepository, deviceRepository, gateway as never)
 
   return {
     deviceModel,
@@ -285,6 +294,19 @@ function createHarness() {
 }
 
 type Harness = ReturnType<typeof createHarness>
+
+/** 采集工单的最小合法载荷，spec 里只有选择器和正则，没有可执行代码 */
+const SYNC_PAYLOAD = {
+  platform: 'xhs',
+  entryUrl: 'https://creator.xiaohongshu.com/new/note-manager',
+  spec: {
+    cardSelector: '.note-card',
+    titleSelector: '.note-card__title',
+    timeSelector: '.note-card__time',
+    statSelector: '.note-card__stat',
+    metricByIconPrefix: { 'M7.99902 3.83398': 'views' },
+  },
+}
 
 /** 走真接口配一台设备出来：生成配对码 → 插件拿码换令牌 */
 async function pairDevice(harness: Harness, name: string, capabilities: string[] = []) {
@@ -797,6 +819,88 @@ describe('执行端链路 · 谁能领到什么', () => {
 
     const foreign = { ...device, userId: 'user-2' }
     expect((await harness.deviceTasksController.claim(foreign)).task).toBeNull()
+  })
+})
+
+describe('执行端链路 · 建单前先看有没有机器会干', () => {
+  it('名下一台设备都没有，auto 工单直接拒绝', async () => {
+    await expect(harness.adminController.create(
+      { id: USER_ID } as never,
+      {
+        projectId: PROJECT_ID,
+        type: ExecutionTaskType.ECHO,
+        payload: { message: 'ping' },
+        mode: ExecutionTaskMode.AUTO,
+        priority: 100,
+      } as never,
+    )).rejects.toMatchObject({ code: ResponseCode.ExecutionTaskNoCapableDevice })
+  })
+
+  it('设备报了平台能力但插件不会这类活，照样拒绝', async () => {
+    await pairDevice(harness, '只登录了小红书的机器', ['xhs'])
+
+    await expect(harness.adminController.create(
+      { id: USER_ID } as never,
+      {
+        projectId: PROJECT_ID,
+        type: ExecutionTaskType.SYNC_CREATOR_NOTES,
+        payload: SYNC_PAYLOAD,
+        mode: ExecutionTaskMode.AUTO,
+        requiredCapability: 'xhs',
+        priority: 100,
+      } as never,
+    )).rejects.toMatchObject({ code: ResponseCode.ExecutionTaskNoCapableDevice })
+  })
+
+  it('两项能力都有就建得出来', async () => {
+    await pairDevice(harness, '装了新版插件的机器', ['xhs', 'job:sync_creator_notes'])
+
+    const task = await harness.adminController.create(
+      { id: USER_ID } as never,
+      {
+        projectId: PROJECT_ID,
+        type: ExecutionTaskType.SYNC_CREATOR_NOTES,
+        payload: SYNC_PAYLOAD,
+        mode: ExecutionTaskMode.AUTO,
+        requiredCapability: 'xhs',
+        priority: 100,
+      } as never,
+    )
+
+    expect(task.type).toBe(ExecutionTaskType.SYNC_CREATOR_NOTES)
+    expect(task.status).toBe(ExecutionTaskStatus.PENDING)
+  })
+
+  it('manual 工单不查设备：它本来就不进领取流程', async () => {
+    const task = await harness.adminController.create(
+      { id: USER_ID } as never,
+      {
+        projectId: PROJECT_ID,
+        type: ExecutionTaskType.ECHO,
+        payload: { message: 'ping' },
+        mode: ExecutionTaskMode.MANUAL,
+        priority: 100,
+      } as never,
+    )
+
+    expect(task.mode).toBe(ExecutionTaskMode.MANUAL)
+  })
+
+  it('载荷跟类型对不上，建单就失败，不会等到设备领走才发现', async () => {
+    await pairDevice(harness, '装了新版插件的机器', ['xhs', 'job:sync_creator_notes'])
+
+    await expect(harness.adminController.create(
+      { id: USER_ID } as never,
+      {
+        projectId: PROJECT_ID,
+        type: ExecutionTaskType.SYNC_CREATOR_NOTES,
+        // 少了 spec
+        payload: { platform: 'xhs', entryUrl: SYNC_PAYLOAD.entryUrl },
+        mode: ExecutionTaskMode.AUTO,
+        requiredCapability: 'xhs',
+        priority: 100,
+      } as never,
+    )).rejects.toMatchObject({ code: ResponseCode.ExecutionTaskPayloadInvalid })
   })
 })
 

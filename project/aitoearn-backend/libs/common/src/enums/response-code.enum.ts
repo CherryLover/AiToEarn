@@ -307,6 +307,7 @@ export enum ResponseCode {
   ExecutionTaskMaxAttemptsExceeded = 20416, // 重试次数已用尽
   ExecutionTaskManualCompleteNotAllowed = 20417, // 只有手动模式的工单可以人工回填
   ExecutionTaskProjectMismatch = 20418, // 工单不属于该项目
+  ExecutionTaskNoCapableDevice = 20419, // 名下没有声明了所需能力的设备，建了也只会重试到失败
 
   // ========================================
   // 20500-20599: publishing（发布记录与数据，阶段 4/5）
@@ -317,7 +318,7 @@ export enum ResponseCode {
   PublishedPostDraftNotFound = 20503, // 草稿不存在：目录版缺 content.md，或路径整个不在
   PublishedPostDraftInvalid = 20504, // 草稿格式不对：解析不了，或路径既不是文件也不是目录
   PublishedPostDraftEmpty = 20505, // 草稿标题和正文都是空的，没东西可发
-  PublishedPostAutoModeNotSupported = 20506, // 这一轮只做手动发布，auto 要等插件
+  PublishedPostAutoModeNotSupported = 20506, // 没有任何一台设备会干这个平台的自动发布
   PublishedPostDuplicate = 20507, // 同一条帖子已经登记过了
   PublishedPostAlreadyCompleted = 20508, // 已经登记为发布成功，不能重复回填
   PublishedPostUrlInvalid = 20509, // 帖子链接不合法

@@ -58,6 +58,56 @@ const CollectMetricsResultSchema = z.object({
   collectedAt: z.coerce.date(),
 })
 
+/**
+ * 采集规格。**只允许选择器和正则，不允许任何可执行代码。**
+ * 放在载荷里是为了平台改版时改服务端配置就行，不用发插件新版本；
+ * 插件侧另有域名白名单，entryUrl 不在白名单里会被拒执行。
+ */
+const CollectSpecSchema = z.object({
+  cardSelector: z.string().min(1).describe('一张作品卡的选择器'),
+  titleSelector: z.string().min(1).describe('卡内标题'),
+  timeSelector: z.string().min(1).describe('卡内发布时间'),
+  statSelector: z.string().min(1).describe('卡内每个指标'),
+  // 按图标指纹认指标，不按位置认：实测顺序是浏览/评论/点赞/收藏/分享，
+  // 按位置读会把赞和评论对调，而且不报错、数字照样有
+  metricByIconPrefix: z.record(z.string(), z.string()).describe('svg path 的 d 属性前缀 → 指标名'),
+  totalCountPattern: z.string().optional().describe('「全部 65」这类标签的正则，第一个捕获组是总数'),
+  maxScrolls: z.coerce.number().int().min(1).max(200).optional().describe('最多滚多少次'),
+  scrollSettleMs: z.coerce.number().int().min(200).max(10000).optional().describe('每次滚完等多久'),
+})
+
+const SyncCreatorNotesPayloadSchema = z.object({
+  platform: z.string().min(1).describe('哪个平台'),
+  accountId: z.string().optional().describe('多号时区分'),
+  entryUrl: z.url().describe('创作平台的作品列表页，插件侧会按白名单校验 host'),
+  spec: CollectSpecSchema.describe('采集规格'),
+})
+
+const CollectedNoteSchema = z.object({
+  title: z.string().describe('卡片上的标题'),
+  titleTruncated: z.boolean().default(false).describe('标题是否被平台截断，截断了要用前缀匹配'),
+  publishedAtText: z.string().describe('原样字符串，插件不转时区，由服务端按平台时区解析'),
+  metrics: z.record(z.string(), z.number().int()).describe('按图标认出来的指标'),
+})
+
+const SyncCreatorNotesResultSchema = z.object({
+  collectedAt: z.coerce.date(),
+  platform: z.string().min(1),
+  accountHint: z.string().nullish().describe('页面上读到的账号名，对不对得上由服务端判断'),
+  totalClaimed: z.number().int().nullish().describe('页面标签页声称的总数'),
+  loadedCount: z.number().int().describe('实际加载到的卡片数'),
+  reachedEnd: z.boolean().describe('是否确认滚到底'),
+  notes: z.array(CollectedNoteSchema),
+  // 图标指纹认不出来的整张卡放这里，不猜值
+  unrecognized: z.array(z.object({
+    title: z.string(),
+    publishedAtText: z.string(),
+    rawNumbers: z.array(z.string()).default([]),
+    unknownPrefixes: z.array(z.string()).default([]),
+  })).default([]),
+  warnings: z.array(z.string()).default([]),
+})
+
 const EchoPayloadSchema = z.object({
   message: z.string().describe('任意字符串'),
 })
@@ -71,6 +121,7 @@ const PAYLOAD_SCHEMAS: Record<ExecutionTaskType, z.ZodType> = {
   [ExecutionTaskType.PUBLISH]: PublishPayloadSchema,
   [ExecutionTaskType.CLAIM_LINK]: ClaimLinkPayloadSchema,
   [ExecutionTaskType.COLLECT_METRICS]: CollectMetricsPayloadSchema,
+  [ExecutionTaskType.SYNC_CREATOR_NOTES]: SyncCreatorNotesPayloadSchema,
   [ExecutionTaskType.ECHO]: EchoPayloadSchema,
 }
 
@@ -78,6 +129,7 @@ const RESULT_SCHEMAS: Record<ExecutionTaskType, z.ZodType> = {
   [ExecutionTaskType.PUBLISH]: PublishResultSchema,
   [ExecutionTaskType.CLAIM_LINK]: ClaimLinkResultSchema,
   [ExecutionTaskType.COLLECT_METRICS]: CollectMetricsResultSchema,
+  [ExecutionTaskType.SYNC_CREATOR_NOTES]: SyncCreatorNotesResultSchema,
   [ExecutionTaskType.ECHO]: EchoResultSchema,
 }
 
