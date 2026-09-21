@@ -37,3 +37,27 @@ export async function chooseOption(trigger: HTMLElement, name: string | RegExp) 
 
   await userEvent.keyboard(`${step.repeat(Math.abs(to - from))}{Enter}`)
 }
+
+/** 打开一个下拉菜单（DropdownMenu / ContextMenu 这类），打开后焦点在第一项上 */
+export async function openMenu(trigger: HTMLElement) {
+  if (trigger.getAttribute('aria-expanded') === 'true')
+    return
+
+  trigger.focus()
+  await userEvent.keyboard('{Enter}')
+  await screen.findByRole('menu')
+}
+
+/** 打开菜单并点某一项，`name` 是菜单项的无障碍名 */
+export async function chooseMenuItem(trigger: HTMLElement, name: string | RegExp) {
+  await openMenu(trigger)
+
+  const target = await screen.findByRole('menuitem', { name })
+  const items = screen.getAllByRole('menuitem')
+  // 打开时焦点落在第一项，从那儿数着走过去
+  const from = Math.max(items.findIndex(item => item === document.activeElement), 0)
+  const to = items.indexOf(target)
+  const step = to > from ? '{ArrowDown}' : '{ArrowUp}'
+
+  await userEvent.keyboard(`${step.repeat(Math.abs(to - from))}{Enter}`)
+}
