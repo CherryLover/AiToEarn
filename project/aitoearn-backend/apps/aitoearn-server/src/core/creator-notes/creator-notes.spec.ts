@@ -2,7 +2,7 @@
  * 建采集工单、认领未归属的行、每 3 小时那一轮调度。
  */
 import { AppException, ResponseCode, UserType } from '@yikart/common'
-import { CreatorNoteMatchState, ExecutionTaskType } from '@yikart/mongodb'
+import { CreatorNoteMatchState, ExecutionTaskType, PublishedPostPublishStatus, PublishedPostSource } from '@yikart/mongodb'
 import { describe, expect, it, vi } from 'vitest'
 import { findCollectProfile } from './collect-specs'
 import { CreatorNotesScheduler } from './creator-notes.scheduler'
@@ -23,7 +23,8 @@ vi.mock('@nestjs/mongoose', async () => {
 
 interface BuildOptions {
   devices?: { id: string, userId: string }[]
-  projects?: { id: string }[]
+  projects?: { id: string, userId?: string, status?: string }[]
+  angles?: { id: string, projectId: string }[]
   rows?: Record<string, unknown>[]
   posts?: Record<string, unknown>[]
   activeSyncTasks?: number
@@ -60,12 +61,26 @@ function build(options: BuildOptions = {}) {
     listAngleTotalsByProjectId: vi.fn(async () => []),
   }
 
+  const createdPosts: Record<string, unknown>[] = []
   const publishedPostRepository = {
-    getByIdAndUserId: vi.fn(async (id: string) => (options.posts ?? []).find(post => post.id === id) ?? null),
+    getByIdAndUserId: vi.fn(async (id: string) =>
+      (options.posts ?? []).find(post => post.id === id) ?? createdPosts.find(post => post.id === id) ?? null,
+    ),
+    listByIds: vi.fn(async () => options.posts ?? []),
+    create: vi.fn(async (data: Record<string, unknown>) => {
+      const doc = { id: `post-new-${createdPosts.length + 1}`, ...data }
+      createdPosts.push(doc)
+      return doc
+    }),
   }
 
   const projectRepository = {
     listByUserId: vi.fn(async () => options.projects ?? [{ id: 'proj-1' }]),
+    getById: vi.fn(async (id: string) => (options.projects ?? [{ id: 'proj-1' }]).find(project => project.id === id) ?? null),
+  }
+
+  const angleRepository = {
+    getById: vi.fn(async (id: string) => (options.angles ?? []).find(angle => angle.id === id) ?? null),
   }
 
   const deviceRepository = {
@@ -90,12 +105,13 @@ function build(options: BuildOptions = {}) {
     metricRepository as never,
     publishedPostRepository as never,
     projectRepository as never,
+    angleRepository as never,
     deviceRepository as never,
     executionTaskRepository as never,
     executionTasksService as never,
   )
 
-  return { service, created, metrics, rows, deviceRepository, executionTaskRepository, executionTasksService }
+  return { service, created, metrics, rows, createdPosts, deviceRepository, executionTaskRepository, executionTasksService }
 }
 
 describe('建采集工单', () => {
@@ -179,6 +195,53 @@ describe('认领未归属的行', () => {
       angleId: 'angle-1',
       userType: UserType.User,
     })
+  })
+
+  it('直接建记录：建出来标 discovered、状态直接是已发布，并立刻补上第一个快照', async () => {
+    const fakes = build({
+      rows: [row()],
+      projects: [{ id: 'proj-1', userId: 'user-1', status: 'active' }],
+      angles: [{ id: 'angle-9', projectId: 'proj-1' }],
+    })
+
+    const updated = await fakes.service.adoptRow('user-1', 'row-1', { projectId: 'proj-1', angleId: 'angle-9' })
+
+    const post = fakes.createdPosts[0]!
+    expect(post.source).toBe(PublishedPostSource.DISCOVERED)
+    // 这条帖子本来就已经在平台上了，记成 pending 会在网页上多出一张「等你去发」的卡片
+    expect(post.publishStatus).toBe(PublishedPostPublishStatus.PUBLISHED)
+    expect(post.angleId).toBe('angle-9')
+    // 列表页上没有正文，建出来的记录正文是空的，不编
+    expect((post.snapshot as { body: string }).body).toBe('')
+    expect(updated.matchState).toBe(CreatorNoteMatchState.MATCHED)
+    expect(fakes.metrics).toHaveLength(1)
+  })
+
+  it('直接建记录：方向不属于这个项目就拒绝，不静默建一条没挂方向的', async () => {
+    const fakes = build({
+      rows: [row()],
+      projects: [{ id: 'proj-1', userId: 'user-1', status: 'active' }],
+      angles: [{ id: 'angle-9', projectId: 'proj-other' }],
+    })
+
+    await expect(fakes.service.adoptRow('user-1', 'row-1', { projectId: 'proj-1', angleId: 'angle-9' }))
+      .rejects
+      .toThrow(new AppException(ResponseCode.AngleNotFound))
+
+    expect(fakes.createdPosts).toHaveLength(0)
+  })
+
+  it('直接建记录：建到别人的项目上按项目不存在拒绝', async () => {
+    const fakes = build({
+      rows: [row()],
+      projects: [{ id: 'proj-1', userId: 'someone-else', status: 'active' }],
+    })
+
+    await expect(fakes.service.adoptRow('user-1', 'row-1', { projectId: 'proj-1' }))
+      .rejects
+      .toThrow(new AppException(ResponseCode.ProjectNotFound))
+
+    expect(fakes.createdPosts).toHaveLength(0)
   })
 
   /** 改归属会让两条帖子的折线都变错，而且错得看不出来 */

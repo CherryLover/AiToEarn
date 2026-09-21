@@ -158,6 +158,14 @@ export class PublishedPostRepository extends BaseRepository<PublishedPost> {
     )
   }
 
+  /** 按一批 id 取回来，数据页把聚合结果配上标题和发布时间时用 */
+  async listByIds(ids: string[], userId: string) {
+    if (ids.length === 0)
+      return []
+
+    return await this.find({ _id: { $in: ids }, userId })
+  }
+
   async listWithPagination(params: ListPublishedPostsParams) {
     const { page, pageSize, userId, projectId, angleId, platform, publishStatus, linkStatus } = params
 

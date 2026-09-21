@@ -1111,4 +1111,8 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'en-US': 'There is no collect spec for this platform yet',
     'zh-CN': '这个平台还没有采集规格，目前只做了小红书',
   },
+  [ResponseCode.CreatorNoteRowAdoptFailed]: {
+    'en-US': 'Could not turn this collected row into a post record',
+    'zh-CN': '把这一行建成发布记录失败了',
+  },
 }

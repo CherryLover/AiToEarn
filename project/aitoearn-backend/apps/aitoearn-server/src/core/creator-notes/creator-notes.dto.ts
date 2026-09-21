@@ -32,6 +32,12 @@ export const ClaimCreatorNoteRowDtoSchema = z.object({
 })
 export class ClaimCreatorNoteRowDto extends createZodDto(ClaimCreatorNoteRowDtoSchema, 'ClaimCreatorNoteRowDto') {}
 
+export const AdoptCreatorNoteRowDtoSchema = z.object({
+  projectId: z.string().min(1).describe('建到哪个项目下'),
+  angleId: z.string().optional().describe('挂到哪个发布方向，不填就是没挂方向，按方向汇总时归在「未分方向」那一条里'),
+})
+export class AdoptCreatorNoteRowDto extends createZodDto(AdoptCreatorNoteRowDtoSchema, 'AdoptCreatorNoteRowDto') {}
+
 export const ProjectMetricsQueryDtoSchema = z.object({
   angleId: z.string().optional().describe('只看某个方向'),
   days: z.coerce.number().int().min(1).max(365).optional().describe('往回看多少天，默认 30'),

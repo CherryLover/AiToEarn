@@ -34,12 +34,11 @@ const SPARKLINE_WIDTH = 120
 const SPARKLINE_HEIGHT = 28
 
 interface PostTrendTableProps {
+  /** 服务端已按发布时间倒序排好，这里不再排一遍 */
   trends: PostMetricTrend[]
-  /** 发布记录 id -> 标题，取不到就显示 id */
-  postTitles: Map<string, string>
 }
 
-export function PostTrendTable({ trends, postTitles }: PostTrendTableProps) {
+export function PostTrendTable({ trends }: PostTrendTableProps) {
   const [openId, setOpenId] = useState<string | null>(null)
   const [series, setSeries] = useState<Record<string, PostMetricPoint[]>>({})
   const [loadingId, setLoadingId] = useState<string | null>(null)
@@ -78,6 +77,7 @@ export function PostTrendTable({ trends, postTitles }: PostTrendTableProps) {
         <TableRow>
           <TableHead className="w-8" />
           <TableHead>标题</TableHead>
+          <TableHead>发布时间</TableHead>
           {METRIC_KEYS.map(metric => (
             <TableHead key={metric} className="text-right">{METRIC_LABELS[metric]}</TableHead>
           ))}
@@ -86,7 +86,7 @@ export function PostTrendTable({ trends, postTitles }: PostTrendTableProps) {
       </TableHeader>
       <TableBody>
         {trends.map((trend) => {
-          const title = postTitles.get(trend.publishedPostId) ?? trend.publishedPostId
+          const title = trend.title || trend.publishedPostId
           const isOpen = openId === trend.publishedPostId
           const points = series[trend.publishedPostId]
 
@@ -105,6 +105,10 @@ export function PostTrendTable({ trends, postTitles }: PostTrendTableProps) {
                   </Button>
                 </TableCell>
                 <TableCell className="max-w-[18rem] truncate" title={title}>{title}</TableCell>
+                {/* 没登记过发布时间的老记录留空，不拿创建时间冒充 */}
+                <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                  {trend.publishedAt ? formatTime(trend.publishedAt) : '—'}
+                </TableCell>
                 {METRIC_KEYS.map(metric => (
                   <TableCell key={metric} className="text-right tabular-nums">
                     <div>{formatMetric(trend.latest[metric])}</div>
@@ -121,7 +125,7 @@ export function PostTrendTable({ trends, postTitles }: PostTrendTableProps) {
 
               {isOpen && (
                 <TableRow>
-                  <TableCell colSpan={METRIC_KEYS.length + 3} className="bg-muted/30">
+                  <TableCell colSpan={METRIC_KEYS.length + 4} className="bg-muted/30">
                     {loadingId === trend.publishedPostId && (
                       <div className="py-3 text-sm text-muted-foreground">正在拉时间序列…</div>
                     )}

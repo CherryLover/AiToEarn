@@ -34,6 +34,16 @@ export interface ListCreatorNoteRowsParams extends Pagination {
   collectedTo?: Date
 }
 
+export interface UpdatePendingCreatorNoteRowParams {
+  metrics: CreatorNoteMetrics
+  collectedAt: Date
+  executionTaskId?: string
+  matchState: CreatorNoteMatchState
+  matchCandidates: string[]
+  matchedPublishedPostId?: string
+  publishedAt?: Date
+}
+
 function isDuplicateKeyError(error: unknown): boolean {
   return (error as { code?: number } | null)?.code === MONGO_DUPLICATE_KEY_ERROR
 }
@@ -67,6 +77,54 @@ export class CreatorNoteRowRepository extends BaseRepository<CreatorNoteRow> {
 
   async getByIdAndUserId(id: string, userId: string) {
     return await this.findOne({ _id: id, userId })
+  }
+
+  /**
+   * 同一条帖子上一次采到的那一行（不分归属状态），没采到过返回 null。
+   *
+   * 身份用 `(platform, title, publishedAtText)`：平台列表页上没有帖子 id，
+   * 这三样是卡片上仅有的、跨两次采集不会变的东西。标题被截断的那些截得一样，
+   * 所以截断也不影响这个身份的稳定性。
+   */
+  async getLatestByIdentity(params: {
+    userId: string
+    platform: string
+    title: string
+    publishedAtText: string
+  }) {
+    return await this.findOne(
+      {
+        userId: params.userId,
+        platform: params.platform,
+        title: params.title,
+        publishedAtText: params.publishedAtText,
+      },
+      { sort: { collectedAt: -1 } },
+    )
+  }
+
+  /**
+   * 把一条还没归属的行就地刷成这次采到的值，而不是再插一行。
+   *
+   * 守住「还没归属」这个前提：认领过的行绝不能被后来的采集覆写回未归属，
+   * 那会让人刚认领完的帖子在下一次采集后又回到待认领列表里。
+   */
+  async updatePendingById(id: string, userId: string, params: UpdatePendingCreatorNoteRowParams) {
+    return await this.updateOne(
+      { _id: id, userId, matchState: { $ne: CreatorNoteMatchState.MATCHED } },
+      {
+        $set: {
+          metrics: params.metrics,
+          collectedAt: params.collectedAt,
+          executionTaskId: params.executionTaskId,
+          matchState: params.matchState,
+          matchCandidates: params.matchCandidates,
+          matchedPublishedPostId: params.matchedPublishedPostId,
+          publishedAt: params.publishedAt,
+        },
+      },
+      { new: true },
+    )
   }
 
   /** 某条帖子的时间序列，早的在前，网页上直接连成折线 */
@@ -128,7 +186,9 @@ export class CreatorNoteRowRepository extends BaseRepository<CreatorNoteRow> {
       page,
       pageSize,
       filter,
-      options: { sort: { collectedAt: -1, title: 1 } },
+      // 按发布时间倒序，最新发的排最上面。解析不出发布时间的行 `publishedAt` 是空的，
+      // Mongo 把缺字段排在倒序的末尾，正好落在真实时间之后，不会插在中间冒充新帖子
+      options: { sort: { publishedAt: -1, collectedAt: -1, title: 1 } },
     })
 
     return { list, total }

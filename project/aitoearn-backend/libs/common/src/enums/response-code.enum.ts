@@ -351,4 +351,5 @@ export enum ResponseCode {
   CreatorNoteRowNotFound = 20710, // 采集数据行不存在
   CreatorNoteRowAlreadyMatched = 20711, // 这一行已经归属了，要改先取消归属
   CreatorNoteSyncNoCollectSpec = 20712, // 这个平台还没有采集规格，只有小红书有
+  CreatorNoteRowAdoptFailed = 20713, // 把未归属的行建成发布记录失败
 }

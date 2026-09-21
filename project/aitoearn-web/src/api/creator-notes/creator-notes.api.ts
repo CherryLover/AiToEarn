@@ -1,4 +1,5 @@
 import type {
+  AdoptCreatorNoteRowParams,
   AngleMetricTotal,
   CreateSyncTaskParams,
   CreatorNoteRow,
@@ -27,6 +28,14 @@ export function getCreatorNoteRowListApi(params?: GetCreatorNoteRowListParams, s
 /** 认领一行未归属的数据到某条发布记录上 */
 export function claimCreatorNoteRowApi(id: string, publishedPostId: string, silent = true) {
   return http.post<CreatorNoteRow>(`creator-notes/rows/${id}/claim`, { publishedPostId }, silent)
+}
+
+/**
+ * 把一行未归属的数据直接建成一条发布记录，并立刻归属过去。
+ * 用在「这条内容是我自己做的，只是一开始没走系统」。
+ */
+export function adoptCreatorNoteRowApi(id: string, data: AdoptCreatorNoteRowParams, silent = true) {
+  return http.post<CreatorNoteRow>(`creator-notes/rows/${id}/adopt`, data, silent)
 }
 
 /** 一条帖子的时间序列，早的在前 */

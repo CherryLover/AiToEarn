@@ -47,6 +47,8 @@ export class PostMetricPointVo extends createZodDto(PostMetricPointVoSchema, 'Po
 
 export const PostMetricTrendVoSchema = z.object({
   publishedPostId: z.string().describe('发布记录 id'),
+  title: z.string().describe('帖子标题'),
+  publishedAt: z.coerce.date().optional().describe('发布时间；老记录可能没登记过'),
   latest: MetricsVoSchema.describe('当前值'),
   delta: MetricsVoSchema.optional().describe('跟上一个采集点的差；只有一个采集点时没有这个字段'),
   latestCollectedAt: z.coerce.date().describe('当前值是什么时候采的'),
@@ -83,9 +85,11 @@ export function toPostMetricPointVo(metric: LeanDoc<PostMetric>) {
   return { collectedAt: metric.collectedAt, metrics: metric.metrics }
 }
 
-export function toPostMetricTrendVo(trend: PostMetricTrend) {
+export function toPostMetricTrendVo(trend: PostMetricTrend & { title: string, publishedAt?: Date }) {
   return {
     publishedPostId: trend.publishedPostId,
+    title: trend.title,
+    publishedAt: trend.publishedAt,
     latest: trend.latest,
     delta: trend.delta,
     latestCollectedAt: trend.latestCollectedAt,

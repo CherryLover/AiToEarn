@@ -3,15 +3,18 @@ import { UserType } from '@yikart/common'
 import {
   CreatorNoteMatchState,
   CreatorNoteMetrics,
+  CreatorNoteRow,
   CreatorNoteRowRepository,
+  LeanDoc,
   PostMetricRepository,
   PublishedPostRepository,
 } from '@yikart/mongodb'
 import { z } from 'zod'
 import { SyncCreatorNotesResultSchema } from '../execution-tasks/task-payloads'
 import { findCollectProfile } from './collect-specs'
-import { CreatorNoteMatcherService, MatchInput } from './creator-note-matcher.service'
+import { CreatorNoteMatcherService, MatchDecision, MatchInput } from './creator-note-matcher.service'
 import { parsePlatformTime } from './creator-note-time'
+import { DraftRef } from './draft-title-index.service'
 
 /** 默认时区：平台表里没写的时候按这个解析卡片上的时间 */
 const FALLBACK_TIME_ZONE = 'Asia/Shanghai'
@@ -21,6 +24,8 @@ type SyncResult = z.infer<typeof SyncCreatorNotesResultSchema>
 export interface IngestOutcome {
   /** 真正落进表里的行数，重复回报的那些不算 */
   insertedRows: number
+  /** 就地刷新掉的未归属行数：同一条帖子上次采过、这次只是更新它的数字 */
+  refreshedRows: number
   matched: number
   ambiguous: number
   unmatched: number
@@ -82,7 +87,7 @@ export class CreatorNoteIngestService {
     accountId?: string
     result: unknown
   }): Promise<IngestOutcome> {
-    const outcome: IngestOutcome = { insertedRows: 0, matched: 0, ambiguous: 0, unmatched: 0, snapshots: 0 }
+    const outcome: IngestOutcome = { insertedRows: 0, refreshedRows: 0, matched: 0, ambiguous: 0, unmatched: 0, snapshots: 0 }
 
     const sync = readSyncResult(params.result)
     if (!sync) {
@@ -105,6 +110,7 @@ export class CreatorNoteIngestService {
 
     for (const note of sync.notes) {
       const publishedAt = parsePlatformTime(note.publishedAtText, timeZone)
+      const metrics = toMetrics(note.metrics)
       const matchInput: MatchInput = {
         userId: params.userId,
         platform: sync.platform,
@@ -114,17 +120,70 @@ export class CreatorNoteIngestService {
         publishedAt,
       }
 
-      let decision
-      try {
-        decision = await this.matcherService.match(matchInput, draftIndex)
-      }
-      catch (error) {
-        // 一行匹配失败不该带走整批数据，落成未归属，人还能手动认领
-        this.logger.warn(error, `匹配失败，这一行落成未归属: ${note.title}`)
-        decision = { matchState: CreatorNoteMatchState.UNMATCHED, matchCandidates: [] as string[] }
+      const prior = await this.creatorNoteRowRepository.getLatestByIdentity({
+        userId: params.userId,
+        platform: sync.platform,
+        title: note.title,
+        publishedAtText: note.publishedAtText,
+      })
+
+      const decision = await this.decide(matchInput, draftIndex, prior)
+
+      if (decision.matchState === CreatorNoteMatchState.MATCHED) {
+        // 已归属的帖子每采一次留一行：这是它的原始数据轨迹，快照表只是派生出来的
+        const row = await this.creatorNoteRowRepository.createIfAbsent({
+          userId: params.userId,
+          userType: params.userType,
+          platform: sync.platform,
+          accountId: params.accountId,
+          title: note.title,
+          titleTruncated: Boolean(note.titleTruncated),
+          publishedAtText: note.publishedAtText,
+          publishedAt,
+          metrics,
+          collectedAt,
+          executionTaskId: params.executionTaskId,
+          matchedPublishedPostId: decision.matchedPublishedPostId,
+          matchState: decision.matchState,
+          matchCandidates: decision.matchCandidates,
+        })
+
+        // 同一次采集重复回报：行已经在了，快照也已经写过，什么都不用做
+        if (!row)
+          continue
+
+        outcome.insertedRows++
+        outcome.matched++
+        if (await this.writeSnapshot(params, row.id, decision.matchedPublishedPostId, metrics, collectedAt))
+          outcome.snapshots++
+        continue
       }
 
-      const row = await this.creatorNoteRowRepository.createIfAbsent({
+      if (decision.matchState === CreatorNoteMatchState.AMBIGUOUS)
+        outcome.ambiguous++
+      else
+        outcome.unmatched++
+
+      // 还归不了属的帖子只占一行，采到新数字就刷在同一行上。
+      // 每次都插一行的话，一个只有 3 条帖子属于项目的号会在「未归属」里
+      // 每天堆出 62×8 行，人再也找不到真正需要他认领的那几条
+      if (prior) {
+        const refreshed = await this.creatorNoteRowRepository.updatePendingById(prior.id, params.userId, {
+          metrics,
+          collectedAt,
+          executionTaskId: params.executionTaskId,
+          matchState: decision.matchState,
+          matchCandidates: decision.matchCandidates,
+          publishedAt,
+        })
+
+        if (refreshed)
+          outcome.refreshedRows++
+
+        continue
+      }
+
+      if (await this.creatorNoteRowRepository.createIfAbsent({
         userId: params.userId,
         userType: params.userType,
         platform: sync.platform,
@@ -133,28 +192,14 @@ export class CreatorNoteIngestService {
         titleTruncated: Boolean(note.titleTruncated),
         publishedAtText: note.publishedAtText,
         publishedAt,
-        metrics: toMetrics(note.metrics),
+        metrics,
         collectedAt,
         executionTaskId: params.executionTaskId,
-        matchedPublishedPostId: decision.matchedPublishedPostId,
         matchState: decision.matchState,
         matchCandidates: decision.matchCandidates,
-      })
-
-      // 同一次采集重复回报：行已经在了，快照也已经写过，什么都不用做
-      if (!row)
-        continue
-
-      outcome.insertedRows++
-      if (decision.matchState === CreatorNoteMatchState.MATCHED)
-        outcome.matched++
-      else if (decision.matchState === CreatorNoteMatchState.AMBIGUOUS)
-        outcome.ambiguous++
-      else
-        outcome.unmatched++
-
-      if (await this.writeSnapshot(params, row.id, decision.matchedPublishedPostId, toMetrics(note.metrics), collectedAt))
-        outcome.snapshots++
+      })) {
+        outcome.insertedRows++
+      }
     }
 
     if (sync.unrecognized.length > 0)
@@ -164,6 +209,37 @@ export class CreatorNoteIngestService {
       this.logger.warn(`工单 ${params.executionTaskId} 采集告警：${warning}`)
 
     return outcome
+  }
+
+  /**
+   * 这一行归到哪条帖子上。
+   *
+   * **上一次的归属结果优先**：人在网页上认领过的帖子，平台上的标题跟我们记录里的标题
+   * 常常对不上（认领本来就是为了处理这种对不上），重新跑一遍匹配规则会把它判成未归属，
+   * 于是刚认领完的帖子下一次采集又回到待认领列表里，而且它的快照从此断掉。
+   * 采集是每 3 小时一次的，这种回弹人一定会碰上。
+   */
+  private async decide(
+    input: MatchInput,
+    draftIndex: Map<string, DraftRef[]>,
+    prior: LeanDoc<CreatorNoteRow> | null,
+  ): Promise<MatchDecision> {
+    if (prior?.matchState === CreatorNoteMatchState.MATCHED && prior.matchedPublishedPostId) {
+      return {
+        matchState: CreatorNoteMatchState.MATCHED,
+        matchedPublishedPostId: prior.matchedPublishedPostId,
+        matchCandidates: [],
+      }
+    }
+
+    try {
+      return await this.matcherService.match(input, draftIndex)
+    }
+    catch (error) {
+      // 一行匹配失败不该带走整批数据，落成未归属，人还能手动认领
+      this.logger.warn(error, `匹配失败，这一行落成未归属: ${input.title}`)
+      return { matchState: CreatorNoteMatchState.UNMATCHED, matchCandidates: [] }
+    }
   }
 
   /** 已归属的行才有快照：快照表是按项目和方向聚合用的，未归属的行进去只会是噪音 */

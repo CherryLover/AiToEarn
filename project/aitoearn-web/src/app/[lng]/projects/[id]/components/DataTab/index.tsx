@@ -9,8 +9,9 @@
  */
 'use client'
 
+import type { Angle } from '@/api/angles/angle.types'
 import type { PublishedPostListItem } from '@/api/publishing/publishing.types'
-import { RefreshCw } from 'lucide-react'
+import { ChevronDown, ChevronRight, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getAngleListApi } from '@/api/angles/angle.api'
 import { createSyncTaskApi } from '@/api/creator-notes/creator-notes.api'
@@ -38,13 +39,16 @@ interface DataTabProps {
 
 export function DataTab({ projectId, readOnly }: DataTabProps) {
   const { trends, angleTotals, isLoading, loadFailed, refresh } = useProjectMetrics(projectId, TREND_DAYS)
-  const { rows, total: unmatchedTotal, isLoading: isRowsLoading, refresh: refreshRows, claim } = useUnmatchedRows()
+  const { rows, total: unmatchedTotal, isLoading: isRowsLoading, refresh: refreshRows, claim, adopt } = useUnmatchedRows(projectId)
 
   const [posts, setPosts] = useState<PublishedPostListItem[]>([])
-  const [angleNames, setAngleNames] = useState<Map<string, string>>(new Map())
+  const [angles, setAngles] = useState<Angle[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
+  // 未归属那一块默认收起来：账号里几十条帖子只有几条属于这个项目，
+  // 摊开之后真正要看的「按方向汇总」和「每条帖子」会被挤到屏幕外面去
+  const [isUnmatchedOpen, setIsUnmatchedOpen] = useState(false)
 
-  // 趋势接口只给 publishedPostId 和数字，标题和方向名要从各自的列表里对出来
+  // 认领要选发布记录，建新记录要选方向，两份列表都在这里一次拉回来
   useEffect(() => {
     let cancelled = false
 
@@ -59,8 +63,7 @@ export function DataTab({ projectId, readOnly }: DataTabProps) {
           return
 
         setPosts(Array.isArray(postRes?.data?.list) ? postRes.data.list : [])
-        const angles = Array.isArray(angleRes?.data) ? angleRes.data : []
-        setAngleNames(new Map(angles.map(angle => [angle.id, angle.name || angle.slug])))
+        setAngles(Array.isArray(angleRes?.data) ? angleRes.data : [])
       }
       catch (error) {
         console.error('Load posts or angles for data tab failed:', error)
@@ -73,9 +76,9 @@ export function DataTab({ projectId, readOnly }: DataTabProps) {
     }
   }, [projectId])
 
-  const postTitles = useMemo(
-    () => new Map(posts.map(post => [post.id, post.title || post.draftPath])),
-    [posts],
+  const angleNames = useMemo(
+    () => new Map(angles.map(angle => [angle.id, angle.name || angle.slug])),
+    [angles],
   )
 
   const syncNow = useCallback(async () => {
@@ -160,30 +163,51 @@ export function DataTab({ projectId, readOnly }: DataTabProps) {
                 这个窗口里还没有快照。
               </div>
             )
-          : <PostTrendTable trends={trends} postTitles={postTitles} />}
+          : <PostTrendTable trends={trends} />}
       </section>
 
       <section className="space-y-3">
-        <h3 className="text-sm font-medium">
+        <button
+          type="button"
+          className="flex w-full items-center gap-1.5 text-left text-sm font-medium"
+          onClick={() => setIsUnmatchedOpen(open => !open)}
+          aria-expanded={isUnmatchedOpen}
+        >
+          {isUnmatchedOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           未归属的帖子
           {unmatchedTotal > 0 && (
-            <span className="ml-2 text-xs font-normal text-muted-foreground">
+            <span className="text-xs font-normal text-muted-foreground">
               {`共 ${unmatchedTotal} 条`}
             </span>
           )}
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          账号里的帖子远多于这个项目的，系统只给匹配上已知帖子或草稿的建记录。其余留在这里，属于这个项目的可以认领过来。
-        </p>
-        {isRowsLoading
-          ? <Skeleton className="h-32 w-full" />
-          : rows.length === 0
-            ? (
-                <div className="rounded-xl border border-dashed border-border px-6 py-8 text-center text-sm text-muted-foreground">
-                  没有待认领的帖子。
-                </div>
-              )
-            : <UnmatchedRowsTable rows={rows} posts={posts} onClaim={claim} />}
+        </button>
+
+        {isUnmatchedOpen && (
+          <>
+            <p className="text-xs text-muted-foreground">
+              账号里的帖子远多于这个项目的，系统只给匹配上已知帖子或草稿的建记录。其余留在这里：当初走系统发过的可以认领到那条记录上，
+              自己做的、一开始没走系统的可以直接建成这个项目的一条记录。
+            </p>
+            {isRowsLoading
+              ? <Skeleton className="h-32 w-full" />
+              : rows.length === 0
+                ? (
+                    <div className="rounded-xl border border-dashed border-border px-6 py-8 text-center text-sm text-muted-foreground">
+                      没有待处理的帖子。
+                    </div>
+                  )
+                : (
+                    <UnmatchedRowsTable
+                      rows={rows}
+                      posts={posts}
+                      angles={angles}
+                      onClaim={claim}
+                      onAdopt={adopt}
+                      readOnly={readOnly}
+                    />
+                  )}
+          </>
+        )}
       </section>
     </div>
   )

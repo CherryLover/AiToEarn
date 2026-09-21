@@ -91,6 +91,28 @@ function build(options: { posts?: Record<string, unknown>[], drafts?: Fakes['dra
       rows.push(doc)
       return doc
     }),
+    getLatestByIdentity: vi.fn(async (params: { userId: string, platform: string, title: string, publishedAtText: string }) => {
+      const hits = rows.filter(row =>
+        row.userId === params.userId
+        && row.platform === params.platform
+        && row.title === params.title
+        && row.publishedAtText === params.publishedAtText,
+      )
+      if (hits.length === 0)
+        return null
+
+      return hits.reduce((latest, row) =>
+        new Date(row.collectedAt as Date).getTime() > new Date(latest.collectedAt as Date).getTime() ? row : latest,
+      )
+    }),
+    updatePendingById: vi.fn(async (id: string, userId: string, params: Record<string, unknown>) => {
+      const row = rows.find(item => item.id === id && item.userId === userId)
+      if (!row || row.matchState === CreatorNoteMatchState.MATCHED)
+        return null
+
+      Object.assign(row, params)
+      return row
+    }),
   }
 
   const metricRepository = {
@@ -171,15 +193,18 @@ function build(options: { posts?: Record<string, unknown>[], drafts?: Fakes['dra
   return { rows, metrics, posts, drafts, service }
 }
 
-function ingest(fakes: Fakes, notes: unknown[]) {
+function ingest(fakes: Fakes, notes: unknown[], at: string = COLLECTED_AT) {
   return fakes.service.ingest({
     userId: 'user-1',
     userType: UserType.User,
     executionTaskId: 'task-1',
     accountId: 'acc-1',
-    result: syncResult(notes),
+    result: { ...syncResult(notes), collectedAt: at },
   })
 }
+
+/** 三小时后的下一轮采集 */
+const NEXT_COLLECTED_AT = '2026-09-21T05:00:00.000Z'
 
 describe('采集结果入库', () => {
   let knownPost: Record<string, unknown>
@@ -339,5 +364,56 @@ describe('采集结果入库', () => {
     expect(outcome.insertedRows).toBe(1)
     expect(fakes.rows[0]!.publishedAt).toBeUndefined()
     expect(fakes.rows[0]!.publishedAtText).toBe('昨天 08:28')
+  })
+
+  it('归不了属的帖子每轮只占一行：第二次采集刷新它的数字，不再多出一行', async () => {
+    const fakes = build({ posts: [knownPost] })
+
+    await ingest(fakes, [NOTE_STRANGER])
+    const outcome = await ingest(
+      fakes,
+      [{ ...NOTE_STRANGER, metrics: { ...NOTE_STRANGER.metrics, views: 99 } }],
+      NEXT_COLLECTED_AT,
+    )
+
+    // 一个号里 60 多条帖子不属于任何项目，每 3 小时插一遍的话一周就没法看了
+    expect(fakes.rows).toHaveLength(1)
+    expect(outcome.insertedRows).toBe(0)
+    expect(outcome.refreshedRows).toBe(1)
+    expect((fakes.rows[0]!.metrics as { views: number }).views).toBe(99)
+    expect(new Date(fakes.rows[0]!.collectedAt as Date).toISOString()).toBe(NEXT_COLLECTED_AT)
+  })
+
+  it('人工认领过的帖子，下一轮采集照旧归在那条记录上，不会退回未归属', async () => {
+    const fakes = build({ posts: [knownPost] })
+
+    // 平台标题跟我们记录里的标题对不上，所以两条规则都命中不了——认领本来就是为了这种情况
+    await ingest(fakes, [NOTE_STRANGER])
+    fakes.rows[0]!.matchState = CreatorNoteMatchState.MATCHED
+    fakes.rows[0]!.matchedPublishedPostId = 'post-known'
+
+    const outcome = await ingest(fakes, [NOTE_STRANGER], NEXT_COLLECTED_AT)
+
+    expect(outcome.matched).toBe(1)
+    expect(outcome.unmatched).toBe(0)
+    expect(fakes.rows[1]!.matchedPublishedPostId).toBe('post-known')
+    // 认领时补的那个点之后，这一轮该接上第二个点
+    expect(fakes.metrics).toHaveLength(1)
+    expect(fakes.metrics[0]!.publishedPostId).toBe('post-known')
+  })
+
+  it('原先归不了属的行，等发布记录出现后下一轮就地转成已归属并补上快照', async () => {
+    const fakes = build({ posts: [] })
+
+    await ingest(fakes, [NOTE_KNOWN])
+    expect(fakes.rows[0]!.matchState).toBe(CreatorNoteMatchState.UNMATCHED)
+
+    fakes.posts.push(knownPost)
+    const outcome = await ingest(fakes, [NOTE_KNOWN], NEXT_COLLECTED_AT)
+
+    expect(outcome.matched).toBe(1)
+    expect(fakes.rows).toHaveLength(2)
+    expect(fakes.metrics).toHaveLength(1)
+    expect(fakes.metrics[0]!.publishedPostId).toBe('post-known')
   })
 })

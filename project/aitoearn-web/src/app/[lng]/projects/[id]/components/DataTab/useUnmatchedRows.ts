@@ -6,13 +6,13 @@
  */
 'use client'
 
-import type { CreatorNoteRow } from '@/api/creator-notes/creator-notes.types'
+import type { AdoptCreatorNoteRowParams, CreatorNoteRow } from '@/api/creator-notes/creator-notes.types'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { claimCreatorNoteRowApi, getCreatorNoteRowListApi } from '@/api/creator-notes/creator-notes.api'
+import { adoptCreatorNoteRowApi, claimCreatorNoteRowApi, getCreatorNoteRowListApi } from '@/api/creator-notes/creator-notes.api'
 import { CREATOR_NOTE_ROW_PAGE_SIZE } from '@/api/creator-notes/creator-notes.constants'
 import { MatchState } from '@/api/creator-notes/creator-notes.types'
 
-export function useUnmatchedRows() {
+export function useUnmatchedRows(projectId: string) {
   const [rows, setRows] = useState<CreatorNoteRow[]>([])
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -62,22 +62,36 @@ export function useUnmatchedRows() {
     }
   }, [])
 
+  /** 认领成功的那一行立刻从「未归属」里拿掉，不等整块刷新 */
+  const drop = useCallback((rowId: string) => {
+    if (!mountedRef.current)
+      return
+
+    setRows(current => current.filter(row => row.id !== rowId))
+    setTotal(current => Math.max(0, current - 1))
+  }, [])
+
   const claim = useCallback(async (rowId: string, publishedPostId: string) => {
     const res = await claimCreatorNoteRowApi(rowId, publishedPostId)
     if (res?.code !== 0)
       return false
 
-    // 认领成功的那一行立刻从「未归属」里拿掉，不等整块刷新
-    if (mountedRef.current) {
-      setRows(current => current.filter(row => row.id !== rowId))
-      setTotal(current => Math.max(0, current - 1))
-    }
+    drop(rowId)
     return true
-  }, [])
+  }, [drop])
+
+  const adopt = useCallback(async (rowId: string, params: Omit<AdoptCreatorNoteRowParams, 'projectId'>) => {
+    const res = await adoptCreatorNoteRowApi(rowId, { ...params, projectId })
+    if (res?.code !== 0)
+      return false
+
+    drop(rowId)
+    return true
+  }, [drop, projectId])
 
   useEffect(() => {
     void refresh()
   }, [refresh])
 
-  return { rows, total, isLoading, loadFailed, refresh, claim }
+  return { rows, total, isLoading, loadFailed, refresh, claim, adopt }
 }

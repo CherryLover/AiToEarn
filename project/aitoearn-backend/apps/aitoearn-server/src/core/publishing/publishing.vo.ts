@@ -7,7 +7,7 @@ const PublishedPostBaseSchema = z.object({
   id: z.string().describe('发布记录 ID'),
   projectId: z.string().describe('属于哪个项目'),
   angleId: z.string().nullable().describe('属于哪个发布方向，归因用'),
-  draftPath: z.string().describe('来源草稿目录，相对项目根'),
+  draftPath: z.string().optional().describe('来源草稿目录，相对项目根；从平台采回来直接建成记录的帖子没有草稿'),
   platform: z.string().describe('平台标识'),
   accountId: z.string().nullable().describe('发到哪个号'),
   executionTaskId: z.string().nullable().describe('对应的执行工单'),

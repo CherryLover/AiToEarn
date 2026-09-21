@@ -135,7 +135,15 @@ CreatorNoteRowSchema.index(
   { userId: 1, platform: 1, title: 1, publishedAtText: 1, collectedAt: 1 },
   { unique: true },
 )
-/** 网页「未归属」那一块的主查询 */
-CreatorNoteRowSchema.index({ userId: 1, matchState: 1, collectedAt: -1 })
+/** 网页「未归属」那一块的主查询：按发布时间倒序，最新发的排在最上面 */
+CreatorNoteRowSchema.index({ userId: 1, matchState: 1, publishedAt: -1 })
 /** 某条帖子的时间序列 */
 CreatorNoteRowSchema.index({ matchedPublishedPostId: 1, collectedAt: -1 })
+/**
+ * 「这条帖子之前采到过吗」——入库时每一行都要问一次。
+ *
+ * 平台的列表页没有单帖入口，一个工单读的是整张列表，所以每 3 小时采一次
+ * 就会把账号里**所有**帖子重新读一遍。没有这次查询的话，一条不属于任何项目的帖子
+ * 每天会在「未归属」里多出 8 行，一周之后那一块就没法看了。
+ */
+CreatorNoteRowSchema.index({ userId: 1, platform: 1, title: 1, publishedAtText: 1, collectedAt: -1 })

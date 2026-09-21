@@ -68,8 +68,8 @@ export interface PublishedPostListItem {
   projectId: string
   /** 属于哪个发布方向，归因用 */
   angleId: string | null
-  /** 来源草稿目录，相对项目根 */
-  draftPath: string
+  /** 来源草稿目录，相对项目根；从平台采回来直接建成记录的帖子没有草稿 */
+  draftPath?: string
   platform: string
   /** 发到哪个号 */
   accountId: string | null

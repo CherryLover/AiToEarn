@@ -74,9 +74,12 @@ export interface PostMetricPoint {
   metrics: NoteMetrics
 }
 
-/** 一条帖子的当前值和变化趋势 */
+/** 一条帖子的当前值和变化趋势，服务端已按发布时间倒序排好 */
 export interface PostMetricTrend {
   publishedPostId: string
+  title: string
+  /** 发布时间；老记录可能没登记过 */
+  publishedAt?: string
   latest: NoteMetrics
   /** 跟上一个采集点的差；只采过一次的帖子没有这个字段 */
   delta?: NoteMetrics
@@ -97,6 +100,12 @@ export interface CreateSyncTaskParams {
   accountId?: string
   projectId?: string
   targetDeviceId?: string
+}
+
+/** 把一行未归属的数据直接建成发布记录 */
+export interface AdoptCreatorNoteRowParams {
+  projectId: string
+  angleId?: string
 }
 
 export interface ProjectMetricsParams {

@@ -64,10 +64,16 @@ export enum PublishedPostSource {
  */
 @Schema({ _id: false })
 export class PublishedPostSnapshot {
-  @Prop({ required: true, default: '' })
+  /**
+   * `required` 在这两个字段上是有害的：Mongoose 的 String 必填校验判的是「非空字符串」，
+   * 空串过不了，而它们的默认值恰恰就是空串——写着 `required: true, default: ''`
+   * 的字段永远无法用默认值落库。标题或正文为空是真实存在的
+   * （从平台采回来认领进系统的帖子，列表页上根本没有正文），所以只保留默认值。
+   */
+  @Prop({ default: '' })
   title: string
 
-  @Prop({ required: true, default: '' })
+  @Prop({ default: '' })
   body: string
 
   @Prop({ required: true, type: [String], default: [] })
@@ -113,9 +119,15 @@ export class PublishedPost extends WithTimestampSchema {
   @Prop({ index: true })
   angleId?: string
 
-  /** 来源草稿目录，相对项目根，如 `drafts/2026-09-18-xhs-export-friction` */
-  @Prop({ required: true })
-  draftPath: string
+  /**
+   * 来源草稿目录，相对项目根，如 `drafts/2026-09-18-xhs-export-friction`。
+   *
+   * **可以没有**：从创作平台采回来、由人在数据页直接建成记录的帖子
+   * （`source: discovered`，没走过本系统的发布流程）在项目里没有对应草稿。
+   * 给它编一个路径会让网页上看起来有草稿可点，点开却是空的。
+   */
+  @Prop()
+  draftPath?: string
 
   /** 平台标识，如 xhs */
   @Prop({ required: true, index: true })

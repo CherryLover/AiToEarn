@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { AppException, ResponseCode, UserType } from '@yikart/common'
 import {
+  AngleRepository,
   CreatorNoteMatchState,
   CreatorNoteRowRepository,
   DeviceRepository,
@@ -9,11 +10,16 @@ import {
   ExecutionTaskType,
   PostMetricRepository,
   ProjectRepository,
+  ProjectStatus,
+  PublishedPostLinkStatus,
+  PublishedPostPublishStatus,
   PublishedPostRepository,
+  PublishedPostSource,
 } from '@yikart/mongodb'
 import { ExecutionTasksService } from '../execution-tasks/execution-tasks.service'
 import { findCollectProfile } from './collect-specs'
 import {
+  AdoptCreatorNoteRowDto,
   ClaimCreatorNoteRowDto,
   CreateSyncTaskDto,
   CreatorNoteRowListQueryDto,
@@ -36,6 +42,7 @@ export class CreatorNotesService {
     private readonly postMetricRepository: PostMetricRepository,
     private readonly publishedPostRepository: PublishedPostRepository,
     private readonly projectRepository: ProjectRepository,
+    private readonly angleRepository: AngleRepository,
     private readonly deviceRepository: DeviceRepository,
     private readonly executionTaskRepository: ExecutionTaskRepository,
     private readonly executionTasksService: ExecutionTasksService,
@@ -153,6 +160,66 @@ export class CreatorNotesService {
     return updated
   }
 
+  /**
+   * 把一行未归属的数据直接建成一条发布记录。
+   *
+   * 场景是「这条内容是我自己做的，只是一开始没走系统」：认领需要先有一条发布记录，
+   * 而这种帖子系统里根本没有对应记录，光有认领就成了死路。
+   *
+   * 建出来的记录标 `source: discovered`，跟走过发布流程的分开：
+   * 它没有草稿、正文是空的（平台的作品列表页上只有标题、时间和五个数字，没有正文），
+   * 混在一起会让人以为项目里存着这篇内容。
+   */
+  async adoptRow(userId: string, rowId: string, dto: AdoptCreatorNoteRowDto) {
+    const row = await this.creatorNoteRowRepository.getByIdAndUserId(rowId, userId)
+    if (!row)
+      throw new AppException(ResponseCode.CreatorNoteRowNotFound)
+
+    if (row.matchState === CreatorNoteMatchState.MATCHED)
+      throw new AppException(ResponseCode.CreatorNoteRowAlreadyMatched)
+
+    const project = await this.projectRepository.getById(dto.projectId)
+    if (!project || project.userId !== userId)
+      throw new AppException(ResponseCode.ProjectNotFound)
+
+    if (project.status === ProjectStatus.ARCHIVED)
+      throw new AppException(ResponseCode.ProjectArchived)
+
+    const angleId = await this.resolveAngleId(project.id, dto.angleId)
+
+    const post = await this.publishedPostRepository.create({
+      userId,
+      userType: UserType.User,
+      projectId: project.id,
+      angleId,
+      platform: row.platform,
+      accountId: row.accountId,
+      snapshot: { title: row.title, body: '', topics: [], mediaUrls: [] },
+      source: PublishedPostSource.DISCOVERED,
+      publishStatus: PublishedPostPublishStatus.PUBLISHED,
+      linkStatus: PublishedPostLinkStatus.NONE,
+      publishedAt: row.publishedAt,
+    })
+
+    if (!post)
+      throw new AppException(ResponseCode.CreatorNoteRowAdoptFailed)
+
+    // 建完立刻按认领那条路走一遍：归属 + 补第一个快照，
+    // 不然人刚建完记录，数据页上这条帖子是一条空折线，要等下一次采集才有点
+    return await this.claimRow(userId, rowId, { publishedPostId: post.id })
+  }
+
+  private async resolveAngleId(projectId: string, angleId?: string): Promise<string | undefined> {
+    if (!angleId)
+      return undefined
+
+    const angle = await this.angleRepository.getById(angleId)
+    if (!angle || angle.projectId !== projectId)
+      throw new AppException(ResponseCode.AngleNotFound)
+
+    return angle.id
+  }
+
   // ========== 数据页 ==========
 
   /** 某条帖子的时间序列，早的在前 */
@@ -164,14 +231,46 @@ export class CreatorNotesService {
     return await this.postMetricRepository.listByPublishedPostId(post.id, userId)
   }
 
-  /** 项目（或某个方向）下每条帖子的当前值和变化趋势 */
+  /**
+   * 项目（或某个方向）下每条帖子的当前值和变化趋势，最新发布的排最前。
+   *
+   * 标题和发布时间在这里配上，而不是让网页再拉一遍发布记录列表去对：
+   * 那样排序就只能在网页拿到的那一页里做，超出那一页的帖子会排到末尾，
+   * 而「最新发的排最上面」恰恰是最容易被这件事破坏的。
+   */
   async listProjectTrends(userId: string, projectId: string, query: ProjectMetricsQueryDto) {
-    return await this.postMetricRepository.listTrendsByProjectId({
+    const trends = await this.postMetricRepository.listTrendsByProjectId({
       userId,
       projectId,
       angleId: query.angleId,
       since: daysAgo(query.days ?? DEFAULT_TREND_DAYS),
     })
+
+    const posts = await this.publishedPostRepository.listByIds(
+      trends.map(trend => trend.publishedPostId),
+      userId,
+    )
+    const postById = new Map(posts.map(post => [post.id, post]))
+
+    return trends
+      .map((trend) => {
+        const post = postById.get(trend.publishedPostId)
+        return {
+          ...trend,
+          title: post?.snapshot.title || post?.draftPath || '',
+          publishedAt: post?.publishedAt,
+        }
+      })
+      .sort((left, right) => {
+        // 没有发布时间的排最后：它们是没登记过发布时间的老记录，
+        // 当成「很久以前」比当成「刚刚」诚实
+        const leftAt = left.publishedAt?.getTime() ?? Number.NEGATIVE_INFINITY
+        const rightAt = right.publishedAt?.getTime() ?? Number.NEGATIVE_INFINITY
+        if (leftAt !== rightAt)
+          return rightAt - leftAt
+
+        return right.latestCollectedAt.getTime() - left.latestCollectedAt.getTime()
+      })
   }
 
   /** 按方向聚合：这才是整套设计的目的 */

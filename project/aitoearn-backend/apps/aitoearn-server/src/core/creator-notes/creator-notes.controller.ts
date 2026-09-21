@@ -4,6 +4,7 @@ import { GetToken, TokenInfo } from '@yikart/aitoearn-auth'
 import { ApiDoc, ParseObjectIdPipe } from '@yikart/common'
 import { ExecutionTaskDetailVo, toExecutionTaskDetailVo } from '../execution-tasks/execution-tasks.vo'
 import {
+  AdoptCreatorNoteRowDto,
   ClaimCreatorNoteRowDto,
   CreateSyncTaskDto,
   CreatorNoteRowListQueryDto,
@@ -75,6 +76,22 @@ export class CreatorNotesController {
   }
 
   @ApiDoc({
+    summary: '把一行未归属的数据建成发布记录',
+    description: '用在「这条内容是我自己做的，只是一开始没走系统」：建一条 source=discovered 的发布记录并立刻归属过去。列表页上没有正文，建出来的记录正文是空的',
+    body: AdoptCreatorNoteRowDto.schema,
+    response: CreatorNoteRowVo,
+  })
+  @Post('/rows/:id/adopt')
+  async adoptRow(
+    @GetToken() token: TokenInfo,
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() dto: AdoptCreatorNoteRowDto,
+  ): Promise<CreatorNoteRowVo> {
+    const row = await this.creatorNotesService.adoptRow(token.id, id, dto)
+    return CreatorNoteRowVo.create(toCreatorNoteRowVo(row))
+  }
+
+  @ApiDoc({
     summary: '一条帖子的时间序列',
     description: '那几次快照连成的折线，早的在前',
     response: [PostMetricPointVo],
@@ -90,7 +107,7 @@ export class CreatorNotesController {
 
   @ApiDoc({
     summary: '项目下每条帖子的当前值和趋势',
-    description: 'delta 是跟上一个采集点的差；只采过一次的帖子没有 delta',
+    description: 'delta 是跟上一个采集点的差；只采过一次的帖子没有 delta。按发布时间倒序，最新发的在最前',
     query: ProjectMetricsQueryDto.schema,
     response: [PostMetricTrendVo],
   })
