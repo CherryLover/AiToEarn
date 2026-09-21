@@ -6,9 +6,10 @@
  */
 'use client'
 
-import type { CreateAgentTaskParams, SSEMessage } from '@/api/ai/ai.types'
+import type { CreateAgentTaskParams } from '@/api/ai/ai.types'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { agentApi } from '@/api/ai/ai.api'
+import { pickProgressText, readTerminalError } from './agent-progress'
 
 /**
  * 带项目的 Agent 任务入参。
@@ -24,21 +25,6 @@ export type ProjectAgentTaskStatus = 'idle' | 'running' | 'done' | 'error'
 
 /** 过程里最多留几行，够看清它在干什么就行 */
 const MAX_LOG_LINES = 40
-
-/** 从一条 SSE 消息里抠出能给人看的文字，抠不出来就返回空串 */
-function pickText(message: SSEMessage): string {
-  if (typeof message.message === 'string')
-    return message.message.trim()
-
-  const payload = message.message as { message?: unknown } | undefined
-  if (payload && typeof payload.message === 'string')
-    return payload.message.trim()
-
-  if (typeof message.data === 'string')
-    return message.data.trim()
-
-  return ''
-}
 
 export function useProjectAgentTask() {
   const [status, setStatus] = useState<ProjectAgentTaskStatus>('idle')
@@ -129,15 +115,22 @@ export function useProjectAgentTask() {
             setTaskId(message.taskId)
           }
 
-          if (message.type === 'error') {
-            setErrorText(pickText(message))
+          // 失败必须在这里落到 error 状态：服务端把失败发成一条普通分片，
+          // 连接随后正常关闭，只看关闭事件的话页面会显示「跑完了」；
+          // 而 SSE 客户端收到这条之后会直接掐断连接，onDone / onError 一个都不会再来，
+          // 不在这里收口就会一直转圈，错误信息也永远显示不出来
+          const failure = readTerminalError(message)
+          if (failure) {
+            if (mountedRef.current)
+              setErrorText(failure)
+            applyStatus('error')
             return
           }
 
           if (message.type === 'keep_alive' || message.type === 'init')
             return
 
-          appendLog(pickText(message))
+          appendLog(pickProgressText(message))
         },
         (error) => {
           if (statusRef.current !== 'running')

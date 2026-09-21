@@ -174,6 +174,9 @@ export const agentApi = {
             if (data.type === 'done' || data.type === 'error') {
               isCompleted = true
               abortController.abort()
+              // 掐断连接之后 onclose 和 onerror 都不会再来（两处都用 isCompleted /
+              // signal.aborted 挡住了），不在这里收口的话调用方会一直停在「进行中」
+              onDone(sessionId)
             }
           }
           catch (error) {
