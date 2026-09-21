@@ -105,6 +105,29 @@ function build(options: { posts?: Record<string, unknown>[], drafts?: Fakes['dra
         new Date(row.collectedAt as Date).getTime() > new Date(latest.collectedAt as Date).getTime() ? row : latest,
       )
     }),
+    deleteDuplicatePendingByUserId: vi.fn(async (userId: string) => {
+      const seen = new Set<string>()
+      const doomed: string[] = []
+      // 按采集时间倒序看，同一条帖子第一次见到的那行留下，后面的都是重复
+      const ordered = [...rows].sort(
+        (a, b) => new Date(b.collectedAt as Date).getTime() - new Date(a.collectedAt as Date).getTime(),
+      )
+      for (const row of ordered) {
+        if (row.userId !== userId || row.matchState === CreatorNoteMatchState.MATCHED)
+          continue
+
+        const key = `${row.platform}|${row.title}|${row.publishedAtText}`
+        if (seen.has(key))
+          doomed.push(row.id as string)
+        else
+          seen.add(key)
+      }
+
+      for (const id of doomed)
+        rows.splice(rows.findIndex(row => row.id === id), 1)
+
+      return doomed.length
+    }),
     updatePendingById: vi.fn(async (id: string, userId: string, params: Record<string, unknown>) => {
       const row = rows.find(item => item.id === id && item.userId === userId)
       if (!row || row.matchState === CreatorNoteMatchState.MATCHED)
@@ -415,5 +438,50 @@ describe('采集结果入库', () => {
     expect(fakes.rows).toHaveLength(2)
     expect(fakes.metrics).toHaveLength(1)
     expect(fakes.metrics[0]!.publishedPostId).toBe('post-known')
+  })
+
+  it('入库前把历史堆出来的重复行清掉，每条帖子只留最新那一行', async () => {
+    const fakes = build({ posts: [knownPost] })
+
+    // 手动摆出「同一条帖子采了三轮各插了一行」的历史现场，也就是改之前的库
+    for (const at of ['2026-09-20T02:00:00.000Z', '2026-09-20T08:00:00.000Z', COLLECTED_AT]) {
+      fakes.rows.push({
+        id: `legacy-${at}`,
+        userId: 'user-1',
+        platform: 'xhs',
+        title: NOTE_STRANGER.title,
+        publishedAtText: NOTE_STRANGER.publishedAtText,
+        collectedAt: new Date(at),
+        matchState: CreatorNoteMatchState.UNMATCHED,
+      })
+    }
+
+    const outcome = await ingest(fakes, [NOTE_STRANGER], NEXT_COLLECTED_AT)
+
+    expect(outcome.removedDuplicateRows).toBe(2)
+    expect(fakes.rows).toHaveLength(1)
+    expect(new Date(fakes.rows[0]!.collectedAt as Date).toISOString()).toBe(NEXT_COLLECTED_AT)
+  })
+
+  it('已经归属的行不在清理范围里：那是它每一轮的原始数据轨迹', async () => {
+    const fakes = build({ posts: [knownPost] })
+
+    for (const at of ['2026-09-20T02:00:00.000Z', '2026-09-20T08:00:00.000Z']) {
+      fakes.rows.push({
+        id: `matched-${at}`,
+        userId: 'user-1',
+        platform: 'xhs',
+        title: NOTE_KNOWN.title,
+        publishedAtText: NOTE_KNOWN.publishedAtText,
+        collectedAt: new Date(at),
+        matchState: CreatorNoteMatchState.MATCHED,
+        matchedPublishedPostId: 'post-known',
+      })
+    }
+
+    const outcome = await ingest(fakes, [NOTE_KNOWN], NEXT_COLLECTED_AT)
+
+    expect(outcome.removedDuplicateRows).toBe(0)
+    expect(fakes.rows).toHaveLength(3)
   })
 })

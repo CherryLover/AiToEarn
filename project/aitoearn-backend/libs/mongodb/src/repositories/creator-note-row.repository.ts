@@ -164,6 +164,42 @@ export class CreatorNoteRowRepository extends BaseRepository<CreatorNoteRow> {
     )
   }
 
+  /**
+   * 清掉同一条帖子在「未归属」里堆出来的重复行，每条只留最新的一行。
+   *
+   * 2026-09-21 之前每采一轮就给每条帖子插一行，采了三轮「未归属」里每条就出现三次。
+   * 入库改成就地刷新之后新的重复不会再产生，但**已经堆在库里的那些不会自己消失**，
+   * 所以每次入库前先扫一遍。扫的是这个用户所有还没归属的行，
+   * 而不只是这一轮采到的那些——平台上已经删掉的帖子不会再被采到，
+   * 只按本轮清理的话它那三行会永远留在列表里。
+   *
+   * 只删还没归属的：已归属的行每轮一条是它的原始数据轨迹，快照表就是从那儿来的。
+   * 删掉的这些也没有任何派生数据——快照只给已归属的行写。
+   */
+  async deleteDuplicatePendingByUserId(userId: string): Promise<number> {
+    const groups = await this.model.aggregate<{ extra: string[] }>([
+      { $match: { userId, matchState: { $ne: CreatorNoteMatchState.MATCHED } } },
+      { $sort: { collectedAt: -1 } },
+      {
+        $group: {
+          _id: { platform: '$platform', title: '$title', publishedAtText: '$publishedAtText' },
+          ids: { $push: '$_id' },
+        },
+      },
+      // 只有一行的不用动
+      { $match: { 'ids.1': { $exists: true } } },
+      // 上面按采集时间倒序排过，第 0 个就是最新的那行，留它
+      { $project: { extra: { $slice: ['$ids', 1, { $size: '$ids' }] } } },
+    ]).exec()
+
+    const ids = groups.flatMap(group => group.extra)
+    if (ids.length === 0)
+      return 0
+
+    const result = await this.model.deleteMany({ _id: { $in: ids }, userId }).exec()
+    return result.deletedCount ?? 0
+  }
+
   async listWithPagination(params: ListCreatorNoteRowsParams) {
     const { page, pageSize, userId, platform, accountId, matchState, matchedPublishedPostId, collectedFrom, collectedTo } = params
 

@@ -26,6 +26,8 @@ export interface IngestOutcome {
   insertedRows: number
   /** 就地刷新掉的未归属行数：同一条帖子上次采过、这次只是更新它的数字 */
   refreshedRows: number
+  /** 入库前清掉的历史重复行数 */
+  removedDuplicateRows: number
   matched: number
   ambiguous: number
   unmatched: number
@@ -87,7 +89,15 @@ export class CreatorNoteIngestService {
     accountId?: string
     result: unknown
   }): Promise<IngestOutcome> {
-    const outcome: IngestOutcome = { insertedRows: 0, refreshedRows: 0, matched: 0, ambiguous: 0, unmatched: 0, snapshots: 0 }
+    const outcome: IngestOutcome = {
+      insertedRows: 0,
+      refreshedRows: 0,
+      removedDuplicateRows: 0,
+      matched: 0,
+      ambiguous: 0,
+      unmatched: 0,
+      snapshots: 0,
+    }
 
     const sync = readSyncResult(params.result)
     if (!sync) {
@@ -103,6 +113,21 @@ export class CreatorNoteIngestService {
 
     const timeZone = findCollectProfile(sync.platform)?.timeZone ?? FALLBACK_TIME_ZONE
     const collectedAt = Number.isNaN(sync.collectedAt.getTime()) ? new Date() : sync.collectedAt
+
+    // 先把历史上堆出来的重复行清掉再入库。
+    // 入库逻辑改成就地刷新之前，每采一轮就给每条帖子插一行，
+    // 采过几轮「未归属」里每条就出现几次；新的重复不会再产生，
+    // 但已经在库里的那些只能在这里收掉。清完是幂等的，之后每轮都是 0。
+    // 清理失败了也要继续入库：这一步只是把列表擦干净，
+    // 为它把一整轮采回来的数据丢掉，代价和收益完全不成比例
+    try {
+      outcome.removedDuplicateRows = await this.creatorNoteRowRepository.deleteDuplicatePendingByUserId(params.userId)
+      if (outcome.removedDuplicateRows > 0)
+        this.logger.log(`清掉 ${outcome.removedDuplicateRows} 行历史重复的未归属数据`)
+    }
+    catch (error) {
+      this.logger.warn(error, '清理历史重复行失败，这一轮照常入库')
+    }
 
     // 草稿索引一次采集只建一次：这一趟要把所有项目的 drafts/ 扫一遍，
     // 放进每行的匹配里就是几十次重复扫描
