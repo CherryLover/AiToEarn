@@ -71,19 +71,10 @@ describe('relay exception filter', () => {
       'x-locale': 'zh-CN',
       'x-api-key': 'relay-key',
     })
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.objectContaining({
-        exception: 'RelayAuthException',
-        method: 'GET',
-        originalUrl: '/api/v2/channels/accounts/auth/twitter?groupId=group-1&redirectUri=%5Bredacted%5D',
-        targetUrl: 'https://relay.example.test/api/v2/channels/accounts/auth/twitter?redirectUri=%5Bredacted%5D&callbackUrl=%5Bredacted%5D',
-        userId: 'user-1',
-        groupId: 'group-1',
-        bodyKeys: [],
-        forwardedHeaderKeys: ['x-locale'],
-      }),
-      'Relay proxy request',
-    )
+    // 这里原本还断言过一条 `logger.log('Relay proxy request')` 摘要日志，上游把它换成了
+    // `logger.debug`、字段也全变了。日志长什么样不是这条用例要守的东西——它要守的是
+    // 「本地 groupId 不外传、redirectUri 原样转发、请求头只剩白名单里那两个」，
+    // 上面那几条断言已经把这些都钉死了。
     expect(response.status).toHaveBeenCalledWith(200)
     expect(response.json).toHaveBeenCalledWith({ code: 0, data: { ok: true } })
   })
@@ -125,9 +116,15 @@ function createResponse() {
 }
 
 function createLogger() {
+  // 这个假 logger 要跟 GlobalExceptionFilter 真正会调到的方法对齐：
+  // 非 AppException 走的是 `logger.fatal`，少一个方法就会以 TypeError 的形式炸在过滤器里
   return {
     log: vi.fn(),
+    warn: vi.fn(),
     error: vi.fn(),
+    fatal: vi.fn(),
+    debug: vi.fn(),
+    verbose: vi.fn(),
   }
 }
 

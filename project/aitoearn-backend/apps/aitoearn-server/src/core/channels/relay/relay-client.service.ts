@@ -50,7 +50,8 @@ export class RelayClientService {
     })
 
     if (!signResult?.uploadUrl) {
-      throw new Error(`uploadSign returned no uploadUrl: ${JSON.stringify(signResult)}`)
+      this.logger.error(new Error('uploadSign returned no uploadUrl'), `Relay uploadSign response missing uploadUrl: ${JSON.stringify(signResult)}`)
+      throw new AppException(ResponseCode.RelayServerUnavailable)
     }
 
     await axios.put(signResult.uploadUrl, fileResponse.data, {
@@ -77,8 +78,8 @@ export class RelayClientService {
         },
       })
       if (response.data.code !== 0) {
-        this.logger.error({ message: 'Relay API returned error', url: options.url, code: response.data.code, relayMessage: response.data.message })
-        throw new Error(`Relay API error [${response.data.code}]: ${response.data.message}`)
+        this.logger.error(new Error(`Relay API error [${response.data.code}]: ${response.data.message}`), `Relay API returned error: ${options.url}`)
+        throw new AppException(ResponseCode.RelayServerUnavailable)
       }
       return response.data.data as T
     }

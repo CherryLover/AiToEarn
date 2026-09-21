@@ -387,8 +387,12 @@ describe('带 SSRF 校验的推送请求', () => {
  *
  * 所以这一组不看返回值，**在 net 层数「建了几条连接、连到哪台」**：
  * 两台靶子占同一个端口的不同地址（`::1` 和 `127.0.0.1`），请求落在哪台就说明真正连的是哪个 IP。
+ *
+ * 这一组需要 IPv6 回环（`::1`）才能把两台靶子分开摆。有些容器化的运行环境没开 IPv6，
+ * `listen('::1')` 会直接 `EAFNOSUPPORT`；那种环境下整组跳过，而不是把套件搞红——
+ * 跳过会在结果里明写出来，红色则会淹掉真正的回归。
  */
-describe('不复用连接池：每次请求都连这一次校验出来的 IP', () => {
+describe.skipIf(!await hasIpv6Loopback())('不复用连接池：每次请求都连这一次校验出来的 IP', () => {
   interface Probe {
     server: Server
     connections: number
@@ -466,3 +470,21 @@ describe('不复用连接池：每次请求都连这一次校验出来的 IP', (
     expect(publicSide.connections).toBe(2)
   })
 })
+
+/** 这个环境能不能把服务器起在 `::1` 上 */
+async function hasIpv6Loopback(): Promise<boolean> {
+  const probe = createServer()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      probe.once('error', reject)
+      probe.listen(0, '::1', resolve)
+    })
+    return true
+  }
+  catch {
+    return false
+  }
+  finally {
+    await new Promise<void>(resolve => probe.close(() => resolve()))
+  }
+}

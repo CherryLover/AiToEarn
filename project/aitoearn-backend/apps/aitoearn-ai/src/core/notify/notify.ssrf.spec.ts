@@ -233,7 +233,12 @@ describe('ssrf · 真发一次请求', () => {
  *
  * 两台靶子占同一个端口的不同地址（`::1` 和 `127.0.0.1`），请求落在哪台，就说明真正连的是哪个 IP。
  */
-describe('ssrf · 用主机名发：连的是这一跳校验出来的 IP', () => {
+/**
+ * 这一组需要 IPv6 回环（`::1`）才能把两台靶子分开摆。有些容器化的运行环境没开 IPv6，
+ * `listen('::1')` 会直接 `EAFNOSUPPORT`；那种环境下整组跳过，而不是把套件搞红——
+ * 跳过会在结果里明写出来，红色则会淹掉真正的回归。
+ */
+describe.skipIf(!await hasIpv6Loopback())('ssrf · 用主机名发：连的是这一跳校验出来的 IP', () => {
   interface Probe {
     server: Server
     connections: number
@@ -480,3 +485,21 @@ describe('ssrf · 跳转码白名单：只认 301/302/303/307/308', () => {
     expect(received.map(r => r.url)).toEqual(['/first/'])
   })
 })
+
+/** 这个环境能不能把服务器起在 `::1` 上 */
+async function hasIpv6Loopback(): Promise<boolean> {
+  const probe = createServer()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      probe.once('error', reject)
+      probe.listen(0, '::1', resolve)
+    })
+    return true
+  }
+  catch {
+    return false
+  }
+  finally {
+    await new Promise<void>(resolve => probe.close(() => resolve()))
+  }
+}
