@@ -1,3 +1,4 @@
+import type { PickedMedia } from './publish.utils'
 import type { PublishedPostDetail } from '@/api/publishing/publishing.types'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -12,6 +13,40 @@ const readProjectFileApi = vi.fn()
 const toastSuccess = vi.fn()
 const toastError = vi.fn()
 const toastWarning = vi.fn()
+const downloadImage = vi.fn()
+
+/** 挑图弹窗被换成一个按钮，点一下就把这批图交回卡片 */
+let picks: PickedMedia[] = []
+
+vi.mock('./MediaPickerDialog', () => ({
+  MediaPickerDialog: ({
+    open,
+    onConfirm,
+    onOpenChange,
+  }: {
+    open: boolean
+    onConfirm: (items: PickedMedia[]) => void
+    onOpenChange: (next: boolean) => void
+  }) =>
+    open
+      ? (
+          <button
+            type="button"
+            onClick={() => {
+              onConfirm(picks)
+              onOpenChange(false)
+            }}
+          >
+            挑好了
+          </button>
+        )
+      : null,
+}))
+/** 只换掉真去碰浏览器下载的那一个，其余都用真的 */
+vi.mock('./publish.utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./publish.utils')>()
+  return { ...actual, downloadImage: (...a: unknown[]) => downloadImage(...a) }
+})
 
 vi.mock('@/api/publishing/publishing.api', () => ({
   completePublishedPostApi: (...a: unknown[]) => completePublishedPostApi(...a),
@@ -65,7 +100,13 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.spyOn(console, 'error').mockImplementation(() => {})
   getProjectFileTreeApi.mockResolvedValue({ code: 0, data: null })
+  downloadImage.mockResolvedValue(true)
+  picks = []
 })
+
+function picked(path: string, ossUrl = `https://oss/${path}`): PickedMedia {
+  return { path, name: path.split('/').pop() ?? '', url: ossUrl, ossUrl }
+}
 
 function renderCard(detail = post(), options: { readOnly?: boolean, draftNotes?: Parameters<typeof PublishCard>[0]['draftNotes'] } = {}) {
   const onUpdated = vi.fn()
@@ -248,5 +289,143 @@ describe('publishCard 标失败和删除', () => {
 
     await waitFor(() => expect(toastError).toHaveBeenCalledWith('publishError.notFound'))
     expect(onDeleted).not.toHaveBeenCalled()
+  })
+})
+
+describe('publishCard 下载配图', () => {
+  const twoImages = post({
+    snapshot: { title: 't', body: 'b', topics: [], mediaUrls: ['https://oss/a.png', 'https://oss/b.png'] },
+  })
+
+  it('单张下载不成功时提示改用另存为', async () => {
+    downloadImage.mockResolvedValue(false)
+    renderCard(twoImages)
+
+    await userEvent.click(screen.getAllByRole('button', { name: /publish.card.download$/ })[0])
+
+    await waitFor(() => expect(downloadImage).toHaveBeenCalledWith('https://oss/a.png', 'a.png'))
+    expect(toastWarning).toHaveBeenCalledWith('publish.card.downloadFallback')
+  })
+
+  it('整批下载把每张都下一遍，全成功才说开始下载', async () => {
+    renderCard(twoImages)
+
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.downloadAll/ }))
+
+    await waitFor(() => expect(downloadImage).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('publish.card.downloadStarted'))
+  })
+
+  /** 有一张没下成就得说一声，不然人以为都下好了 */
+  it('整批下载里有一张没下成就提示改用另存为', async () => {
+    downloadImage.mockResolvedValueOnce(true).mockResolvedValueOnce(false)
+    renderCard(twoImages)
+
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.downloadAll/ }))
+
+    await waitFor(() => expect(toastWarning).toHaveBeenCalledWith('publish.card.downloadFallback'))
+    expect(toastSuccess).not.toHaveBeenCalledWith('publish.card.downloadStarted')
+  })
+
+  it('只有一张图时不给整批下载', () => {
+    renderCard(post({ snapshot: { title: 't', body: 'b', topics: [], mediaUrls: ['https://oss/a.png'] } }))
+
+    expect(screen.queryByRole('button', { name: /publish.card.downloadAll/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('publishCard 临时补配图', () => {
+  it('从物料里挑的图并进这张卡片，并标出来是挑来的', async () => {
+    picks = [picked('media/cover.png')]
+    renderCard()
+
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.pickMedia/ }))
+    await userEvent.click(await screen.findByRole('button', { name: '挑好了' }))
+
+    expect(await screen.findByAltText('cover.png')).toBeInTheDocument()
+    expect(screen.getByText('publish.card.pickedLabel')).toBeInTheDocument()
+    expect(toastSuccess).toHaveBeenCalledWith('publish.mediaPicker.added')
+  })
+
+  /** 快照里已经有同一个 OSS 地址的，再挑一遍就是重复，别往卡片上摆两张一样的 */
+  it('快照里已经有的图不再并进去', async () => {
+    picks = [picked('media/a.png', 'https://oss/a.png')]
+    renderCard(post({
+      snapshot: { title: 't', body: 'b', topics: [], mediaUrls: ['https://oss/a.png'] },
+    }))
+
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.pickMedia/ }))
+    await userEvent.click(await screen.findByRole('button', { name: '挑好了' }))
+
+    await waitFor(() => expect(toastWarning).toHaveBeenCalledWith('publish.mediaPicker.alreadyIn'))
+    expect(screen.queryByText('publish.card.pickedLabel')).not.toBeInTheDocument()
+  })
+
+  it('挑来的图能再移掉，快照里的那几张不给移', async () => {
+    picks = [picked('media/cover.png')]
+    renderCard(post({
+      snapshot: { title: 't', body: 'b', topics: [], mediaUrls: ['https://oss/a.png'] },
+    }))
+
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.pickMedia/ }))
+    await userEvent.click(await screen.findByRole('button', { name: '挑好了' }))
+    await screen.findByAltText('cover.png')
+
+    expect(screen.getAllByRole('button', { name: /publish.card.removePicked/ })).toHaveLength(1)
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.removePicked/ }))
+
+    expect(screen.queryByAltText('cover.png')).not.toBeInTheDocument()
+    expect(screen.getByAltText('a.png')).toBeInTheDocument()
+  })
+
+  it('归档项目里不给挑图', () => {
+    renderCard(post(), { readOnly: true })
+
+    expect(screen.queryByRole('button', { name: /publish.card.pickMedia/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('publishCard 请求没通', () => {
+  it('回填请求没通时说网络', async () => {
+    completePublishedPostApi.mockRejectedValue(new Error('offline'))
+    renderCard()
+
+    await userEvent.type(screen.getByPlaceholderText('publish.card.urlPlaceholder'), 'https://a.com/1')
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.complete/ }))
+
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('error.network'))
+  })
+
+  it('标失败请求没通时说网络', async () => {
+    failPublishedPostApi.mockRejectedValue(new Error('offline'))
+    renderCard()
+
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.fail$/ }))
+    await userEvent.type(await screen.findByPlaceholderText('publish.card.failPlaceholder'), '平台限流')
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.failSubmit/ }))
+
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('error.network'))
+  })
+
+  it('标失败被业务码挡下来时把码翻成具体说法', async () => {
+    failPublishedPostApi.mockResolvedValue({ code: 20500 })
+    const { onUpdated } = renderCard()
+
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.fail$/ }))
+    await userEvent.type(await screen.findByPlaceholderText('publish.card.failPlaceholder'), '平台限流')
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.failSubmit/ }))
+
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('publishError.notFound'))
+    expect(onUpdated).not.toHaveBeenCalled()
+  })
+
+  it('删除请求没通时说网络', async () => {
+    deletePublishedPostApi.mockRejectedValue(new Error('offline'))
+    renderCard()
+
+    await userEvent.click(screen.getByRole('button', { name: /publish.card.delete$/ }))
+    await userEvent.click(await screen.findByRole('button', { name: /publish.card.deleteConfirm/ }))
+
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('error.network'))
   })
 })

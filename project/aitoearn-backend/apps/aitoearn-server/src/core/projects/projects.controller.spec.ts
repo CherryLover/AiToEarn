@@ -163,3 +163,155 @@ describe('项目接口的路由装配', () => {
     expect(file).toBeDefined()
   })
 })
+
+describe('项目本身的路由装配', () => {
+  let controller: ProjectsController
+  let service: Record<string, ReturnType<typeof vi.fn>>
+  let filesService: Record<string, ReturnType<typeof vi.fn>>
+
+  function project(overrides: Record<string, unknown> = {}) {
+    return {
+      id: PROJECT_ID,
+      name: 'forty-weeks',
+      displayName: '四十周',
+      desc: '孕期内容',
+      audience: null,
+      goal: null,
+      status: 'active',
+      dirName: 'forty-weeks',
+      archivedAt: null,
+      createdAt: NOW,
+      updatedAt: NOW,
+      ...overrides,
+    }
+  }
+
+  beforeEach(async () => {
+    service = {
+      create: vi.fn(),
+      listByUserId: vi.fn(),
+      suggestName: vi.fn(),
+      getDetail: vi.fn(),
+      update: vi.fn(),
+      archive: vi.fn(),
+    }
+    filesService = { mkdir: vi.fn(), rename: vi.fn() }
+
+    const moduleRef = await Test.createTestingModule({
+      controllers: [ProjectsController],
+      providers: [
+        { provide: ProjectsService, useValue: service },
+        { provide: ProjectFilesService, useValue: filesService },
+      ],
+    }).compile()
+
+    controller = moduleRef.get(ProjectsController)
+  })
+
+  it('建项目把表单透传下去，返回详情 VO', async () => {
+    service.create!.mockResolvedValue(project())
+    const dto = { name: 'forty-weeks', displayName: '四十周', desc: '孕期内容' }
+
+    const vo = await controller.create(TOKEN, dto as never)
+
+    expect(service.create).toHaveBeenCalledWith('user-1', dto)
+    expect(vo.name).toBe('forty-weeks')
+    expect(vo.dirName).toBe('forty-weeks')
+  })
+
+  /** 列表项只给列表要的那几个字段，目录名、归档时间这些是详情才有的 */
+  it('列表按状态筛，并且只给列表字段', async () => {
+    service.listByUserId!.mockResolvedValue([project()])
+
+    const vos = await controller.list(TOKEN, { status: 'active' } as never)
+
+    expect(service.listByUserId).toHaveBeenCalledWith('user-1', 'active')
+    expect(vos[0]!.displayName).toBe('四十周')
+    expect(vos[0]).not.toHaveProperty('dirName')
+  })
+
+  it('说明没填过时列表里给的是 null，不是缺字段', async () => {
+    service.listByUserId!.mockResolvedValue([project({ desc: undefined })])
+
+    const vos = await controller.list(TOKEN, {} as never)
+
+    expect(vos[0]!.desc).toBeNull()
+  })
+
+  it('建议英文名包一层 VO 再给出去', async () => {
+    service.suggestName!.mockResolvedValue('quiet-otter')
+
+    const vo = await controller.suggestName(TOKEN)
+
+    expect(vo.name).toBe('quiet-otter')
+  })
+
+  it('详情把没填过的字段都补成 null', async () => {
+    service.getDetail!.mockResolvedValue(project({ desc: undefined, audience: undefined, goal: undefined }))
+
+    const vo = await controller.detail(TOKEN, PROJECT_ID)
+
+    expect(service.getDetail).toHaveBeenCalledWith(PROJECT_ID, 'user-1')
+    expect(vo.desc).toBeNull()
+    expect(vo.audience).toBeNull()
+    expect(vo.goal).toBeNull()
+  })
+
+  it('更新把表单透传下去，返回改完的详情', async () => {
+    service.update!.mockResolvedValue(project({ displayName: '四十周 2.0' }))
+    const dto = { displayName: '四十周 2.0' }
+
+    const vo = await controller.update(TOKEN, PROJECT_ID, dto as never)
+
+    expect(service.update).toHaveBeenCalledWith(PROJECT_ID, 'user-1', dto)
+    expect(vo.displayName).toBe('四十周 2.0')
+  })
+
+  /** 归档只改目录名，英文名不动，两个值从这一刻起就不一样了 */
+  it('归档之后目录名带上归档前缀，归档时间也回传', async () => {
+    service.archive!.mockResolvedValue(project({
+      status: 'archived',
+      dirName: '_archived_forty-weeks_20260921030000',
+      archivedAt: NOW,
+    }))
+
+    const vo = await controller.archive(TOKEN, PROJECT_ID)
+
+    expect(service.archive).toHaveBeenCalledWith(PROJECT_ID, 'user-1')
+    expect(vo.name).toBe('forty-weeks')
+    expect(vo.dirName).toBe('_archived_forty-weeks_20260921030000')
+    expect(vo.archivedAt).toEqual(NOW)
+  })
+
+  it('新建文件夹把路径透传给文件服务', async () => {
+    filesService.mkdir!.mockResolvedValue({
+      name: 'assets',
+      path: 'media/assets',
+      type: 'dir',
+      size: null,
+      updatedAt: NOW,
+      children: null,
+    })
+
+    const vo = await controller.fileMkdir(TOKEN, PROJECT_ID, { path: 'media/assets' } as never)
+
+    expect(filesService.mkdir).toHaveBeenCalledWith(PROJECT_ID, 'user-1', 'media/assets')
+    expect(vo.path).toBe('media/assets')
+  })
+
+  it('改名把起点和终点一起交给文件服务', async () => {
+    filesService.rename!.mockResolvedValue({
+      name: 'assets',
+      path: 'assets',
+      type: 'dir',
+      size: null,
+      updatedAt: NOW,
+      children: null,
+    })
+
+    const vo = await controller.fileRename(TOKEN, PROJECT_ID, { from: 'media', to: 'assets' } as never)
+
+    expect(filesService.rename).toHaveBeenCalledWith(PROJECT_ID, 'user-1', 'media', 'assets')
+    expect(vo.path).toBe('assets')
+  })
+})

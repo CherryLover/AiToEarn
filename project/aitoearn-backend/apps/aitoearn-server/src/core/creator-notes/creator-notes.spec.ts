@@ -111,7 +111,7 @@ function build(options: BuildOptions = {}) {
     executionTasksService as never,
   )
 
-  return { service, created, metrics, rows, createdPosts, deviceRepository, executionTaskRepository, executionTasksService }
+  return { service, created, metrics, rows, createdPosts, deviceRepository, executionTaskRepository, executionTasksService, rowRepository, metricRepository, projectRepository, publishedPostRepository }
 }
 
 describe('建采集工单', () => {
@@ -317,5 +317,215 @@ describe('每 3 小时那一轮调度', () => {
 
     expect(fakes.created).toHaveLength(1)
     expect(fakes.created[0]!.userId).toBe('user-ok')
+  })
+})
+
+describe('数据页要的那几个查询', () => {
+  const post = {
+    id: 'post-1',
+    userId: 'user-1',
+    projectId: 'proj-1',
+    snapshot: { title: '孕晚期焦虑' },
+    publishedAt: new Date('2026-09-20T00:00:00.000Z'),
+  }
+
+  it('列数据行把用户和筛选条件一起交给仓储', async () => {
+    const fakes = build({ rows: [{ id: 'row-1' }] })
+
+    const result = await fakes.service.listRowsWithPagination('user-1', { page: 1, pageSize: 20 } as never)
+
+    expect(fakes.rowRepository.listWithPagination).toHaveBeenCalledWith({ userId: 'user-1', page: 1, pageSize: 20 })
+    expect(result.total).toBe(1)
+  })
+
+  it('数未归属的数量只数 unmatched 这一种', async () => {
+    const fakes = build({ rows: [{ id: 'row-1' }] })
+
+    await fakes.service.countUnmatched('user-1')
+
+    expect(fakes.rowRepository.countByUserIdAndMatchState)
+      .toHaveBeenCalledWith('user-1', CreatorNoteMatchState.UNMATCHED)
+  })
+
+  it('时间序列先确认这条帖子是自己的', async () => {
+    const fakes = build({ posts: [post] })
+
+    await fakes.service.listSeriesByPublishedPostId('user-1', 'post-1')
+
+    expect(fakes.metricRepository.listByPublishedPostId).toHaveBeenCalledWith('post-1', 'user-1')
+  })
+
+  it('别人的帖子按记录不存在拒绝', async () => {
+    const fakes = build({ posts: [] })
+
+    await expect(fakes.service.listSeriesByPublishedPostId('user-1', 'post-1'))
+      .rejects
+      .toThrow(new AppException(ResponseCode.PublishedPostNotFound))
+  })
+
+  /**
+   * 标题和发布时间在服务端配上再排序，不让网页自己去对：
+   * 网页只拿得到一页发布记录，超出那一页的帖子会排到末尾，
+   * 而「最新发的排最上面」恰恰是最容易被这件事破坏的。
+   */
+  it('趋势按发布时间倒序，最新发的排最前', async () => {
+    const older = { ...post, id: 'post-old', publishedAt: new Date('2026-09-10T00:00:00.000Z'), snapshot: { title: '老帖子' } }
+    const fakes = build({ posts: [post, older] })
+    fakes.metricRepository.listTrendsByProjectId.mockResolvedValue([
+      { publishedPostId: 'post-old', latestCollectedAt: new Date('2026-09-21T00:00:00.000Z') },
+      { publishedPostId: 'post-1', latestCollectedAt: new Date('2026-09-21T00:00:00.000Z') },
+    ] as never)
+
+    const trends = await fakes.service.listProjectTrends('user-1', 'proj-1', {} as never)
+
+    expect(trends.map(trend => trend.publishedPostId)).toEqual(['post-1', 'post-old'])
+    expect(trends[0]!.title).toBe('孕晚期焦虑')
+  })
+
+  /** 没登记过发布时间的老记录当成「很久以前」，比当成「刚刚」诚实 */
+  it('没有发布时间的排最后', async () => {
+    const noDate = { ...post, id: 'post-no-date', publishedAt: undefined, snapshot: { title: '没登记过' } }
+    const fakes = build({ posts: [post, noDate] })
+    fakes.metricRepository.listTrendsByProjectId.mockResolvedValue([
+      { publishedPostId: 'post-no-date', latestCollectedAt: new Date('2026-09-21T00:00:00.000Z') },
+      { publishedPostId: 'post-1', latestCollectedAt: new Date('2026-09-21T00:00:00.000Z') },
+    ] as never)
+
+    const trends = await fakes.service.listProjectTrends('user-1', 'proj-1', {} as never)
+
+    expect(trends.map(trend => trend.publishedPostId)).toEqual(['post-1', 'post-no-date'])
+  })
+
+  it('发布时间一样时按最近一次采集的先后排', async () => {
+    const twin = { ...post, id: 'post-2', snapshot: { title: '同一天发的' } }
+    const fakes = build({ posts: [post, twin] })
+    fakes.metricRepository.listTrendsByProjectId.mockResolvedValue([
+      { publishedPostId: 'post-1', latestCollectedAt: new Date('2026-09-21T00:00:00.000Z') },
+      { publishedPostId: 'post-2', latestCollectedAt: new Date('2026-09-21T02:00:00.000Z') },
+    ] as never)
+
+    const trends = await fakes.service.listProjectTrends('user-1', 'proj-1', {} as never)
+
+    expect(trends.map(trend => trend.publishedPostId)).toEqual(['post-2', 'post-1'])
+  })
+
+  /** 采回来直接建成记录的帖子没有草稿，标题拿不到时退回草稿路径，总好过空白 */
+  it('快照标题是空的时候退回草稿路径', async () => {
+    const noTitle = { ...post, id: 'post-3', snapshot: { title: '' }, draftPath: 'drafts/20260901-xhs-pain' }
+    const fakes = build({ posts: [noTitle] })
+    fakes.metricRepository.listTrendsByProjectId.mockResolvedValue([
+      { publishedPostId: 'post-3', latestCollectedAt: new Date('2026-09-21T00:00:00.000Z') },
+    ] as never)
+
+    const trends = await fakes.service.listProjectTrends('user-1', 'proj-1', {} as never)
+
+    expect(trends[0]!.title).toBe('drafts/20260901-xhs-pain')
+  })
+
+  it('趋势里有已经删掉的帖子时标题留空，不崩', async () => {
+    const fakes = build({ posts: [] })
+    fakes.metricRepository.listTrendsByProjectId.mockResolvedValue([
+      { publishedPostId: 'post-gone', latestCollectedAt: new Date('2026-09-21T00:00:00.000Z') },
+    ] as never)
+
+    const trends = await fakes.service.listProjectTrends('user-1', 'proj-1', {} as never)
+
+    expect(trends[0]!.title).toBe('')
+  })
+
+  it('按方向汇总把项目和时间窗口交给仓储', async () => {
+    const fakes = build()
+
+    await fakes.service.listAngleTotals('user-1', 'proj-1', { days: 7 } as never)
+
+    expect(fakes.metricRepository.listAngleTotalsByProjectId).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'user-1', projectId: 'proj-1' }),
+    )
+  })
+
+  it('数在跑的采集工单只数 sync_creator_notes 这一种', async () => {
+    const fakes = build({ activeSyncTasks: 2 })
+
+    const count = await fakes.service.countActiveSyncTasks('user-1')
+
+    expect(count).toBe(2)
+    expect(fakes.executionTaskRepository.countActiveByUserIdAndType)
+      .toHaveBeenCalledWith('user-1', ExecutionTaskType.SYNC_CREATOR_NOTES)
+  })
+})
+
+describe('建工单时挂哪个项目', () => {
+  /** 工单模型要求有 projectId，但采集是按平台加账号来的，挂哪个项目不影响归因 */
+  it('一个项目都没有时直接拒绝，不建一个挂不上的工单', async () => {
+    const fakes = build({ projects: [] })
+
+    await expect(fakes.service.createSyncTask('user-1', { platform: 'xhs' }))
+      .rejects
+      .toThrow(new AppException(ResponseCode.ProjectNotFound))
+    expect(fakes.created).toHaveLength(0)
+  })
+})
+
+describe('直接建记录的其余拦截', () => {
+  const row = () => ({
+    id: 'row-1',
+    userId: 'user-1',
+    matchState: CreatorNoteMatchState.UNMATCHED,
+    matchCandidates: [],
+    metrics: { views: 12, comments: 0, likes: 0, collects: 0, shares: 0 },
+    collectedAt: new Date('2026-09-21T02:00:00.000Z'),
+    executionTaskId: 'task-1',
+    platform: 'xhs',
+  })
+
+  it('归档项目不让再往里建记录', async () => {
+    const fakes = build({
+      rows: [row()],
+      projects: [{ id: 'proj-1', userId: 'user-1', status: 'archived' }],
+    })
+
+    await expect(fakes.service.adoptRow('user-1', 'row-1', { projectId: 'proj-1' }))
+      .rejects
+      .toThrow(new AppException(ResponseCode.ProjectArchived))
+    expect(fakes.createdPosts).toHaveLength(0)
+  })
+
+  it('这一行本来就不存在时按行不存在拒绝', async () => {
+    const fakes = build({ rows: [] })
+
+    await expect(fakes.service.adoptRow('user-1', 'row-1', { projectId: 'proj-1' }))
+      .rejects
+      .toThrow(new AppException(ResponseCode.CreatorNoteRowNotFound))
+  })
+
+  it('已经归属过的不让再建一条', async () => {
+    const fakes = build({
+      rows: [{ ...row(), matchState: CreatorNoteMatchState.MATCHED }],
+      projects: [{ id: 'proj-1', userId: 'user-1', status: 'active' }],
+    })
+
+    await expect(fakes.service.adoptRow('user-1', 'row-1', { projectId: 'proj-1' }))
+      .rejects
+      .toThrow(new AppException(ResponseCode.CreatorNoteRowAlreadyMatched))
+  })
+
+  it('记录建不出来时说清楚是建失败，不是别的', async () => {
+    const fakes = build({
+      rows: [row()],
+      projects: [{ id: 'proj-1', userId: 'user-1', status: 'active' }],
+    })
+    fakes.publishedPostRepository.create.mockResolvedValueOnce(null as never)
+
+    await expect(fakes.service.adoptRow('user-1', 'row-1', { projectId: 'proj-1' }))
+      .rejects
+      .toThrow(new AppException(ResponseCode.CreatorNoteRowAdoptFailed))
+  })
+
+  it('认领一行不存在的数据时按行不存在拒绝', async () => {
+    const fakes = build({ rows: [] })
+
+    await expect(fakes.service.claimRow('user-1', 'row-1', { publishedPostId: 'post-1' }))
+      .rejects
+      .toThrow(new AppException(ResponseCode.CreatorNoteRowNotFound))
   })
 })
