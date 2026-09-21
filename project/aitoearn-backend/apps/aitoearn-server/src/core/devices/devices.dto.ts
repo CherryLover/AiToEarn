@@ -1,10 +1,25 @@
 import { createZodDto } from '@yikart/common'
 import { z } from 'zod'
 
-/** 能力标识，跟平台标识同形，如 xhs、douyin、wechat_channels */
+/**
+ * 能力标识，两种形态：
+ * - 平台标识，跟平台标识同形，如 `xhs`、`douyin`、`wechat_channels`
+ * - 工单类型能力，`job:` 前缀加工单类型，如 `job:publish`、`job:sync_creator_notes`
+ *
+ * **`job:` 这一支不能漏**：设备上报的能力是建 auto 工单前那道「有没有机器会干这活」
+ * 检查的唯一依据（`countCapableByUserId` 用 `$all` 匹配）。这里把带冒号的挡掉的话，
+ * 配对和心跳整个请求都会被参数校验拒掉——插件那边看到的是一句「参数验证失败」，
+ * 完全看不出是能力格式的问题。
+ *
+ * 只放开 `job:` 这一个前缀，不是放开冒号：能力标识会直接进 Mongo 查询，
+ * 保持一个封闭的字母表比事后过滤安全。
+ */
 export const DeviceCapabilitySchema = z
   .string()
-  .regex(/^[a-z][a-z0-9_-]{0,31}$/, '能力标识只能是小写字母开头的短标识')
+  .regex(
+    /^(?:job:)?[a-z][a-z0-9_-]{0,31}$/,
+    '能力标识只能是小写字母开头的短标识，或 job: 前缀加工单类型',
+  )
 
 export const DeviceAccountSchema = z.object({
   platform: z.string().min(1).max(32).describe('平台标识，如 xhs'),
