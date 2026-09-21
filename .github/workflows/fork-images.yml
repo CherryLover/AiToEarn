@@ -1,10 +1,14 @@
 # fork 自己的镜像构建：推到 ghcr.io/cherrylover/aitoearn-*，只打 arm64（OCI 是 ARM 机器）
 # 官方的 backend-build / web-build 推官方 Docker Hub，在 fork 里已停用
+#
+# 任何分支推上来都会构建，这样功能分支不用先合 main 就能部署验证。
+# 版本号带了 commit sha，分支之间不会互相覆盖；**但 `:latest` 只有 main 会打**——
+# 那是唯一一个没写版本号时会被拿到的标签，让功能分支移动它迟早出事。
 name: Fork Images
 
 on:
   push:
-    branches: [main]
+    branches: ['**']
     paths:
       - 'project/aitoearn-backend/**'
       - 'project/aitoearn-web/**'
@@ -22,7 +26,9 @@ permissions:
 
 concurrency:
   group: fork-images-${{ github.ref }}
-  cancel-in-progress: false
+  # 功能分支上连着推几次时只留最后一次：前面那几个版本没人会去部署，
+  # 跑完只是白占 arm64 机器。main 不取消，那上面每一个版本都可能已经被部署脚本引用
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   IMAGE_PREFIX: ghcr.io/cherrylover
@@ -37,6 +43,7 @@ jobs:
       version: ${{ steps.plan.outputs.version }}
       backend_apps: ${{ steps.plan.outputs.backend_apps }}
       build_web: ${{ steps.plan.outputs.build_web }}
+      push_latest: ${{ steps.plan.outputs.push_latest }}
     steps:
       - uses: actions/checkout@v5
 
@@ -66,14 +73,29 @@ jobs:
             if [ "${{ steps.changes.outputs.web }}" = "true" ] || [ "${{ steps.changes.outputs.workflow }}" = "true" ]; then
               APPS="${APPS:+$APPS,}aitoearn-web"
             fi
+            # 新分支的第一次推送没有可比的父提交，paths-filter 会两项都给 false。
+            # 触发器上的 paths 已经保证这次推送确实碰了这几个目录，所以这里兜底全建，
+            # 免得出现「工作流跑了、但什么都没构建」这种最难查的情况
+            if [ -z "$APPS" ]; then
+              echo "::notice::没比出改了哪一块（多半是新分支的第一次推送），按全部构建处理"
+              APPS="aitoearn-server,aitoearn-ai,aitoearn-web"
+            fi
           fi
+
+          # :latest 是没写版本号时会被拿到的那个标签，只让 main 动它
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            PUSH_LATEST=true
+          else
+            PUSH_LATEST=false
+          fi
+          echo "push_latest=$PUSH_LATEST" >> "$GITHUB_OUTPUT"
           BACKEND=$(echo "$APPS" | tr ',' '\n' | grep -E '^aitoearn-(server|ai)$' | jq -R . | jq -cs .)
           WEB=false
           echo "$APPS" | tr ',' '\n' | grep -qx aitoearn-web && WEB=true
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "backend_apps=$BACKEND" >> "$GITHUB_OUTPUT"
           echo "build_web=$WEB" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION backend=$BACKEND web=$WEB"
+          echo "version=$VERSION backend=$BACKEND web=$WEB latest=$PUSH_LATEST"
 
   backend:
     needs: plan
@@ -116,6 +138,19 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
+      # 标签单独算：只有 main 才加 :latest，功能分支只打带 sha 的版本号
+      - name: Compose tags
+        id: tags
+        run: |
+          {
+            echo 'tags<<TAGS_EOF'
+            echo "${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:${{ needs.plan.outputs.version }}"
+            if [ "${{ needs.plan.outputs.push_latest }}" = "true" ]; then
+              echo "${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:latest"
+            fi
+            echo TAGS_EOF
+          } >> "$GITHUB_OUTPUT"
+
       - uses: docker/build-push-action@v6
         with:
           context: ${{ env.BACKEND_DIR }}/tmp/docker-context
@@ -123,9 +158,7 @@ jobs:
           platforms: linux/arm64
           build-args: |
             APP_NAME=${{ matrix.app }}
-          tags: |
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:${{ needs.plan.outputs.version }}
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:latest
+          tags: ${{ steps.tags.outputs.tags }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -153,14 +186,25 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
+      # 标签单独算：只有 main 才加 :latest，功能分支只打带 sha 的版本号
+      - name: Compose tags
+        id: tags
+        run: |
+          {
+            echo 'tags<<TAGS_EOF'
+            echo "${{ env.IMAGE_PREFIX }}/aitoearn-web:${{ needs.plan.outputs.version }}"
+            if [ "${{ needs.plan.outputs.push_latest }}" = "true" ]; then
+              echo "${{ env.IMAGE_PREFIX }}/aitoearn-web:latest"
+            fi
+            echo TAGS_EOF
+          } >> "$GITHUB_OUTPUT"
+
       - uses: docker/build-push-action@v6
         with:
           context: ${{ env.WEB_DIR }}
           file: ${{ env.WEB_DIR }}/Dockerfile
           platforms: linux/arm64
-          tags: |
-            ${{ env.IMAGE_PREFIX }}/aitoearn-web:${{ needs.plan.outputs.version }}
-            ${{ env.IMAGE_PREFIX }}/aitoearn-web:latest
+          tags: ${{ steps.tags.outputs.tags }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
