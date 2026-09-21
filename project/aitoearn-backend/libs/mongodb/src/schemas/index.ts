@@ -7,6 +7,7 @@ import { AppConfig, AppConfigSchema } from './app-config.schema'
 import { Asset, AssetSchema } from './asset.schema'
 import { Blog, BlogSchema } from './blog.schema'
 import { ContentGenerationTask, ContentGenerationTaskSchema } from './content-generation-task.schema'
+import { CreatorNoteRow, CreatorNoteRowSchema } from './creator-note-row.schema'
 import { Device, DeviceSchema } from './device.schema'
 import { DraftGenerationMemory, DraftGenerationMemorySchema } from './draft-generation-memory.schema'
 import { ExecutionTask, ExecutionTaskSchema } from './execution-task.schema'
@@ -15,6 +16,7 @@ import { Material, MaterialSchema } from './material.schema'
 import { MediaGroup, MediaGroupSchema } from './media-group.schema'
 import { Media, MediaSchema } from './media.schema'
 import { OAuth2Credential, OAuth2CredentialSchema } from './oauth2-credential.schema'
+import { PostMetric, PostMetricSchema } from './post-metric.schema'
 import { Project, ProjectSchema } from './project.schema'
 import { PublishDayInfo, PublishDayInfoSchema } from './publish-day-info.schema'
 import { PublishInfo, PublishInfoSchema } from './publish-info.schema'
@@ -35,6 +37,7 @@ export * from './app-config.schema'
 export * from './asset.schema'
 export * from './blog.schema'
 export * from './content-generation-task.schema'
+export * from './creator-note-row.schema'
 export * from './device.schema'
 export * from './draft-generation-memory.schema'
 export * from './execution-task.schema'
@@ -43,6 +46,7 @@ export * from './material.schema'
 export * from './media-group.schema'
 export * from './media.schema'
 export * from './oauth2-credential.schema'
+export * from './post-metric.schema'
 export * from './project.schema'
 export * from './publish-day-info.schema'
 export * from './publish-info.schema'
@@ -75,5 +79,7 @@ export const schemas = [
   { name: Device.name, schema: DeviceSchema },
   { name: ExecutionTask.name, schema: ExecutionTaskSchema },
   { name: PublishedPost.name, schema: PublishedPostSchema },
+  { name: CreatorNoteRow.name, schema: CreatorNoteRowSchema },
+  { name: PostMetric.name, schema: PostMetricSchema },
   { name: UserNotifySetting.name, schema: UserNotifySettingSchema },
 ] as const

@@ -18,6 +18,11 @@ export interface ListPublishedPostsParams extends Pagination {
   linkStatus?: PublishedPostLinkStatus
 }
 
+/** Mongo 的 `$regex` 认这些元字符，标题里出现它们是常事（`(内测)`、`3+1`），必须转义 */
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export interface CompletePublishedPostParams {
   id: string
   userId: string
@@ -108,6 +113,49 @@ export class PublishedPostRepository extends BaseRepository<PublishedPost> {
   async deleteByIdAndUserId(id: string, userId: string) {
     const result = await this.deleteOne({ _id: id, userId })
     return result.deletedCount > 0
+  }
+
+  /**
+   * 采集匹配第一条规则：按「平台 + 快照标题 + 发布时间同一分钟」找已知帖子。
+   *
+   * 时间放宽到同一分钟，因为创作平台的卡片上只精确到分钟
+   * （`2026-09-18 08:28`），秒是我们这边登记时自己记的。
+   */
+  async listByPlatformAndTitleInMinute(params: {
+    userId: string
+    platform: string
+    title: string
+    minuteStart: Date
+    minuteEnd: Date
+  }) {
+    return await this.find({
+      'userId': params.userId,
+      'platform': params.platform,
+      'snapshot.title': params.title,
+      'publishedAt': { $gte: params.minuteStart, $lt: params.minuteEnd },
+    })
+  }
+
+  /**
+   * 标题被平台截断时走的前缀匹配。
+   *
+   * 命中多条时**不挑一条**，原样返回让上层标成 ambiguous——
+   * 挑错了会让两条帖子的数据都变成错的，而且错得看不出来。
+   */
+  async listByPlatformAndTitlePrefix(params: {
+    userId: string
+    platform: string
+    titlePrefix: string
+    limit: number
+  }) {
+    return await this.find(
+      {
+        'userId': params.userId,
+        'platform': params.platform,
+        'snapshot.title': { $regex: `^${escapeRegExp(params.titlePrefix)}` },
+      },
+      { limit: params.limit },
+    )
   }
 
   async listWithPagination(params: ListPublishedPostsParams) {

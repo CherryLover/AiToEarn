@@ -1,0 +1,199 @@
+import { Injectable, Logger } from '@nestjs/common'
+import { UserType } from '@yikart/common'
+import {
+  CreatorNoteMatchState,
+  CreatorNoteMetrics,
+  CreatorNoteRowRepository,
+  PostMetricRepository,
+  PublishedPostRepository,
+} from '@yikart/mongodb'
+import { z } from 'zod'
+import { SyncCreatorNotesResultSchema } from '../execution-tasks/task-payloads'
+import { findCollectProfile } from './collect-specs'
+import { CreatorNoteMatcherService, MatchInput } from './creator-note-matcher.service'
+import { parsePlatformTime } from './creator-note-time'
+
+/** 默认时区：平台表里没写的时候按这个解析卡片上的时间 */
+const FALLBACK_TIME_ZONE = 'Asia/Shanghai'
+
+type SyncResult = z.infer<typeof SyncCreatorNotesResultSchema>
+
+export interface IngestOutcome {
+  /** 真正落进表里的行数，重复回报的那些不算 */
+  insertedRows: number
+  matched: number
+  ambiguous: number
+  unmatched: number
+  /** 写出来的指标快照数 */
+  snapshots: number
+}
+
+/**
+ * 插件按图标指纹认出来的指标是个动态字典，这里收成固定的五个字段。
+ *
+ * 少了的补 0 而不是留空：指标是累计值，缺字段和「这一项是 0」在页面上看不出区别，
+ * 但缺字段会让按方向汇总那一步算出 `null`。认不出来的整张卡根本不会走到这儿，
+ * 它在插件那边就进了 `unrecognized`。
+ */
+function toMetrics(raw: Record<string, number>): CreatorNoteMetrics {
+  return {
+    views: raw['views'] ?? 0,
+    comments: raw['comments'] ?? 0,
+    likes: raw['likes'] ?? 0,
+    collects: raw['collects'] ?? 0,
+    shares: raw['shares'] ?? 0,
+  }
+}
+
+/**
+ * 用建单时那一份 schema 再校验一次回报的结果。
+ *
+ * 不自己手写解析：这里读错一个字段名（比如把 `collects` 读成 `collect`）的后果是
+ * 那个指标静默变成 0，页面上看不出来。复用同一份 schema 之后，
+ * 插件和服务端对这份结构的理解不可能分叉。
+ */
+function readSyncResult(result: unknown): SyncResult | null {
+  const parsed = SyncCreatorNotesResultSchema.safeParse(result)
+  return parsed.success ? parsed.data : null
+}
+
+/**
+ * 把一个 `sync_creator_notes` 工单回报的结果落进表里。
+ *
+ * 顺序是**先落地、再匹配、最后写快照**（contract-collect-xhs 第三节）：
+ * 匹配规则将来一定会改，改完得能拿历史数据重跑。先落地保证了原始数据在任何情况下都不丢，
+ * 匹配挂了顶多是一堆「未归属」，人在网页上还能自己认领。
+ */
+@Injectable()
+export class CreatorNoteIngestService {
+  private readonly logger = new Logger(CreatorNoteIngestService.name)
+
+  constructor(
+    private readonly creatorNoteRowRepository: CreatorNoteRowRepository,
+    private readonly postMetricRepository: PostMetricRepository,
+    private readonly publishedPostRepository: PublishedPostRepository,
+    private readonly matcherService: CreatorNoteMatcherService,
+  ) {}
+
+  async ingest(params: {
+    userId: string
+    userType: UserType
+    executionTaskId: string
+    accountId?: string
+    result: unknown
+  }): Promise<IngestOutcome> {
+    const outcome: IngestOutcome = { insertedRows: 0, matched: 0, ambiguous: 0, unmatched: 0, snapshots: 0 }
+
+    const sync = readSyncResult(params.result)
+    if (!sync) {
+      this.logger.warn(`工单 ${params.executionTaskId} 回报的结果不是采集结果，跳过入库`)
+      return outcome
+    }
+
+    if (sync.notes.length === 0) {
+      // 插件那边一条都没读到就该回报失败，走到这里说明契约被绕过了，记一笔
+      this.logger.warn(`工单 ${params.executionTaskId} 采集成功但一条都没有，不入库`)
+      return outcome
+    }
+
+    const timeZone = findCollectProfile(sync.platform)?.timeZone ?? FALLBACK_TIME_ZONE
+    const collectedAt = Number.isNaN(sync.collectedAt.getTime()) ? new Date() : sync.collectedAt
+
+    // 草稿索引一次采集只建一次：这一趟要把所有项目的 drafts/ 扫一遍，
+    // 放进每行的匹配里就是几十次重复扫描
+    const draftIndex = await this.matcherService.buildDraftIndex(params.userId)
+
+    for (const note of sync.notes) {
+      const publishedAt = parsePlatformTime(note.publishedAtText, timeZone)
+      const matchInput: MatchInput = {
+        userId: params.userId,
+        platform: sync.platform,
+        accountId: params.accountId,
+        title: note.title,
+        titleTruncated: Boolean(note.titleTruncated),
+        publishedAt,
+      }
+
+      let decision
+      try {
+        decision = await this.matcherService.match(matchInput, draftIndex)
+      }
+      catch (error) {
+        // 一行匹配失败不该带走整批数据，落成未归属，人还能手动认领
+        this.logger.warn(error, `匹配失败，这一行落成未归属: ${note.title}`)
+        decision = { matchState: CreatorNoteMatchState.UNMATCHED, matchCandidates: [] as string[] }
+      }
+
+      const row = await this.creatorNoteRowRepository.createIfAbsent({
+        userId: params.userId,
+        userType: params.userType,
+        platform: sync.platform,
+        accountId: params.accountId,
+        title: note.title,
+        titleTruncated: Boolean(note.titleTruncated),
+        publishedAtText: note.publishedAtText,
+        publishedAt,
+        metrics: toMetrics(note.metrics),
+        collectedAt,
+        executionTaskId: params.executionTaskId,
+        matchedPublishedPostId: decision.matchedPublishedPostId,
+        matchState: decision.matchState,
+        matchCandidates: decision.matchCandidates,
+      })
+
+      // 同一次采集重复回报：行已经在了，快照也已经写过，什么都不用做
+      if (!row)
+        continue
+
+      outcome.insertedRows++
+      if (decision.matchState === CreatorNoteMatchState.MATCHED)
+        outcome.matched++
+      else if (decision.matchState === CreatorNoteMatchState.AMBIGUOUS)
+        outcome.ambiguous++
+      else
+        outcome.unmatched++
+
+      if (await this.writeSnapshot(params, row.id, decision.matchedPublishedPostId, toMetrics(note.metrics), collectedAt))
+        outcome.snapshots++
+    }
+
+    if (sync.unrecognized.length > 0)
+      this.logger.warn(`工单 ${params.executionTaskId} 有 ${sync.unrecognized.length} 张卡片的指标认不出来，没有入库`)
+
+    for (const warning of sync.warnings)
+      this.logger.warn(`工单 ${params.executionTaskId} 采集告警：${warning}`)
+
+    return outcome
+  }
+
+  /** 已归属的行才有快照：快照表是按项目和方向聚合用的，未归属的行进去只会是噪音 */
+  private async writeSnapshot(
+    params: { userId: string, userType: UserType, executionTaskId: string },
+    rowId: string,
+    publishedPostId: string | undefined,
+    metrics: CreatorNoteMetrics,
+    collectedAt: Date,
+  ): Promise<boolean> {
+    if (!publishedPostId)
+      return false
+
+    const post = await this.publishedPostRepository.getByIdAndUserId(publishedPostId, params.userId)
+    if (!post)
+      return false
+
+    const created = await this.postMetricRepository.createIfAbsent({
+      userId: params.userId,
+      userType: params.userType,
+      publishedPostId: post.id,
+      projectId: post.projectId,
+      angleId: post.angleId,
+      platform: post.platform,
+      metrics,
+      collectedAt,
+      sourceRowId: rowId,
+      executionTaskId: params.executionTaskId,
+    })
+
+    return created !== null
+  }
+}

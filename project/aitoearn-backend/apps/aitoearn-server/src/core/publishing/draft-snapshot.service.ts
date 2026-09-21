@@ -99,6 +99,14 @@ interface DraftLayout {
   metaSegments?: string[]
 }
 
+/** `readTitle()` 的结果：匹配用得到的那几项，没有配图 */
+export interface DraftTitleResult {
+  draftPath: string
+  title: string
+  angleSlug?: string
+  draftPlatform?: string
+}
+
 /** 一张图在快照里的候选来源 */
 interface MediaCandidate {
   /** 去重用的键：能定位到本地文件就用本地路径，否则用地址本身 */
@@ -176,6 +184,30 @@ export class DraftSnapshotService {
       skippedMedia,
       bodyFallback,
       mediaDeclared,
+    }
+  }
+
+  /**
+   * 只读标题和血缘，不碰配图。
+   *
+   * 采集匹配要在**所有项目的所有草稿**里按标题找（contract-collect-xhs 第三节第 2 条），
+   * 走完整的 `read()` 意味着为了拿一个标题去把每份草稿声明的每张图的名片文件都读一遍，
+   * 而配图跟匹配没有任何关系。
+   */
+  async readTitle(dirName: string, draftPath: string): Promise<DraftTitleResult> {
+    const segments = parseDraftPath(draftPath)
+    const layout = await this.resolveLayout(dirName, segments)
+    const content = await this.readContent(dirName, layout.contentSegments)
+    const meta = layout.metaSegments ? await this.readMeta(dirName, layout.metaSegments) : null
+
+    const { meta: front, body: rawBody } = parseFrontMatter(content)
+    const sections = layout.metaSegments ? null : parseDraftSections(rawBody)
+
+    return {
+      draftPath: segments.join('/'),
+      title: readString(pick(front, 'title')) ?? sections?.title ?? '',
+      angleSlug: readString(pick(meta, 'angleSlug')) ?? readString(pick(front, 'angle')),
+      draftPlatform: readString(pick(meta, 'platform')) ?? readString(pick(front, 'platform')),
     }
   }
 

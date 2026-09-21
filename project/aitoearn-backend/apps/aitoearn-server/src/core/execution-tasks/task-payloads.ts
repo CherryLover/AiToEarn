@@ -90,7 +90,7 @@ const CollectedNoteSchema = z.object({
   metrics: z.record(z.string(), z.number().int()).describe('按图标认出来的指标'),
 })
 
-const SyncCreatorNotesResultSchema = z.object({
+export const SyncCreatorNotesResultSchema = z.object({
   collectedAt: z.coerce.date(),
   platform: z.string().min(1),
   accountHint: z.string().nullish().describe('页面上读到的账号名，对不对得上由服务端判断'),

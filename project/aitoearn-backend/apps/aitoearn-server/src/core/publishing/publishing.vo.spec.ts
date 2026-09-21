@@ -16,6 +16,7 @@ vi.mock('@yikart/mongodb', () => ({
     FAILED: 'failed',
   },
   PublishedPostLinkStatus: { NONE: 'none', CLAIMED: 'claimed', CLAIM_FAILED: 'claim_failed' },
+  PublishedPostSource: { REGISTERED: 'registered', DISCOVERED: 'discovered' },
 }))
 
 const NOW = new Date('2026-09-18T05:00:00.000Z')

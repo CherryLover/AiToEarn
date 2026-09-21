@@ -13,8 +13,10 @@ export enum ExecutionTaskType {
   Publish = 'publish',
   /** 去平台找回刚发的帖子链接 */
   ClaimLink = 'claim_link',
-  /** 采集某条帖子的数据 */
+  /** 采集某条帖子的数据。定义还在，但实测小红书没有可寻址的单帖入口，服务端和插件都没有实现 */
   CollectMetrics = 'collect_metrics',
+  /** 把一个创作平台账号的作品列表整张读回来 */
+  SyncCreatorNotes = 'sync_creator_notes',
   /** 打通链路用，原样返回 */
   Echo = 'echo',
 }
@@ -59,8 +61,10 @@ export interface ExecutionTaskListItem {
   deviceId: string | null
   /** 干这活需要的能力，如 xhs */
   requiredCapability: string | null
-  /** 失败原因，给人看的 */
+  /** 失败原因，给人看的。设备写在最前面的业务码已经摘掉了，在 errorCode 里 */
   error: string | null
+  /** 失败原因对应的业务码（采集失败是 20700 段）；设备没给码时为 null */
+  errorCode: number | null
   /** 已尝试次数 */
   attempts: number
   /** 最多尝试几次 */

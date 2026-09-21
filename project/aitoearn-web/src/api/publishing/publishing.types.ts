@@ -51,6 +51,18 @@ export interface PublishSnapshot {
  * 发布登记列表项，对应 PublishedPostListItemVo。
  * 日期字段经 JSON 序列化后为 ISO 字符串。
  */
+/**
+ * 这条记录是怎么来的。
+ * discovered 的没走过发布流程，是采集时按草稿标题反查出来的，页面上要能看出区别。
+ * 对应服务端 PublishedPostSource。
+ */
+export enum PublishedPostSource {
+  /** 在网页上点「准备发布」登记出来的 */
+  Registered = 'registered',
+  /** 采集时按草稿标题反查出来的 */
+  Discovered = 'discovered',
+}
+
 export interface PublishedPostListItem {
   id: string
   projectId: string
@@ -65,6 +77,7 @@ export interface PublishedPostListItem {
   executionTaskId: string | null
   publishStatus: PublishStatus
   linkStatus: LinkStatus
+  source: PublishedPostSource
   /** 平台侧帖子 id */
   platformPostId: string | null
   /** 帖子链接 */

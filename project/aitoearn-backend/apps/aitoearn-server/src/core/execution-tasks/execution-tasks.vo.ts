@@ -13,6 +13,7 @@ const ExecutionTaskBaseSchema = z.object({
   deviceId: z.string().nullable().describe('当前（或最近一次）持有工单的设备'),
   requiredCapability: z.string().nullable().describe('需要的设备能力'),
   error: z.string().nullable().describe('失败原因'),
+  errorCode: z.number().int().nullable().describe('失败原因对应的业务码；设备把码写在错误信息开头，没有码时为 null'),
   attempts: z.number().int().describe('已尝试次数'),
   maxAttempts: z.number().int().describe('最大尝试次数'),
   availableAt: z.coerce.date().describe('到点才可领取'),
@@ -68,6 +69,28 @@ const TaskReportedVoSchema = z.object({
 })
 export class TaskReportedVo extends createZodDto(TaskReportedVoSchema, 'TaskReportedVo') {}
 
+/**
+ * 设备把业务码写在失败信息最前面（`[20701] 还没登录`），这里解出来。
+ *
+ * 工单回报失败只有 `error` 一个字符串字段，设备侧要传一个可判别的类型只能借它。
+ * 网页拿到码之后才能按类型给引导（去登录 / 更新采集规格 / 换地址），
+ * 只给一句中文的话，网页只能原样显示，判断类型就得去匹配字符串。
+ */
+const ERROR_CODE_PATTERN = /^\[(\d{5})\]\s*/
+
+function readErrorCode(error?: string): number | null {
+  const match = error ? ERROR_CODE_PATTERN.exec(error) : null
+  return match ? Number(match[1]) : null
+}
+
+/** 码已经单独给出去了，展示的那份就不用再带一遍方括号 */
+function readErrorMessage(error?: string): string | null {
+  if (!error)
+    return null
+
+  return error.replace(ERROR_CODE_PATTERN, '')
+}
+
 type ExecutionTaskDoc = LeanDoc<ExecutionTask>
 
 function toBase(task: ExecutionTaskDoc) {
@@ -81,7 +104,8 @@ function toBase(task: ExecutionTaskDoc) {
     targetDeviceId: task.targetDeviceId ?? null,
     deviceId: task.deviceId ?? null,
     requiredCapability: task.requiredCapability ?? null,
-    error: task.error ?? null,
+    error: readErrorMessage(task.error),
+    errorCode: readErrorCode(task.error),
     attempts: task.attempts,
     maxAttempts: task.maxAttempts,
     availableAt: task.availableAt,

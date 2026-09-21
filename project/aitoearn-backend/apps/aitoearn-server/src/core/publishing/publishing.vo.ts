@@ -1,5 +1,5 @@
 import { createPaginationVo, createZodDto } from '@yikart/common'
-import { LeanDoc, PublishedPost, PublishedPostLinkStatus, PublishedPostPublishStatus } from '@yikart/mongodb'
+import { LeanDoc, PublishedPost, PublishedPostLinkStatus, PublishedPostPublishStatus, PublishedPostSource } from '@yikart/mongodb'
 import { z } from 'zod'
 import { SkippedMedia } from './draft-snapshot.service'
 
@@ -13,6 +13,7 @@ const PublishedPostBaseSchema = z.object({
   executionTaskId: z.string().nullable().describe('对应的执行工单'),
   // 两个状态分开：「发成功了但没抓到链接」是真实会发生的，合成一个就成了模糊地带
   publishStatus: z.enum(PublishedPostPublishStatus).describe('发布状态：pending / publishing / published / failed'),
+  source: z.enum(PublishedPostSource).describe('registered 是自己登记的，discovered 是采集时按草稿标题反查出来的'),
   linkStatus: z.enum(PublishedPostLinkStatus).describe('链接状态：none / claimed / claim_failed'),
   platformPostId: z.string().nullable().describe('平台侧帖子 id'),
   postUrl: z.string().nullable().describe('帖子链接'),
@@ -74,6 +75,7 @@ function toBase(post: PublishedPostDoc) {
     accountId: post.accountId ?? null,
     executionTaskId: post.executionTaskId ?? null,
     publishStatus: post.publishStatus,
+    source: post.source ?? PublishedPostSource.REGISTERED,
     linkStatus: post.linkStatus,
     platformPostId: post.platformPostId ?? null,
     postUrl: post.postUrl ?? null,

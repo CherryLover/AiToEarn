@@ -39,6 +39,23 @@ export enum PublishedPostLinkStatus {
 }
 
 /**
+ * 这条发布记录是怎么来的。
+ *
+ * `discovered` 是采集反查出来的（contract-collect-xhs 第三节第 2 条规则）：
+ * 用户手工发的帖子，草稿还在项目目录里，标题能对上就自动建一条，
+ * 这是整套方案能全自动归因的关键。
+ *
+ * **必须跟登记出来的分开标**：discovered 的记录没有走过发布流程，
+ * `draftPath` 是反查猜出来的，人在网页上要能一眼看出哪些是系统替他补的。
+ */
+export enum PublishedPostSource {
+  /** 在网页上点「准备发布」登记出来的 */
+  REGISTERED = 'registered',
+  /** 采集时按草稿标题反查出来的 */
+  DISCOVERED = 'discovered',
+}
+
+/**
  * 点「准备发布」那一刻的内容快照。
  *
  * **必须是快照，不能只存草稿路径**（contract-skeleton 第四节）：
@@ -110,6 +127,15 @@ export class PublishedPost extends WithTimestampSchema {
 
   @Prop({ required: true, type: PublishedPostSnapshotSchema })
   snapshot: PublishedPostSnapshot
+
+  @Prop({
+    required: true,
+    type: String,
+    enum: PublishedPostSource,
+    default: PublishedPostSource.REGISTERED,
+    index: true,
+  })
+  source: PublishedPostSource
 
   /** 对应的执行工单 */
   @Prop({ index: true })

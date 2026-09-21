@@ -1067,4 +1067,48 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'en-US': 'Notification group name is invalid',
     'zh-CN': '通知分组填得不对',
   },
+  [ResponseCode.CreatorNoteSyncEntryUrlNotAllowed]: {
+    'en-US': 'The creator page URL is not on the extension allowlist',
+    'zh-CN': '这个列表页地址不在插件允许的域名里，插件不会去打开它',
+  },
+  [ResponseCode.CreatorNoteSyncNotLoggedIn]: {
+    'en-US': 'The device is not logged in to this creator platform',
+    'zh-CN': '那台机器上没登录这个创作平台，先在浏览器里登录一次',
+  },
+  [ResponseCode.CreatorNoteSyncListNotAppeared]: {
+    'en-US': 'The note list never appeared, the page layout may have changed',
+    'zh-CN': '等不到作品列表出现，可能是平台改版了，采集规格要更新',
+  },
+  [ResponseCode.CreatorNoteSyncEmptyResult]: {
+    'en-US': 'No notes were read at all',
+    'zh-CN': '一条都没读到：要么选择器过时了，要么这个账号确实没有作品',
+  },
+  [ResponseCode.CreatorNoteSyncScrollLimitReached]: {
+    'en-US': 'Hit the scroll limit before reaching the end of the list',
+    'zh-CN': '滚到上限还没到底，这次采回来的不一定是全部',
+  },
+  [ResponseCode.CreatorNoteSyncMetricUnrecognized]: {
+    'en-US': 'None of the metric icons were recognised, values are not guessed by position',
+    'zh-CN': '指标图标全认不出来。按位置猜会把赞和评论对调，所以一个都不猜',
+  },
+  [ResponseCode.CreatorNoteSyncSpecInvalid]: {
+    'en-US': 'The collect spec is invalid',
+    'zh-CN': '采集规格不合法',
+  },
+  [ResponseCode.CreatorNoteSyncFailed]: {
+    'en-US': 'Collecting failed, see the job error for details',
+    'zh-CN': '采集失败了，具体原因看工单上的错误信息',
+  },
+  [ResponseCode.CreatorNoteRowNotFound]: {
+    'en-US': 'This collected row does not exist',
+    'zh-CN': '这一行采集数据不存在',
+  },
+  [ResponseCode.CreatorNoteRowAlreadyMatched]: {
+    'en-US': 'This row is already attributed to a post',
+    'zh-CN': '这一行已经归到某条帖子上了，要改先取消归属',
+  },
+  [ResponseCode.CreatorNoteSyncNoCollectSpec]: {
+    'en-US': 'There is no collect spec for this platform yet',
+    'zh-CN': '这个平台还没有采集规格，目前只做了小红书',
+  },
 }

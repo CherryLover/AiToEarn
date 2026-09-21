@@ -301,6 +301,27 @@ export class ExecutionTaskRepository extends BaseRepository<ExecutionTask> {
   }
 
   /** 租约已经过期、还挂在 leased / running 上的工单 */
+  /**
+   * 这个用户名下还有几个这种类型的工单没跑完（pending / leased / running）。
+   *
+   * 每 3 小时一次的调度用它防重：那台机器可能整天离线，工单排着队等租约，
+   * 不看一眼就建的话，一周下来能攒出五十多个等着采同一份数据的工单。
+   */
+  async countActiveByUserIdAndType(userId: string, type: ExecutionTaskType): Promise<number> {
+    return await this.count({
+      userId,
+      type,
+      status: {
+        $in: [ExecutionTaskStatus.PENDING, ExecutionTaskStatus.LEASED, ExecutionTaskStatus.RUNNING],
+      },
+    })
+  }
+
+  /** 最近一个这种类型的工单，调度用它判断「离上次采过去多久了」 */
+  async getLatestByUserIdAndType(userId: string, type: ExecutionTaskType) {
+    return await this.findOne({ userId, type }, { sort: { createdAt: -1 } })
+  }
+
   async listByExpiredLease(now: Date, limit = 50) {
     return await this.find(
       {

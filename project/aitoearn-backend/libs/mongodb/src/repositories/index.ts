@@ -7,6 +7,7 @@ import { AppConfigRepository } from './app-config.repository'
 import { AssetRepository } from './asset.repository'
 import { BlogRepository } from './blog.repository'
 import { ContentGenerationTaskRepository } from './content-generation-task.repository'
+import { CreatorNoteRowRepository } from './creator-note-row.repository'
 import { DeviceRepository } from './device.repository'
 import { DraftGenerationMemoryRepository } from './draft-generation-memory.repository'
 import { ExecutionTaskRepository } from './execution-task.repository'
@@ -15,6 +16,7 @@ import { MaterialRepository } from './material.repository'
 import { MediaGroupRepository } from './media-group.repository'
 import { MediaRepository } from './media.repository'
 import { OAuth2CredentialRepository } from './oauth2-credential.repository'
+import { PostMetricRepository } from './post-metric.repository'
 import { ProjectRepository } from './project.repository'
 import { PublishRecordRepository } from './publish-record.repository'
 import { PublishedPostRepository } from './published-post.repository'
@@ -31,6 +33,7 @@ export * from './asset.repository'
 export * from './base.repository'
 export * from './blog.repository'
 export * from './content-generation-task.repository'
+export * from './creator-note-row.repository'
 export * from './device.repository'
 export * from './draft-generation-memory.repository'
 export * from './execution-task.repository'
@@ -39,6 +42,7 @@ export * from './material.repository'
 export * from './media-group.repository'
 export * from './media.repository'
 export * from './oauth2-credential.repository'
+export * from './post-metric.repository'
 export * from './project.repository'
 export * from './publish-record.repository'
 export * from './published-post.repository'
@@ -67,5 +71,7 @@ export const repositories = [
   DeviceRepository,
   ExecutionTaskRepository,
   PublishedPostRepository,
+  CreatorNoteRowRepository,
+  PostMetricRepository,
   UserNotifySettingRepository,
 ] as const

@@ -12,6 +12,7 @@ import {
 } from '@yikart/mongodb'
 import { customAlphabet } from 'nanoid'
 import { config } from '../../config'
+import { CreatorNoteIngestService } from '../creator-notes/creator-note-ingest.service'
 import { DeviceDoc } from '../devices/devices.service'
 import { NotifyService } from '../notify/notify.service'
 import { DeviceWsGateway } from './device-ws.gateway'
@@ -55,6 +56,7 @@ export class ExecutionTasksService {
     private readonly deviceRepository: DeviceRepository,
     private readonly gateway: DeviceWsGateway,
     @Optional() private readonly notifyService?: NotifyService,
+    @Optional() private readonly creatorNoteIngestService?: CreatorNoteIngestService,
   ) {}
 
   // ========== 建单 ==========
@@ -210,6 +212,7 @@ export class ExecutionTasksService {
       if (!succeeded)
         await this.throwLeaseFailure(id, device, dto.leaseId)
 
+      await this.ingestCollectedNotes(succeeded!)
       return succeeded!
     }
 
@@ -224,6 +227,36 @@ export class ExecutionTasksService {
       await this.throwLeaseFailure(id, device, dto.leaseId)
 
     return await this.settleAfterFailure(consumed!)
+  }
+
+  /**
+   * 采集工单成功回报后把数据落进表里。
+   *
+   * **入库失败不回滚工单**：工单确实跑完了，回滚它只会让插件再跑一遍同样的采集，
+   * 而那一遍会撞上同一个入库问题。结果留在工单的 `result` 里没丢，修好之后能重放。
+   */
+  private async ingestCollectedNotes(task: ExecutionTaskDoc): Promise<void> {
+    if (task.type !== ExecutionTaskType.SYNC_CREATOR_NOTES || !this.creatorNoteIngestService)
+      return
+
+    try {
+      const payload = task.payload as { accountId?: string } | undefined
+      const outcome = await this.creatorNoteIngestService.ingest({
+        userId: task.userId,
+        userType: task.userType,
+        executionTaskId: task.id,
+        accountId: payload?.accountId,
+        result: task.result,
+      })
+
+      this.logger.log(
+        `工单 ${task.id} 采集入库：新增 ${outcome.insertedRows} 行，`
+        + `归属 ${outcome.matched} / 待定 ${outcome.ambiguous} / 未归属 ${outcome.unmatched}`,
+      )
+    }
+    catch (error) {
+      this.logger.error(error, `工单 ${task.id} 的采集结果入库失败，数据还在工单的 result 里`)
+    }
   }
 
   // ========== 回收 ==========

@@ -335,4 +335,20 @@ export enum ResponseCode {
   SettingsNotifyNotConfigured = 20604, // 还没配通知，先保存再测试
   SettingsNotifyRuleInvalid = 20605, // 通知规则不合法：类型不认识或同一类型给了多条
   SettingsNotifyGroupInvalid = 20606, // 通知分组不合法
+
+  // ========================================
+  // 20700-20799: 创作平台数据采集（contract-collect-xhs）
+  // 20700-20709 是插件在页面上跑出来的失败，插件把码写在回报的 error 里，服务端照原样翻出来
+  // ========================================
+  CreatorNoteSyncEntryUrlNotAllowed = 20700, // 列表页地址不在插件的域名白名单里
+  CreatorNoteSyncNotLoggedIn = 20701, // 这台机器没登录这个创作平台
+  CreatorNoteSyncListNotAppeared = 20702, // 等不到作品列表出现，页面结构可能变了
+  CreatorNoteSyncEmptyResult = 20703, // 一条都没读到：选择器过时，或这个账号确实没有作品
+  CreatorNoteSyncScrollLimitReached = 20704, // 滚到上限还没到底，没法确认数据是全的
+  CreatorNoteSyncMetricUnrecognized = 20705, // 指标图标全认不出来，按位置猜会把赞和评论对调，不猜
+  CreatorNoteSyncSpecInvalid = 20706, // 采集规格不合法
+  CreatorNoteSyncFailed = 20707, // 采集失败，原因看工单的 lastError
+  CreatorNoteRowNotFound = 20710, // 采集数据行不存在
+  CreatorNoteRowAlreadyMatched = 20711, // 这一行已经归属了，要改先取消归属
+  CreatorNoteSyncNoCollectSpec = 20712, // 这个平台还没有采集规格，只有小红书有
 }

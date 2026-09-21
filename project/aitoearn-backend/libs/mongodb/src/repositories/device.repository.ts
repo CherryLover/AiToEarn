@@ -54,6 +54,34 @@ export class DeviceRepository extends BaseRepository<Device> {
     })
   }
 
+  /** 名下同时声明了这些能力的设备，最近活跃的在前。派采集工单时用它挑目标机器 */
+  async listCapableByUserId(userId: string, capabilities: string[]) {
+    return await this.find(
+      {
+        userId,
+        revokedAt: { $exists: false },
+        ...(capabilities.length > 0 ? { capabilities: { $all: capabilities } } : {}),
+      },
+      { sort: { lastSeenAt: -1 } },
+    )
+  }
+
+  /**
+   * 全平台范围内声明了这些能力的设备，定时任务用它找出「谁该采」。
+   *
+   * 定时任务没有当前用户，只能反过来从设备找人：**有机器会干才建工单**，
+   * 照着用户表挨个建的话，名下根本没装插件的用户会攒出一堆永远没人领的工单。
+   */
+  async listCapableDevices(capabilities: string[], limit: number) {
+    return await this.find(
+      {
+        revokedAt: { $exists: false },
+        ...(capabilities.length > 0 ? { capabilities: { $all: capabilities } } : {}),
+      },
+      { sort: { lastSeenAt: -1 }, limit },
+    )
+  }
+
   /** 用户名下还没吊销的设备数量 */
   async countByUserId(userId: string): Promise<number> {
     return await this.count({ userId, revokedAt: { $exists: false } })

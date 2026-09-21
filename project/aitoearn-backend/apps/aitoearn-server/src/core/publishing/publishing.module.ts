@@ -10,6 +10,6 @@ import { PublishingService } from './publishing.service'
   imports: [ProjectsModule, ExecutionTasksModule],
   controllers: [PublishingController],
   providers: [PublishingService, DraftSnapshotService],
-  exports: [PublishingService],
+  exports: [PublishingService, DraftSnapshotService],
 })
 export class PublishingModule {}

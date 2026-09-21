@@ -3,7 +3,8 @@
  * 标题旁显示项目状态；基本信息与项目设置是一次性配置，默认折叠，展开过的记在浏览器本地
  * 基本信息 + 可编辑显示名/说明/受众/目标 + 归档
  * 「物料」标签页做了文件浏览器，「方向」和「生成」是阶段 2 的方向演进树与草稿；
- * 「发布」是阶段 4 的手动发布卡片（内容打包给人，人自己去平台发），「数据」先留占位
+ * 「发布」是阶段 4 的手动发布卡片（内容打包给人，人自己去平台发），
+ * 「数据」是插件采回来的创作平台数据（按方向汇总、每条帖子的趋势、未归属的认领）
  */
 'use client'
 
@@ -32,17 +33,15 @@ import { toast } from '@/utils/ui/toast'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
 import { getProjectErrorKey } from '../projects.utils'
 import { AnglesTab } from './components/AnglesTab'
+import { DataTab } from './components/DataTab'
 import { DraftsTab } from './components/DraftsTab'
 import { MaterialsTab } from './components/MaterialsTab'
 import { ProjectInfoCard } from './components/ProjectInfoCard'
 import { ProjectSettingsForm } from './components/ProjectSettingsForm'
 import { PublishTab } from './components/PublishTab'
 
-/** 标签页顺序：物料 → 方向 → 生成 → 发布，数据留给后面的阶段 */
+/** 标签页顺序：物料 → 方向 → 生成 → 发布 → 数据 */
 const TABS = ['materials', 'angles', 'generate', 'publish', 'data'] as const
-
-/** 还没实现的标签页 */
-const PLACEHOLDER_TABS = ['data'] as const
 
 /** 基本信息 / 项目设置的展开状态，记在浏览器本地 */
 const SECTION_STORAGE_KEY = {
@@ -317,13 +316,11 @@ export default function ProjectDetailPage() {
               : <PublishTab projectId={project.id} readOnly={false} />}
           </TabsContent>
 
-          {PLACEHOLDER_TABS.map(tab => (
-            <TabsContent key={tab} value={tab}>
-              <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
-                {t('tabs.placeholder')}
-              </div>
-            </TabsContent>
-          ))}
+          <TabsContent value="data">
+            {/* 归档项目不给派采集工单：那台机器采回来的数据也归不到已经归档的项目上。
+                列表仍旧能看，归档不等于数据作废 */}
+            <DataTab projectId={project.id} readOnly={isArchived} />
+          </TabsContent>
         </Tabs>
       </div>
 

@@ -19,6 +19,8 @@ import { ChannelsMcpModule } from './core/channels/mcp/channels.mcp.module'
 import { RelayModule } from './core/channels/relay/relay.module'
 import { ContentMcpModule } from './core/content/content-mcp.module'
 import { ContentModule } from './core/content/content.module'
+import { CreatorNoteIngestModule } from './core/creator-notes/creator-note-ingest.module'
+import { CreatorNotesModule } from './core/creator-notes/creator-notes.module'
 import { DevicesModule } from './core/devices/devices.module'
 import { ExecutionTasksModule } from './core/execution-tasks/execution-tasks.module'
 import { NotifyModule } from './core/notify/notify.module'
@@ -88,6 +90,9 @@ import { UserModule } from './core/user/user.module'
     DevicesModule,
     ExecutionTasksModule,
     PublishingModule,
+    // 入库那一半是 @Global，要排在 ExecutionTasksModule 用得到它之前
+    CreatorNoteIngestModule,
+    CreatorNotesModule,
     SettingsModule,
     RelayModule,
     // MCP modules (after business modules to ensure @Global services are available)
