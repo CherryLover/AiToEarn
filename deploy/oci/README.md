@@ -123,11 +123,20 @@ DATA_DIR=/opt/stack/aitoearn/data
 ## 部署 / 更新
 
 ```bash
-/opt/stack/aitoearn/repo/deploy/oci/deploy.sh 20260917-1a2b3c4d   # 指定镜像标签
-/opt/stack/aitoearn/repo/deploy/oci/deploy.sh                     # 只更新配置，沿用 .env 里的标签
+/opt/stack/aitoearn/repo/deploy/oci/deploy.sh                     # main 上的最新构建
+/opt/stack/aitoearn/repo/deploy/oci/deploy.sh 20260917-1a2b3c4d   # 回到某个指定版本
 ```
 
-脚本会：仓库切到 `origin/main` → 写入镜像标签 → 渲染配置 → 拉镜像 → `docker compose up -d` → 等健康检查。
+脚本会：仓库切到 `origin/main` → 定版本 → 渲染配置 → 拉镜像 → `docker compose up -d` → 等健康检查。
+
+**不给标签就是升到 main 的最新构建。** 三个镜像各查各的：只改了后台的那次推送不会重建网页镜像，
+网页就停在它自己最后一次构建上。找的办法是反查和 `:latest` 同一个 manifest 的那个版本号标签
+（`:latest` 只有 main 会打），写进 `.env` 的仍然是版本号而不是 `latest` —— 这样 `docker compose ps`
+和日志里看得出线上跑的是哪一版，隔几天原样再跑一次也还是同一版，不会悄悄又升一级。
+某个镜像查不到就沿用 `.env` 里的旧值，不会把部署拦下来。
+
+带 `--ref <分支>` 部署时必须显式给标签，脚本会拒绝自动取版本：`:latest` 指的是 main，
+把分支的部署文件配上 main 的镜像是最难查的那种错。
 
 配置合并规则（`render_config.py`）：官方 `config.yaml` 为底，`overrides/*.yaml` 覆盖；override 值为空的项保留官方默认；server 配置里 `https://localhost/` 开头的地址统一换成 `https://$DOMAIN/`；没填 `OIDC_CLIENT_ID` 时不写登录配置（服务能起，但登录不了）。
 
