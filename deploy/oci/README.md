@@ -177,7 +177,8 @@ SDK 起 `claude` 进程 → 打本机的 claude-code-router（127.0.0.1:3456）�
 | `AGENT_THINK_MODEL` | 思考任务模型 | 取清单第一个 |
 | `AGENT_TRANSFORMERS` | 跟上游说话的方式，见下表 | 默认 `Anthropic` 透传 |
 
-**七行必须留在 `.env` 里（可以是空值）**：`render_config.py` 是严格替换，缺变量直接 KeyError。
+`.env` 里缺了这几行不会拦下部署：`render_config.py` 会把它们逐个点名，然后按留空处理。
+（模板里出现一个 `.env.example` 里也没有的变量名才会报错停下——那是仓库自己写错了。）
 
 **两种协议都能接**，靠 `AGENT_TRANSFORMERS` 区分，claude-code-router 负责转换：
 
@@ -193,6 +194,8 @@ SDK 起 `claude` 进程 → 打本机的 claude-code-router（127.0.0.1:3456）�
 **全留空 = 这个功能是坏的**，不是降级。占位上游会拒掉请求，`claude` 进程往 stderr 打
 `There's an issue with the selected model (claude-opus-4-6). It may not exist or you may not have access to it.`，
 网页弹窗里照原样显示，最后收一个 `Internal server error`。
+进站横幅和 `/setup` 会把这件事摆出来，所以不填 `.env` 也可以直接在网页 `/config` 里配，
+保存即生效、不用重启；`.env` 这条路的好处是重装机器时它跟着配置一起走。
 
 角色模型填了但不在 `AGENT_MODELS` 里，`render_config.py` 会在渲染阶段就报错停下。
 这是故意的——后台启动时 zod 也会拦，但那时的表现是容器起不来，得翻日志才知道为什么。
@@ -208,7 +211,7 @@ SDK 起 `claude` 进程 → 打本机的 claude-code-router（127.0.0.1:3456）�
 | `NOTIFY_BARK_KEY` | 请求头 `bark-key` 的值 | 关掉推送 |
 | `NOTIFY_GROUP` | 通知分组，默认 `AiToEarn` | 用默认值 |
 
-**四行必须留在 `.env` 里（可以是空值）**：`render_config.py` 是严格替换，缺变量直接 KeyError，配置渲染不出来。
+`.env` 里缺了这几行不会拦下部署：`render_config.py` 会把它们逐个点名，然后按留空处理。
 
 **真实地址和 key 只写在服务器的 `/opt/stack/aitoearn/.env`，绝不进仓库。**
 

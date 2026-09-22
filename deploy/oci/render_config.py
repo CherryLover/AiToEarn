@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """把官方 config.yaml 和本目录 overrides/*.yaml 合并成服务器上实际用的配置。
 
-- overrides 里的 ${VAR} 从环境变量取（deploy.sh 会先加载 .env），缺变量直接报错
+- overrides 里的 ${VAR} 从环境变量取（deploy.sh 会先加载 .env）。
+  .env 里没有但 .env.example 里有 = 服务器上的 .env 比仓库旧，按留空处理并逐个点名；
+  两边都没有 = 模板里的变量名写错了，直接报错
 - override 的值是空字符串时跳过，保留官方默认值（比如还没给 AI 的 Key）
 - server 配置里所有 https://localhost/ 开头的地址换成 https://$DOMAIN/（各平台授权回调等）
 - oidcLogin 没填 clientId 时整段去掉（否则后台配置校验不过、起不来；此时只是暂时不能登录）；allowedEmails 写成逗号分隔字符串，这里拆成列表
@@ -70,12 +72,71 @@ def replace_localhost(node, domain):
     return node
 
 
+ENV_EXAMPLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env.example")
+
+
+def declared_in_example():
+    """.env.example 里声明过的变量名。它是用户 .env 的来源，所以也是「这个变量该不该存在」的依据。"""
+    names = set()
+    try:
+        with open(ENV_EXAMPLE, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    names.add(line.split("=", 1)[0].strip())
+    except OSError:
+        pass
+    return names
+
+
+def substitute(text, override_path):
+    """把模板里的 ${VAR} 换成环境变量。
+
+    缺变量分两种，后果完全不同，所以不能一视同仁：
+
+    - **模板里写错了变量名**（.env.example 里也没有）：报错。这是仓库自己的 bug，
+      渲染成空只会让它在几层之后变成一条看不懂的启动失败。
+    - **服务器上的 .env 比仓库旧**（.env.example 里有）：按留空处理，逐个点名。
+      这是常态，每次往 .env.example 加变量都会撞上一次；为此让整个部署停摆，
+      等于每加一个可选配置就把线上卡死一次。留空的项会被 prune 掉、沿用官方默认，
+      缺了什么进站横幅和 /setup 会说，也可以直接在网页 /config 里补。
+    """
+    template = string.Template(text)
+    referenced = set()
+    for match in template.pattern.finditer(text):
+        name = match.group("named") or match.group("braced")
+        if name:
+            referenced.add(name)
+
+    missing = sorted(name for name in referenced if name not in os.environ)
+    if missing:
+        declared = declared_in_example()
+        unknown = [name for name in missing if name not in declared]
+        if unknown:
+            sys.exit(
+                f"✗ {override_path} 用到的变量 .env.example 里也没有，多半是名字写错了：\n"
+                + "\n".join(f"    {name}" for name in unknown)
+            )
+        print(
+            f"! {os.path.basename(override_path)}：.env 里缺下面这些，按留空处理"
+            f"（.env.example 里有，说明服务器上的 .env 比仓库旧）：",
+            file=sys.stderr,
+        )
+        for name in missing:
+            print(f"    {name}", file=sys.stderr)
+        print(f"  要补就照着 {ENV_EXAMPLE} 加进 .env 再跑一次，或者到网页 /config 里配", file=sys.stderr)
+
+    values = {name: "" for name in missing}
+    values.update(os.environ)
+    return template.substitute(values)
+
+
 def main():
     base_path, override_path, out_path = sys.argv[1:4]
     with open(base_path, encoding="utf-8") as f:
         base = yaml.load(f, Loader=Yaml12Loader)
     with open(override_path, encoding="utf-8") as f:
-        text = string.Template(f.read()).substitute(os.environ)
+        text = substitute(f.read(), override_path)
     merge(base, yaml.load(text, Loader=Yaml12Loader) or {})
     base = replace_localhost(base, os.environ["DOMAIN"])
     oidc = base.get("oidcLogin")
