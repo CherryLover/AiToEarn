@@ -5,6 +5,7 @@
 - override 的值是空字符串时跳过，保留官方默认值（比如还没给 AI 的 Key）
 - server 配置里所有 https://localhost/ 开头的地址换成 https://$DOMAIN/（各平台授权回调等）
 - oidcLogin 没填 clientId 时整段去掉（否则后台配置校验不过、起不来；此时只是暂时不能登录）；allowedEmails 写成逗号分隔字符串，这里拆成列表
+- agent.models 也是逗号分隔字符串，拆成列表；三个角色模型没单独指定就取清单第一个，指定了但不在清单里直接报错（后台 zod 也会拦，但那时是容器起不来）
 - 输出文件权限 600，里面有密码
 
 用法：render_config.py <官方配置> <override 模板> <输出文件>
@@ -82,6 +83,31 @@ def main():
             del base["oidcLogin"]
         elif isinstance(oidc.get("allowedEmails"), str):
             oidc["allowedEmails"] = [m.strip() for m in oidc["allowedEmails"].split(",") if m.strip()]
+
+    agent = base.get("agent")
+    if isinstance(agent, dict):
+        role_fields = (
+            ("defaultModel", "AGENT_DEFAULT_MODEL"),
+            ("backgroundModel", "AGENT_BACKGROUND_MODEL"),
+            ("thinkModel", "AGENT_THINK_MODEL"),
+        )
+        if isinstance(agent.get("models"), str):
+            # .env 里是逗号分隔的一行，配置要的是列表
+            agent["models"] = [m.strip() for m in agent["models"].split(",") if m.strip()]
+            if not agent["models"]:
+                sys.exit("AGENT_MODELS 填了但拆不出模型名")
+            # 换了模型清单又没单独指定角色模型时，别把官方默认那几个 claude 留在这三个字段上
+            for field, var in role_fields:
+                if not os.environ.get(var, "").strip():
+                    agent[field] = agent["models"][0]
+        # 后台启动时 zod 会校验「三个角色模型都得在清单里」，不过就是服务起不来。
+        # 与其等容器起不来再翻日志，不如在渲染阶段就说清楚是哪个变量填错了。
+        for field, var in role_fields:
+            if agent.get(field) not in agent.get("models", []):
+                sys.exit(
+                    f"agent.{field} = {agent.get(field)!r} 不在 agent.models {agent.get('models')} 里，"
+                    f"检查 .env 里的 {var} 和 AGENT_MODELS"
+                )
 
     tmp = out_path + ".tmp"
     fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
