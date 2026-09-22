@@ -100,6 +100,10 @@ services:
         condition: service_healthy
     volumes:
       - ./config/ai.yaml:/app/config.yaml:ro
+      # 运行时配置覆盖层，读写。config.yaml 是 .env 渲染出来的基石，每次部署重新生成；
+      # 这一份由网页 /config 保存，deploy.sh 不生成也不碰它，所以重新部署不会被冲掉。
+      # deploy.sh 会在 compose 之前 touch 出空文件（600），否则 Docker 会把它建成目录
+      - ${DATA_DIR:?}/config/ai.override.yaml:/app/config.override.yaml
       # 项目物料目录，读写。应用容器每次部署都被 rm --stop --force 删掉重建，不落宿主机的东西一律丢失
       - ${DATA_DIR:?}/projects:/data/projects
     healthcheck:
@@ -122,6 +126,8 @@ services:
         condition: service_healthy
     volumes:
       - ./config/server.yaml:/app/config.yaml:ro
+      # 运行时配置覆盖层，读写。和 ai 各一份，互不影响；由 deploy.sh 预先 touch 出来（600）
+      - ${DATA_DIR:?}/config/server.override.yaml:/app/config.override.yaml
       # 项目物料目录，读写。和 aitoearn-ai 挂的是同一个宿主机目录，两边看到的是同一份文件
       - ${DATA_DIR:?}/projects:/data/projects
     healthcheck:

@@ -1,4 +1,5 @@
 export * from './api-key.util'
+export * from './config-override.util'
 export * from './error.util'
 export * from './exception.util'
 export * from './file.util'

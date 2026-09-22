@@ -8,7 +8,7 @@
 #   1. 仓库副本 repo/ 切到指定 git 引用（默认 origin/main），拿到最新的部署文件和官方配置模板
 #   2. 给了镜像标签就写回 .env 的 AITOEARN_TAG
 #   3. 用 .env 渲染 config/server.yaml、config/ai.yaml
-#   4. 建数据目录，拉镜像，docker compose up -d，等健康检查
+#   4. 建数据目录（含运行时配置覆盖层的空文件），拉镜像，docker compose up -d，等健康检查
 #
 set -euo pipefail
 
@@ -71,7 +71,15 @@ python3 repo/deploy/oci/render_config.py "$BACKEND/aitoearn-server/config/config
 python3 repo/deploy/oci/render_config.py "$BACKEND/aitoearn-ai/config/config.yaml" repo/deploy/oci/overrides/ai.yaml config/ai.yaml
 
 echo "==> 数据目录 $DATA_DIR"
-sudo mkdir -p "$DATA_DIR"/{mongodb/db,mongodb/configdb,redis,rustfs,projects}
+sudo mkdir -p "$DATA_DIR"/{mongodb/db,mongodb/configdb,redis,rustfs,projects,config}
+# 运行时配置覆盖层：网页 /config 保存的那份，deploy.sh 只负责把空文件建出来，之后再也不碰它，
+# 所以重新部署不会冲掉线上改过的值。必须在 docker compose 之前建好：
+# Docker 对不存在的宿主机挂载源会直接建成目录，那样后端就永远读不到这份配置了。
+# 里面会有上游 Key，权限锁 600
+for f in server.override.yaml ai.override.yaml; do
+  sudo touch "$DATA_DIR/config/$f"
+  sudo chmod 600 "$DATA_DIR/config/$f"
+done
 # rustfs 镜像以 uid 10001 运行，数据目录要归它，否则启动报 Permission denied
 sudo chown 10001:10001 "$DATA_DIR/rustfs"
 # projects 不改属主：aitoearn-server / aitoearn-ai 两个 Dockerfile 都没写 USER，容器内进程就是 root(uid 0)，

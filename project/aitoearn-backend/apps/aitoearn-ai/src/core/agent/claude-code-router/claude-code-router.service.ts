@@ -1,9 +1,11 @@
+import type { ConfigOverrideSavedEvent } from '@yikart/config-editor'
 import type { FSWatcher } from 'node:fs'
 import { ChildProcess, spawn } from 'node:child_process'
 import { existsSync, mkdirSync, unlinkSync, watch, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
-import { config } from '../../../config'
+import { onConfigOverrideSaved } from '@yikart/config-editor'
+import { agentConfigSchema, config } from '../../../config'
 import { CLAUDE_CODE_ROUTER_PROVIDER_NAME } from '../agent.constants'
 
 interface TransformerConfig {
@@ -47,6 +49,8 @@ export class ClaudeCodeRouterService implements OnModuleInit, OnModuleDestroy {
   private childProcess: ChildProcess | null = null
   private fileWatcher: FSWatcher | null = null
   private shouldRestart = true
+  private cliPath: string | null = null
+  private unsubscribeConfigOverride: (() => void) | null = null
   private readonly sessionDir = join(process.cwd(), '.claude-session')
   private readonly configDir = join(this.sessionDir, '.claude-code-router')
   private readonly configPath = join(this.configDir, 'config.json')
@@ -56,15 +60,25 @@ export class ClaudeCodeRouterService implements OnModuleInit, OnModuleDestroy {
     const routerConfig = config.agent
 
     const cliPath = require.resolve('@musistudio/claude-code-router/dist/cli.js')
+    this.cliPath = cliPath
     this.logger.debug(`找到 Claude Code Router CLI: ${cliPath}`)
 
     this.startFileWatcher()
     this.generateConfigFile(routerConfig)
     this.startChildProcess(cliPath)
+
+    // 运行时覆盖层保存完，`agent` 这一段不重启整个 ai 服务就生效：
+    // 只重写 router 的 config.json 并重启那个子进程，主进程不动
+    this.unsubscribeConfigOverride = onConfigOverrideSaved(event => this.handleConfigOverrideSaved(event))
   }
 
   async onModuleDestroy() {
     this.shouldRestart = false
+
+    if (this.unsubscribeConfigOverride) {
+      this.unsubscribeConfigOverride()
+      this.unsubscribeConfigOverride = null
+    }
 
     if (this.fileWatcher) {
       this.fileWatcher.close()
@@ -77,6 +91,51 @@ export class ClaudeCodeRouterService implements OnModuleInit, OnModuleDestroy {
       this.childProcess.kill('SIGTERM')
       this.childProcess = null
     }
+  }
+
+  /**
+   * 重新生成 router 配置并重启子进程。主进程不动，所以网页上改完 `agent.baseUrl` / `agent.apiKey`
+   * 不需要点「重启服务」。
+   *
+   * 注意范围：这里只换掉 router 的上游。`agent.models` 那份清单在模块加载时就被
+   * `AllowedModelSchema`（`agent.dto.ts`）吃成了 zod 枚举，改模型清单仍然要重启服务才算数。
+   */
+  reloadAgentConfig(routerConfig: typeof config.agent): void {
+    this.generateConfigFile(routerConfig)
+    this.restartChildProcess()
+  }
+
+  private handleConfigOverrideSaved(event: ConfigOverrideSavedEvent) {
+    if (!event.changedKeys.includes('agent')) {
+      return
+    }
+
+    const parsed = agentConfigSchema.safeParse(event.config['agent'])
+    if (!parsed.success) {
+      this.logger.warn('保存后的 agent 配置过不了校验，沿用当前 Claude Code Router 配置')
+      return
+    }
+
+    try {
+      this.reloadAgentConfig(parsed.data)
+      this.logger.debug('agent 配置有变化，已重写 Claude Code Router 配置并重启子进程')
+    }
+    catch (error) {
+      // 热生效失败不能让「保存配置」这件事失败，配置已经落盘，点一次重启也能生效
+      this.logger.error(error, '热更新 Claude Code Router 配置失败')
+    }
+  }
+
+  private restartChildProcess() {
+    if (!this.childProcess) {
+      if (this.cliPath) {
+        this.startChildProcess(this.cliPath)
+      }
+      return
+    }
+
+    // exit 回调里带着 shouldRestart，杀掉之后会自己用新配置重新拉起来
+    this.childProcess.kill('SIGTERM')
   }
 
   private generateConfigFile(routerConfig: typeof config.agent) {
