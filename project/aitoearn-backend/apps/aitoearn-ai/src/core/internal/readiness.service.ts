@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { ResponseCode } from '@yikart/common'
 import axios from 'axios'
 import { config } from '../../config'
+import { CLAUDE_CODE_ROUTER_API_KEY, CLAUDE_CODE_ROUTER_BASE_URL } from '../agent/agent.constants'
 import { sanitizeDetail } from './readiness.sanitize'
 
 /** 探一次上游最多等这么久（contract-runtime-config 4.1 写死 5 秒） */
@@ -27,7 +28,10 @@ export interface InternalReadinessItem {
  *
  * 只管两件 server 那边判不了的事：
  * - `agentUpstream`：`agent.*` 的上游到底通不通。**真发一个最小的 messages 请求**，
- *   不是看配置非空——线上那次事故正是「配置非空但从来没被覆盖过」，占位值一直躺在那儿；
+ *   不是看配置非空——线上那次事故正是「配置非空但从来没被覆盖过」，占位值一直躺在那儿。
+ *   请求打的是本机的 claude-code-router，不是直连 `agent.baseUrl`：真正跑提炼方向的
+ *   `claude` 进程就是这么走的，中间那层 transformer 配错了（上游是 OpenAI 协议却留着
+ *   Anthropic 透传）也是一种「用不了」。直连上游探不出这一类问题，等于报了个假的绿灯；
  * - `aiChatModels`：`ai.models.chat` 和 `ai.openai.apiKey` 都只存在于 ai 的配置里，
  *   server 进程里根本读不到，所以这一项也只能落在这边判。
  *
@@ -100,7 +104,7 @@ export class ReadinessService {
     const startedAt = Date.now()
     try {
       const response = await axios.post(
-        baseUrl,
+        `${CLAUDE_CODE_ROUTER_BASE_URL}/v1/messages`,
         {
           model: agent.defaultModel,
           max_tokens: PROBE_MAX_TOKENS,
@@ -110,12 +114,13 @@ export class ReadinessService {
           timeout: AGENT_UPSTREAM_PROBE_TIMEOUT_MS,
           // 非 2xx 不抛错：我们要拿状态码和返回体当 detail，不是当异常
           validateStatus: () => true,
+          // router 在本机回环上，走代理会直接连不上
+          proxy: false,
           headers: {
             'content-type': 'application/json',
             'anthropic-version': ANTHROPIC_VERSION,
-            // 两种鉴权头都带上：上游可能是 Anthropic 官方，也可能是只认 Bearer 的兼容网关
-            'x-api-key': apiKey,
-            'authorization': `Bearer ${apiKey}`,
+            // 这是 router 自己的口令，不是上游的 Key；上游的 Key 由 router 按配置加
+            'x-api-key': CLAUDE_CODE_ROUTER_API_KEY,
           },
         },
       )
@@ -138,7 +143,8 @@ export class ReadinessService {
         status: 'error',
         required: true,
         configPath: 'agent.baseUrl',
-        detail: `上游返回 HTTP ${response.status}：${sanitizeDetail(response.data, this.secrets())}`,
+        detail: `上游返回 HTTP ${response.status}：${sanitizeDetail(response.data, this.secrets())}`
+          + `（请求经本机 claude-code-router 转发，对不上多半是 agent.baseUrl、agent.apiKey 或 agent.transformers 配错了）`,
       }
     }
     catch (error) {
@@ -161,6 +167,9 @@ export class ReadinessService {
     const code = (error as { code?: string } | null)?.code
     if (code === 'ECONNABORTED' || code === 'ETIMEDOUT') {
       return `探测超时：${AGENT_UPSTREAM_PROBE_TIMEOUT_MS / 1000} 秒内上游没有响应（已等 ${elapsedMs} 毫秒）`
+    }
+    if (code === 'ECONNREFUSED') {
+      return '本机的 claude-code-router 没在监听，ai 服务可能刚起来还没把它拉起来，稍后再试一次'
     }
     return `连不上上游：${sanitizeDetail(error, this.secrets())}`
   }

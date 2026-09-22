@@ -44,7 +44,7 @@ import { RelayMediaResolverService } from '../../ai/relay-media'
 import { findDraftWrittenSince } from '../../notify/draft-summary'
 import { NotifyRuleType } from '../../notify/notify-settings.service'
 import { NotifyService } from '../../notify/notify.service'
-import { ChannelsToolName, CLAUDE_CODE_ROUTER_PROVIDER_NAME, McpServerName, POLLING_TASK_AGENT_PROMPT, SKILL_ANALYZER_AGENT_PROMPT, SYSTEM_PROMPT } from '../agent.constants'
+import { ChannelsToolName, CLAUDE_CODE_ROUTER_API_KEY, CLAUDE_CODE_ROUTER_BASE_URL, CLAUDE_CODE_ROUTER_PROVIDER_NAME, McpServerName, POLLING_TASK_AGENT_PROMPT, SKILL_ANALYZER_AGENT_PROMPT, SYSTEM_PROMPT } from '../agent.constants'
 import { ContentBlock, CreateContentGenerationTaskDto } from '../agent.dto'
 import { enhancePrompt, filterHeaders, normalizePrompt, sanitizeMessage, shouldFilterSyntheticMessage } from '../agent.utils'
 import {
@@ -259,9 +259,9 @@ export class AgentRuntimeService {
       env: {
         ...process.env,
         DEBUG_CLAUDE_AGENT_SDK: '1',
-        ANTHROPIC_AUTH_TOKEN: 'ccr',
+        ANTHROPIC_AUTH_TOKEN: CLAUDE_CODE_ROUTER_API_KEY,
         ANTHROPIC_API_KEY: '',
-        ANTHROPIC_BASE_URL: 'http://127.0.0.1:3456',
+        ANTHROPIC_BASE_URL: CLAUDE_CODE_ROUTER_BASE_URL,
         NO_PROXY: '127.0.0.1',
         DISABLE_TELEMETRY: 'true',
         DISABLE_COST_WARNINGS: 'true',

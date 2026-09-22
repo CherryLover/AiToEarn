@@ -79,7 +79,11 @@ describe('readinessService', () => {
 
       expect(postMock).toHaveBeenCalledTimes(1)
       const [url, body, options] = postMock.mock.calls[0]
-      expect(url).toBe('https://upstream.example.com/v1/messages')
+      // 探的是本机 router，不是直连 agent.baseUrl：真正跑提炼方向的 claude 进程就走这条路，
+      // 中间那层 transformer 配错了（上游说 OpenAI 协议却留着 Anthropic 透传）直连是探不出来的
+      expect(url).toBe('http://127.0.0.1:3456/v1/messages')
+      expect(options.headers['x-api-key']).toBe('ccr')
+      expect(options.proxy).toBe(false)
       expect(body.model).toBe('demo-model')
       expect(body.messages).toHaveLength(1)
       expect(options.timeout).toBe(AGENT_UPSTREAM_PROBE_TIMEOUT_MS)
@@ -119,6 +123,8 @@ describe('readinessService', () => {
       expect(item.status).toBe('error')
       expect(item.detail).toContain('401')
       expect(item.detail).not.toContain('sk-placeholder')
+      // 报错要把人引到该改的三个字段上，尤其 transformers——协议选错是最难自己看出来的那种
+      expect(item.detail).toContain('agent.transformers')
     })
 
     it('超时回 error，并说清楚等了多久', async () => {
@@ -132,10 +138,19 @@ describe('readinessService', () => {
       expect(item.detail).toContain('5 秒')
     })
 
-    it('连不上回 error，不抛异常', async () => {
+    it('router 还没起来回 error，并说清楚是本机那一层，不抛异常', async () => {
       postMock.mockRejectedValue(Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:3456'), { code: 'ECONNREFUSED' }))
 
       await expect(service.listItems()).resolves.toBeDefined()
+      const item = findItem(await service.listItems(), 'agentUpstream')
+
+      expect(item.status).toBe('error')
+      expect(item.detail).toContain('claude-code-router 没在监听')
+    })
+
+    it('其它网络错误回 error，不抛异常', async () => {
+      postMock.mockRejectedValue(Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' }))
+
       const item = findItem(await service.listItems(), 'agentUpstream')
 
       expect(item.status).toBe('error')

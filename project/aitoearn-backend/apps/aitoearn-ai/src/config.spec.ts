@@ -32,6 +32,20 @@ describe('agentConfigSchema', () => {
     expect(agentConfig.defaultModel).toBe('deepseek-anthropic-chat')
   })
 
+  it('默认是 Anthropic 透传：上游本身就说 Anthropic 协议时不用配', () => {
+    expect(agentConfigSchema.parse(baseAgentConfig).transformers).toEqual(['Anthropic'])
+  })
+
+  // 上游是 OpenAI 协议的中转站时填空数组，router 的缺省行为就是两边互转
+  it('接受空的 transformers：交给 router 做 Anthropic 和 OpenAI 互转', () => {
+    expect(agentConfigSchema.parse({ ...baseAgentConfig, transformers: [] }).transformers).toEqual([])
+  })
+
+  it('接受 router 支持的其它 transformer', () => {
+    expect(agentConfigSchema.parse({ ...baseAgentConfig, transformers: ['openrouter'] }).transformers)
+      .toEqual(['openrouter'])
+  })
+
   it('rejects route models that are not configured', () => {
     expect(() => agentConfigSchema.parse({
       ...baseAgentConfig,

@@ -180,6 +180,11 @@ export const agentConfigSchema = z.object({
   defaultModel: agentModelNameSchema.default('claude-opus-4-6').describe('Agent 默认模型'),
   backgroundModel: agentModelNameSchema.default('claude-haiku-4-5-20251001').describe('Agent 后台子任务模型'),
   thinkModel: agentModelNameSchema.default('claude-opus-4-6').describe('Agent 思考任务模型'),
+  transformers: z.array(z.string().min(1)).default(['Anthropic']).describe(
+    'claude-code-router 的 transformer 链，决定怎么跟上游说话。'
+    + '上游是 Anthropic 协议（/v1/messages）就用默认的 [Anthropic]，那是原样透传；'
+    + '上游是 OpenAI 协议（/v1/chat/completions）就留空数组，由 router 负责两边转换。',
+  ),
   taskTimeoutMs: z.number().default(60 * 60 * 1000).describe('Agent 任务超时时间（毫秒），默认 60 分钟'),
 }).superRefine((agent, ctx) => {
   const configuredModels = new Set(agent.models)
