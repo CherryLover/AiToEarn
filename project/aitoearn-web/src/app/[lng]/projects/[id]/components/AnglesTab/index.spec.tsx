@@ -29,6 +29,8 @@ vi.mock('@/utils/ui/toast', () => ({
 vi.mock('@/app/i18n/client', () => ({
   useTransClient: () => ({ t: (key: string) => key }),
 }))
+/** 「让 AI 提炼方向」现在只是把一句话丢给右侧对话，用例靠它断言丢了什么 */
+const onAskAi = vi.fn()
 /** 最近一次提炼任务的「跑完」回调，用例靠它模拟 Agent 跑完 */
 let onAgentDone: (() => void) | null = null
 vi.mock('@/api/ai/ai.api', () => ({
@@ -67,9 +69,31 @@ beforeEach(() => {
 })
 
 async function renderTab(readOnly = false) {
-  const view = render(<AnglesTab projectId="p1" projectName="forty-weeks" readOnly={readOnly} />)
+  const view = render(
+    <AnglesTab
+      projectId="p1"
+      projectName="forty-weeks"
+      readOnly={readOnly}
+      onAskAi={onAskAi}
+      refreshSignal={0}
+    />,
+  )
   await waitFor(() => expect(getAngleListApi).toHaveBeenCalled())
-  return view
+
+  /** 模拟页面「对话跑完一轮」：把 refreshSignal 往上加 */
+  const bumpSignal = async (signal: number) => {
+    view.rerender(
+      <AnglesTab
+        projectId="p1"
+        projectName="forty-weeks"
+        readOnly={readOnly}
+        onAskAi={onAskAi}
+        refreshSignal={signal}
+      />,
+    )
+  }
+
+  return { ...view, bumpSignal }
 }
 
 describe('anglesTab 空状态与失败', () => {
@@ -196,41 +220,62 @@ describe('anglesTab 删方向', () => {
  * AI 提炼完只是把 angles/<slug>.md 写进了项目目录，数据库里还是空的。
  * 先登记（/angles/sync）再看列表——少了这一步，提炼完页面照样是空的。
  */
-describe('anglesTab AI 提炼之后的登记', () => {
-  it('提炼对话框能打开', async () => {
+describe('anglesTab 让 AI 提炼方向', () => {
+  /** 提炼不再自己起任务：它只是把一句话丢进右侧那条项目对话 */
+  it('点提炼把提示词丢给对话，不弹窗', async () => {
     await renderTab()
 
     await userEvent.click(await screen.findByRole('button', { name: /angles.empty.extract/ }))
 
-    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(onAskAi).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  async function runExtract() {
+  /** 人多半是先聊了一阵才点这个按钮，提示词不圈住前面聊的，AI 会当成全新任务从头来 */
+  it('提示词里点明要吃这条对话里已经聊到的东西', async () => {
     await renderTab()
-    await userEvent.click(await screen.findByRole('button', { name: /angles.empty.extract/ }))
-    await userEvent.click(await screen.findByRole('button', { name: /angles.extract.start/ }))
-    await waitFor(() => expect(onAgentDone).not.toBeNull())
-    await act(async () => {
-      onAgentDone?.()
-    })
-  }
 
-  /** 少了这一步，提炼完页面照样是空的 */
+    await userEvent.click(await screen.findByRole('button', { name: /angles.empty.extract/ }))
+
+    const prompt = onAskAi.mock.calls[0][0] as string
+    expect(prompt).toContain('这条对话里已经聊到的')
+    expect(prompt).toContain('extracting-angles')
+  })
+})
+
+describe('anglesTab 对话跑完之后的登记', () => {
+  /** 少了这一步，AI 写完文件页面照样是空的 */
   it('跑完先登记再看列表', async () => {
     syncAnglesApi.mockResolvedValue({ code: 0, data: [angle({ id: 'a1', slug: 'pain-point', name: '孕晚期焦虑' })] })
-    await runExtract()
+    const { bumpSignal } = await renderTab()
+
+    await act(async () => {
+      await bumpSignal(1)
+    })
 
     await waitFor(() => expect(syncAnglesApi).toHaveBeenCalledWith('p1'))
     expect(toastError).not.toHaveBeenCalled()
   })
 
-  /** 登记失败要说清楚，并且退回去重拉一次，免得页面停在提炼前的旧列表上 */
+  /** 登记失败要说清楚，并且退回去重拉一次，免得页面停在跑之前的旧列表上 */
   it('登记失败时说明原因并重拉列表', async () => {
     syncAnglesApi.mockResolvedValue({ code: 20200 })
-    await runExtract()
+    const before = getAngleListApi.mock.calls.length
+    const { bumpSignal } = await renderTab()
+
+    await act(async () => {
+      await bumpSignal(1)
+    })
 
     await waitFor(() => expect(toastError).toHaveBeenCalledWith('angles.error.notFound'))
-    expect(getAngleListApi).toHaveBeenCalledTimes(2)
+    expect(getAngleListApi.mock.calls.length).toBeGreaterThan(before)
+  })
+
+  /** 初始那次渲染不该白跑一次登记 */
+  it('刚进页面不会白登记一次', async () => {
+    await renderTab()
+
+    expect(syncAnglesApi).not.toHaveBeenCalled()
   })
 })
 

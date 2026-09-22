@@ -8,8 +8,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { agentApi } from '@/api/ai/ai.api'
 
 import { AgentTaskStatus } from '@/api/ai/ai.constants'
+import { convertMessages, isTaskCompleted } from '@/components/Chat/utils'
 import { useUserStore } from '@/store/user'
-import { convertMessages, isTaskCompleted } from '../utils'
 
 export interface ITaskPollingOptions {
   /** 任务 ID */

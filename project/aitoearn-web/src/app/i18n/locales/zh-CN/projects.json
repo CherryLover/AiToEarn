@@ -378,6 +378,15 @@
       "draftWriteFailed": "草稿没写进去，稍后再试一次",
       "draftMetaInvalid": "草稿的血缘记录不对，去文件里看一眼",
       "platformNotSupported": "这个平台还不支持"
+    },
+    "pending": {
+      "banner": "有 {{num}} 条 AI 新提的方向待确认",
+      "hint": "采用之后才会进列表和演进树",
+      "confirm": "采用",
+      "confirmAll": "全部采用",
+      "edit": "改一下",
+      "confirmSuccess": "已采用「{{name}}」",
+      "confirmAllSuccess": "{{num}} 条方向都采用了"
     }
   },
   "drafts": {
@@ -398,7 +407,8 @@
       "failed": "没生成成功",
       "waiting": "已经派下去了，等它开始读物料…",
       "noLog": "这次没有过程记录。",
-      "noAngles": "还没有可用的方向。先去「方向」标签页提炼或新建一个，再回来生成。"
+      "noAngles": "还没有可用的方向。先去「方向」标签页提炼或新建一个，再回来生成。",
+      "runsInChat": "过程在右侧对话里，可以随时追问或让它改"
     },
     "platform": {
       "xhs": "小红书",
@@ -588,5 +598,25 @@
     "urlInvalid": "帖子链接不合法，得是 http 或 https 开头的完整地址",
     "createFailed": "没建成功，稍后再试一次",
     "statusInvalid": "当前状态下不能这么操作，刷新一下看看"
+  },
+  "chat": {
+    "open": "AI 对话",
+    "title": "AI 对话",
+    "close": "收起",
+    "startNew": "开一条新的",
+    "placeholder": "说说你的想法，聊出来再提炼方向…",
+    "sendFailed": "没发出去，再试一次",
+    "busyTip": "这一轮还在跑，等它跑完再开新的",
+    "empty": {
+      "title": "先聊聊这个项目",
+      "desc": "想法可以很粗：说个念头、丢点材料、问它一句都行。聊清楚了再让它提炼方向。"
+    },
+    "history": {
+      "title": "历史对话",
+      "loading": "正在加载…",
+      "loadFailed": "没拉到历史对话",
+      "empty": "这个项目还没聊过",
+      "untitled": "未命名对话"
+    }
   }
 }

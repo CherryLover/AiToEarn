@@ -309,6 +309,11 @@ export interface ISSEMessage {
 export interface ICreateTaskParams {
   /** 提示词 */
   prompt: string
+  /**
+   * 项目英文名。传了 Agent 就在该项目的物料目录里工作，这条会话也会归到这个项目名下。
+   * 不传就是老的通用对话，行为不变。
+   */
+  projectName?: string
   /** 媒体文件列表 */
   medias?: IUploadedMedia[]
   /** 翻译函数 */

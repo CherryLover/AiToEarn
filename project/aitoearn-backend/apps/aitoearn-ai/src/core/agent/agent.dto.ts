@@ -102,6 +102,7 @@ export class GetContentGenerationTaskDto extends createZodDto(GetContentGenerati
 export const ListContentGenerationTaskDtoSchema = PaginationDtoSchema.extend({
   keyword: z.string().max(100).optional().describe('搜索关键词（匹配标题和对话内容）'),
   favoriteOnly: z.coerce.boolean().optional().default(false).describe('仅显示收藏的任务'),
+  projectName: z.string().max(100).optional().describe('只看某个项目下的对话；不传就是全部'),
 })
 export class ListContentGenerationTaskDto extends createZodDto(ListContentGenerationTaskDtoSchema, 'ListContentGenerationTaskDto') { }
 

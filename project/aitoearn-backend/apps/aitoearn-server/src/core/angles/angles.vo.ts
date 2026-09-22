@@ -14,6 +14,7 @@ const AngleVoSchema = z.object({
   sourceAssetPaths: z.array(z.string()).describe('提炼时吃了哪些背景物料，相对项目根'),
   promptSnapshot: z.string().nullable().describe('提炼时用的提示词'),
   filePath: z.string().describe('写作指引文件路径，相对项目根；正文用物料文件接口读写'),
+  confirmedAt: z.coerce.date().optional().describe('人确认采用的时间；没有这个字段表示还在待确认区里等人看'),
   createdAt: z.coerce.date().describe('创建时间'),
   updatedAt: z.coerce.date().describe('更新时间'),
 })

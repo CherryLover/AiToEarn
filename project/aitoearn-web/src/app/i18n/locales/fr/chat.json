@@ -211,5 +211,14 @@
       "publish": "Publication en cours...",
       "complete": "Publié"
     }
+  },
+  "toolAction": {
+    "bash": "Exécuté",
+    "edit": "Modifié",
+    "glob": "Fichiers trouvés",
+    "grep": "Contenu recherché",
+    "read": "Lu",
+    "todo": "Liste de tâches",
+    "write": "Écrit"
   }
 }

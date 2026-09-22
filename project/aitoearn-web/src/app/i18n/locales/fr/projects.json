@@ -378,6 +378,15 @@
       "draftWriteFailed": "Le brouillon n'a pas pu être écrit. Réessayez.",
       "draftMetaInvalid": "La fiche de filiation du brouillon est incorrecte. Ouvrez le fichier.",
       "platformNotSupported": "Cette plateforme n'est pas encore prise en charge."
+    },
+    "pending": {
+      "banner": "{{num}} angle(s) tout juste proposé(s) par l’IA vous attendent",
+      "hint": "Ils n’entrent dans la liste et dans l’arbre qu’une fois retenus",
+      "confirm": "Retenir",
+      "confirmAll": "Tout retenir",
+      "edit": "Retoucher",
+      "confirmSuccess": "« {{name}} » retenu",
+      "confirmAllSuccess": "Les {{num}} angles ont été retenus"
     }
   },
   "drafts": {
@@ -398,7 +407,8 @@
       "failed": "La génération a échoué",
       "waiting": "Envoyé. En attente qu'elle commence à lire les matériaux…",
       "noLog": "Aucune trace pour cette exécution.",
-      "noAngles": "Aucun angle utilisable. Dégagez-en ou créez-en un dans l'onglet Angles, puis revenez ici."
+      "noAngles": "Aucun angle utilisable. Dégagez-en ou créez-en un dans l'onglet Angles, puis revenez ici.",
+      "runsInChat": "Cela se déroule dans le dialogue à droite : posez-y vos questions ou demandez des retouches."
     },
     "platform": {
       "xhs": "Xiaohongshu",
@@ -588,5 +598,25 @@
     "urlInvalid": "Le lien du post n'est pas valide, il doit être une adresse http ou https complète",
     "createFailed": "La création a échoué, réessaie plus tard",
     "statusInvalid": "Impossible dans l'état actuel, actualise la page"
+  },
+  "chat": {
+    "open": "Dialogue IA",
+    "title": "Dialogue IA",
+    "close": "Replier",
+    "startNew": "Démarrer un nouveau fil",
+    "placeholder": "Lancez une idée, même vague — on en discute, puis on dégage des angles…",
+    "sendFailed": "Envoi impossible. Réessayez.",
+    "busyTip": "Toujours en cours. Attendez la fin avant d'ouvrir un nouveau fil.",
+    "empty": {
+      "title": "Commencez par en parler",
+      "desc": "Une idée vague suffit : lancez une piste, déposez des éléments, ou posez une question. Les angles viendront après."
+    },
+    "history": {
+      "title": "Fils précédents",
+      "loading": "Chargement…",
+      "loadFailed": "Impossible de charger les fils précédents",
+      "empty": "Aucun fil pour ce projet pour l'instant",
+      "untitled": "Fil sans titre"
+    }
   }
 }

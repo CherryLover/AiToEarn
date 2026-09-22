@@ -22,16 +22,18 @@ Use this skill when:
 - User already picked an angle and wants a post written → use `drafting-post`
 - User wants to edit or retire an existing angle → that is a web UI action, not a generation task
 
-## Hard Rule: Facts Come Only From `background/`
+## Hard Rule: Facts Come Only From `background/` or From the User
 
-**Every factual claim in an angle must trace back to a file under `background/`.**
+**Every factual claim in an angle must trace back to a file under `background/`, or to something the user told you earlier in this same conversation.**
 
 - No invented features, numbers, user quotes, prices, awards, or competitor comparisons
 - No "typical for this kind of product" filler, no industry common sense presented as project fact
-- If the material does not support an angle that looks promising, **say the material is missing and name exactly what is missing** — do not write the angle anyway
+- If neither the material nor the conversation supports an angle that looks promising, **say what is missing and name exactly what would unblock it** — do not write the angle anyway
 - Returning fewer than 3 angles is a valid outcome. Inventing the 4th is not.
 
 An angle built on a fabricated fact poisons every post later generated from it, and nobody downstream can tell. This rule is not negotiable.
+
+**What the user says in the conversation counts as material, and it has to be attributed like material.** An angle whose basis is something the user said — a constraint, a priority, a fact about the product that is not written down anywhere — is legitimate, but the file must say so: put it in `promptSnapshot` and name it in the body. What is forbidden is passing off a conversation claim as if it came from a file, or dressing up your own guess as something the user said.
 
 ## Workspace
 
@@ -49,6 +51,16 @@ The task is already locked to the project's material directory, so **use relativ
 `background/` is source material: **read only, never edit**. Paths outside the project are rejected by the runtime; do not try.
 
 ## Workflow
+
+### Step 0: Use the Conversation You Are Already In
+
+This skill almost always runs inside a longer conversation about the project — the user has usually been talking through an idea for a while before asking for angles. **Re-read what was said in this conversation before touching any file.**
+
+- Ideas, constraints, audiences and dislikes the user already expressed are inputs, not noise
+- An angle that contradicts something the user just ruled out is a wasted angle
+- If the conversation is empty or unrelated, skip this and work from the material alone
+
+Do not restart from scratch and propose angles unrelated to what was just discussed. That is the single most common failure here.
 
 ### Step 1: Read the Project Brief
 
@@ -71,6 +83,8 @@ Do not propose an angle that repeats an existing one. If a new idea overlaps, ei
 `Read` the files found in Step 2. `background/feedback/` is usually the densest source — real complaints are pain points already written down. Use `Grep` to find words that recur across files; repetition is a signal.
 
 **Record the relative path of every file you actually used.** It goes into the angle file.
+
+Where the conversation already pointed at something specific, go check it in the material rather than taking it on faith — the user's memory of what the material says and what it actually says are not always the same thing. When they differ, say so.
 
 ### Step 5: Shape 3-6 Angles
 
@@ -152,14 +166,16 @@ promptSnapshot: extracting-angles / 从 background 提炼候选方向
 | `source`           | yes      | `ai` when this skill wrote it                                  |
 | `parent`           | yes      | `null`, unless deriving from an existing angle — then its slug |
 | `status`           | yes      | `candidate` for everything this skill produces                 |
-| `sourceAssetPaths` | yes      | Relative paths of the material actually used, one per line     |
-| `promptSnapshot`   | yes      | One line saying how this angle was produced                    |
+| `sourceAssetPaths` | yes      | Relative paths of the material actually used, one per line. **Files only** — never put conversation notes here |
+| `promptSnapshot`   | yes      | One line saying how this angle was produced; **say so here when the conversation fed it** |
 
 These are exactly the fields the server parses when it registers the file. Two of them carry weight beyond the file itself:
 
 **`desc` is what the angle list in the web UI shows.** Leave it out and the card is a bare name: the list becomes a column of labels with no way to tell what any angle actually cuts into, and choosing one means opening every file. Write it as one concrete line — the pain and the hook — not a verdict like「这个方向很有潜力」.
 
-**`sourceAssetPaths` is not decoration** — the server reads it back to record which material fed which angle. An empty list means the angle came from nothing, which the Hard Rule forbids.
+**`sourceAssetPaths` is not decoration** — the server reads it back to record which material fed which angle. It holds file paths and nothing else; a conversation is not a path, so it never goes in this list.
+
+An angle grounded entirely in what the user said is the one case where this list may be empty — and then `promptSnapshot` must carry the attribution, e.g. `extracting-angles / 依据本轮对话中用户说明的定价策略，无对应物料文件`. An empty list with a `promptSnapshot` that does not explain where the angle came from means the angle came from nothing, which the Hard Rule forbids.
 
 The server also accepts `sourceAssets` for `sourceAssetPaths` and `prompt` for `promptSnapshot` — those are the names it writes itself. Either spelling is read correctly; the names in the table above are the ones to write.
 
@@ -191,7 +207,24 @@ The server also accepts `sourceAssets` for `sourceAssetPaths` and `prompt` for `
 5. Write only the new files
 ```
 
-### Example 3: Material Too Thin
+### Example 3: Continuing a Conversation
+
+**Context**: the user has spent the last few turns saying the product is mainly used by agencies handing files to clients, and that they do not want to talk about pricing at all.
+
+```
+1. Re-read the conversation: audience = agencies, pricing is off the table
+2. Read CLAUDE.md
+3. Glob "angles/*.md"            → 2 existing angles, read both
+4. Glob "background/**/*", read the files, check the agency claim against
+   background/feedback/ — reviews do mention client handoff, so it holds
+5. Shape 3 angles around the handoff workflow; drop the pricing idea because
+   the user ruled it out, and say so in the report
+6. Write the files. One angle rests on the agency framing the user supplied
+   rather than on any single file, so its promptSnapshot says so
+7. Report the 3 angles, and note that the pricing angle was dropped on request
+```
+
+### Example 4: Material Too Thin
 
 ```
 1. Read CLAUDE.md
@@ -203,6 +236,7 @@ The server also accepts `sourceAssets` for `sourceAssetPaths` and `prompt` for `
 
 ## Important Notes
 
+- The conversation is an input; `background/` is still the ground truth. When they disagree, say so rather than silently picking one
 - Write angle files one at a time and confirm each write before the next
 - Never modify anything under `background/`
 - Never overwrite an existing `angles/*.md`; a taken slug means pick another

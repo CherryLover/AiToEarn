@@ -378,6 +378,15 @@
       "draftWriteFailed": "Der Entwurf ließ sich nicht schreiben. Bitte erneut versuchen.",
       "draftMetaInvalid": "Der Herkunftseintrag des Entwurfs stimmt nicht. Bitte die Datei ansehen.",
       "platformNotSupported": "Diese Plattform wird noch nicht unterstützt."
+    },
+    "pending": {
+      "banner": "{{num}} frisch von der KI vorgeschlagene Blickwinkel warten auf dich",
+      "hint": "Erst wenn du sie übernimmst, landen sie in Liste und Stammbaum",
+      "confirm": "Übernehmen",
+      "confirmAll": "Alle übernehmen",
+      "edit": "Nachbessern",
+      "confirmSuccess": "„{{name}}“ übernommen",
+      "confirmAllSuccess": "Alle {{num}} Blickwinkel übernommen"
     }
   },
   "drafts": {
@@ -398,7 +407,8 @@
       "failed": "Der Inhalt ließ sich nicht erzeugen",
       "waiting": "Abgeschickt. Warten, bis sie anfängt, das Material zu lesen…",
       "noLog": "Zu diesem Lauf gibt es keine Aufzeichnung.",
-      "noAngles": "Es gibt noch keinen brauchbaren Blickwinkel. Erst im Tab „Blickwinkel“ einen herausarbeiten oder anlegen, dann hierher zurück."
+      "noAngles": "Es gibt noch keinen brauchbaren Blickwinkel. Erst im Tab „Blickwinkel“ einen herausarbeiten oder anlegen, dann hierher zurück.",
+      "runsInChat": "Läuft im Dialog rechts – dort nachfragen oder Änderungen verlangen."
     },
     "platform": {
       "xhs": "Xiaohongshu",
@@ -588,5 +598,25 @@
     "urlInvalid": "Der Beitragslink ist ungültig, er muss eine vollständige http- oder https-Adresse sein",
     "createFailed": "Konnte nicht angelegt werden, versuch es später erneut",
     "statusInvalid": "Im aktuellen Zustand geht das nicht, lade die Seite neu"
+  },
+  "chat": {
+    "open": "KI-Dialog",
+    "title": "KI-Dialog",
+    "close": "Einklappen",
+    "startNew": "Neuen Verlauf starten",
+    "placeholder": "Schreib die Idee grob hin – erst reden, dann Richtungen ableiten …",
+    "sendFailed": "Konnte nicht gesendet werden. Bitte erneut versuchen.",
+    "busyTip": "Läuft noch. Warte, bis es fertig ist, bevor du neu startest.",
+    "empty": {
+      "title": "Erst einmal darüber reden",
+      "desc": "Eine grobe Idee reicht: Gedanken äußern, Material einwerfen oder einfach fragen. Richtungen kommen später."
+    },
+    "history": {
+      "title": "Frühere Verläufe",
+      "loading": "Wird geladen …",
+      "loadFailed": "Frühere Verläufe konnten nicht geladen werden",
+      "empty": "Für dieses Projekt gibt es noch keine Verläufe",
+      "untitled": "Unbenannter Verlauf"
+    }
   }
 }

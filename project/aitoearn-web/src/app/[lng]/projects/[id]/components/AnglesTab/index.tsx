@@ -2,13 +2,16 @@
  * AnglesTab - 项目详情页「方向」标签页
  * 方向是待验证的假设，不是分类：能手建、能让 AI 从物料里提炼、能从一个方向深入派生子方向。
  * 默认看演进树，一眼看出哪条线在往下长、哪条试两次就断了；也能切成按状态分组。
+ *
+ * 「让 AI 提炼方向」不在这里跑：它只是往右侧那条项目对话里发一句话，
+ * 跑完由页面回调 refreshSignal 通知这里去登记并刷新。想法是聊出来的，不该困在一个一次性弹窗里。
  */
 'use client'
 
 import type { AngleFormState, AngleFormValues } from './AngleFormDialog'
 import type { Angle, AngleStatus } from '@/api/angles/angle.types'
 import { GitBranch, LayoutList, Plus, RefreshCw, Sparkles } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTransClient } from '@/app/i18n/client'
 import {
   AlertDialog,
@@ -25,10 +28,16 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/utils/className'
 import { toast } from '@/utils/ui/toast'
 import { AngleFormDialog } from './AngleFormDialog'
-import { buildAngleTree, getAngleErrorKey, groupAnglesByStatus, suggestChildSlug } from './angles.utils'
+import {
+  buildAngleTree,
+  buildExtractAnglesPrompt,
+  getAngleErrorKey,
+  groupAnglesByStatus,
+  suggestChildSlug,
+} from './angles.utils'
 import { AngleStatusGroups } from './AngleStatusGroups'
 import { AngleTree } from './AngleTree'
-import { ExtractAnglesDialog } from './ExtractAnglesDialog'
+import { PendingAngles } from './PendingAngles'
 import { useAngles } from './useAngles'
 
 interface AnglesTabProps {
@@ -37,11 +46,15 @@ interface AnglesTabProps {
   projectName: string
   /** 归档项目只读 */
   readOnly: boolean
+  /** 把一句话丢进右侧的项目对话里 */
+  onAskAi: (prompt: string) => void
+  /** 页面每跑完一轮 AI 任务就加一，收到就去登记并刷新 */
+  refreshSignal: number
 }
 
 type AngleView = 'tree' | 'status'
 
-export function AnglesTab({ projectId, projectName, readOnly }: AnglesTabProps) {
+export function AnglesTab({ projectId, projectName, readOnly, onAskAi, refreshSignal }: AnglesTabProps) {
   const { t } = useTransClient('projects')
 
   const { angles, isLoading, loadFailed, refresh, sync, create, derive, update, remove } = useAngles(projectId)
@@ -51,7 +64,6 @@ export function AnglesTab({ projectId, projectName, readOnly }: AnglesTabProps) 
   const [deleteTarget, setDeleteTarget] = useState<Angle | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
-  const [extractOpen, setExtractOpen] = useState(false)
 
   const tree = useMemo(() => buildAngleTree(angles), [angles])
   const groups = useMemo(() => groupAnglesByStatus(angles), [angles])
@@ -151,10 +163,10 @@ export function AnglesTab({ projectId, projectName, readOnly }: AnglesTabProps) 
   }, [deleteTarget, isDeleting, remove, t])
 
   /**
-   * AI 提炼完只是把 angles/<slug>.md 写进了项目目录，数据库里还是空的。
+   * AI 干完一轮只是把 angles/<slug>.md 写进了项目目录，数据库里还是空的。
    * 先登记（/angles/sync）再看列表，少了这一步，提炼完页面照样是空的。
    */
-  const handleExtractFinished = useCallback(async () => {
+  const syncFromFiles = useCallback(async () => {
     const result = await sync()
     if (result.ok)
       return
@@ -162,6 +174,18 @@ export function AnglesTab({ projectId, projectName, readOnly }: AnglesTabProps) 
     toast.error(t(getAngleErrorKey(result.code)))
     await refresh()
   }, [refresh, sync, t])
+
+  // 右侧对话每跑完一轮，页面把 refreshSignal 加一。
+  // 初始值 0 不处理，否则一进页面就会白跑一次登记。
+  useEffect(() => {
+    if (refreshSignal > 0)
+      void syncFromFiles()
+  }, [refreshSignal, syncFromFiles])
+
+  /** 「让 AI 提炼方向」= 往右侧那条对话里发一句话，接着之前聊的往下走 */
+  const handleExtract = useCallback(() => {
+    onAskAi(buildExtractAnglesPrompt(projectName, takenSlugs))
+  }, [onAskAi, projectName, takenSlugs])
 
   const openCreate = () => setFormState({ mode: 'create' })
   const openDerive = (angle: Angle) =>
@@ -241,7 +265,7 @@ export function AnglesTab({ projectId, projectName, readOnly }: AnglesTabProps) 
 
           {!readOnly && (
             <>
-              <Button variant="outline" size="sm" onClick={() => setExtractOpen(true)}>
+              <Button variant="outline" size="sm" onClick={handleExtract}>
                 <Sparkles className="size-4" />
                 {t('angles.action.extract')}
               </Button>
@@ -254,6 +278,19 @@ export function AnglesTab({ projectId, projectName, readOnly }: AnglesTabProps) 
         </div>
       </div>
 
+      {/* 待确认区：AI 提炼的方向先进这里，人点了采用才进下面的树和分组。
+          key 带上 refreshSignal：它自己拉自己的数据，跑完一轮 AI 任务要让它重新拉一次 */}
+      {!readOnly && (
+        <div className="mt-4">
+          <PendingAngles
+            key={`pending-${refreshSignal}`}
+            projectId={projectId}
+            readOnly={readOnly}
+            onChanged={refresh}
+          />
+        </div>
+      )}
+
       {/* 正文 */}
       {angles.length === 0 ? (
         <div className="mt-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-border px-6 py-14 text-center">
@@ -262,7 +299,7 @@ export function AnglesTab({ projectId, projectName, readOnly }: AnglesTabProps) 
           <p className="mt-2 max-w-lg text-xs text-muted-foreground">{t('angles.empty.hint')}</p>
           {!readOnly && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-              <Button onClick={() => setExtractOpen(true)}>
+              <Button onClick={handleExtract}>
                 <Sparkles className="size-4" />
                 {t('angles.empty.extract')}
               </Button>
@@ -305,14 +342,6 @@ export function AnglesTab({ projectId, projectName, readOnly }: AnglesTabProps) 
         takenSlugs={takenSlugs}
         onOpenChange={open => !open && setFormState(null)}
         onSubmit={handleFormSubmit}
-      />
-
-      <ExtractAnglesDialog
-        open={extractOpen}
-        projectName={projectName}
-        existingSlugs={takenSlugs}
-        onOpenChange={setExtractOpen}
-        onFinished={handleExtractFinished}
       />
 
       <AlertDialog open={Boolean(deleteTarget)} onOpenChange={open => !open && setDeleteTarget(null)}>

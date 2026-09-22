@@ -78,7 +78,7 @@ export function handleSSEMessage(
 
   // 处理 result 消息
   if (msg.type === 'result') {
-    handleResultMessage(ctx, msg)
+    handleResultMessage(ctx, msg, callbacks)
     return
   }
 
@@ -224,13 +224,64 @@ function handleUserMessage(ctx: ISSEHandlerContext, msg: ISSEMessage): void {
 }
 
 /**
+ * 失败的 result 分片长什么样。
+ *
+ * 服务端把失败发成一条普通的 result 分片（`subtype` 不是 success，或者 `is_error`），
+ * 连接随后正常关闭。只看关闭事件的话页面会显示「跑完了」，人看到的是一次假成功。
+ * 失败原因写在 `message` 里。
+ */
+function readResultFailure(messageData: any): string | null {
+  if (!messageData || typeof messageData !== 'object')
+    return null
+
+  const subtype = typeof messageData.subtype === 'string' ? messageData.subtype : ''
+  const failed = messageData.is_error === true || (subtype !== '' && subtype !== 'success')
+  if (!failed)
+    return null
+
+  const text = typeof messageData.message === 'string' ? messageData.message.trim() : ''
+  return text || (subtype ? `任务失败（${subtype}）` : '任务失败')
+}
+
+/**
  * 处理 result 消息
  * 支持 result 为数组的情况（多平台发布）
  */
-function handleResultMessage(ctx: ISSEHandlerContext, msg: ISSEMessage): void {
+function handleResultMessage(
+  ctx: ISSEHandlerContext,
+  msg: ISSEMessage,
+  callbacks?: ISSECallbacks,
+): void {
   const messageData = msg.data || msg.message
   if (!messageData)
     return
+
+  // 失败必须在这里收口，不能等 done：这条之后连接就正常关了，
+  // 不拦住的话页面会把一次失败显示成正常完成
+  const failure = readResultFailure(messageData)
+  if (failure) {
+    const streamingText = ctx.getStreamingText()
+    const currentStepWorkflow = ctx.getCurrentStepWorkflow()
+    if (streamingText.trim() || currentStepWorkflow.length > 0) {
+      saveCurrentStepToMessage(ctx)
+    }
+
+    ctx.addMessage({
+      id: `assistant-error-${Date.now()}`,
+      role: 'assistant',
+      content: '',
+      status: 'done',
+      createdAt: Date.now(),
+      actions: [{ type: 'errorOnly', title: '生成失败', description: failure }],
+    })
+
+    setTimeout(() => {
+      ctx.setIsGenerating(false)
+    }, 100)
+    ctx.setProgress(0)
+    callbacks?.onError?.(new Error(failure))
+    return
+  }
 
   // 获取 result 数组：优先从 messageData.result 获取，否则将 messageData 视为单个结果
   const resultArray: any[] = Array.isArray(messageData.result) ? messageData.result : [messageData]

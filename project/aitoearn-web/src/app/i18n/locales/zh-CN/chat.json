@@ -231,5 +231,14 @@
       "publish": "正在发布...",
       "complete": "发布完成"
     }
+  },
+  "toolAction": {
+    "bash": "执行",
+    "edit": "改",
+    "glob": "找文件",
+    "grep": "搜内容",
+    "read": "读",
+    "todo": "待办清单",
+    "write": "写"
   }
 }

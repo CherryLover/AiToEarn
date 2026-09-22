@@ -32,12 +32,14 @@ async function mounted(projectId = 'p1') {
 }
 
 describe('useAngles 加载', () => {
-  it('一次把项目下的方向全拉回来', async () => {
+  /** angles 只装已采用的：待确认那份单独拉，不能混进演进树和状态分组 */
+  it('只把已采用的方向拉进列表', async () => {
     getAngleListApi.mockResolvedValue({ code: 0, data: [{ id: 'a1' }, { id: 'a2' }] })
 
     const { result } = await mounted()
 
-    expect(getAngleListApi).toHaveBeenCalledWith('p1')
+    expect(getAngleListApi).toHaveBeenCalledWith('p1', { confirmed: true })
+    expect(getAngleListApi).toHaveBeenCalledWith('p1', { confirmed: false })
     expect(result.current.angles).toHaveLength(2)
     expect(result.current.loadFailed).toBe(false)
   })
@@ -195,8 +197,13 @@ describe('useAngles 增删改', () => {
  * 登记接口回的就是登记之后的全量方向，直接换掉列表，不用再拉一次。
  */
 describe('useAngles 登记 AI 写出来的方向文件', () => {
-  it('登记成功后直接用返回值换掉列表，不再重拉', async () => {
+  /**
+   * /sync 返回的是全量（已采用 + 待确认），不能直接拿来填列表——那样待确认的会混进演进树。
+   * 所以登记完两份各自重拉一次。
+   */
+  it('登记成功后两份列表各自重拉，不拿返回值直接填', async () => {
     syncAnglesApi.mockResolvedValue({ code: 0, data: [{ id: 'a1' }, { id: 'a2' }] })
+    getAngleListApi.mockResolvedValue({ code: 0, data: [{ id: 'a1' }] })
     const { result } = await mounted()
     getAngleListApi.mockClear()
 
@@ -204,8 +211,8 @@ describe('useAngles 登记 AI 写出来的方向文件', () => {
       await expect(result.current.sync()).resolves.toEqual({ ok: true })
     })
 
-    expect(getAngleListApi).not.toHaveBeenCalled()
-    expect(result.current.angles).toHaveLength(2)
+    expect(getAngleListApi).toHaveBeenCalledWith('p1', { confirmed: true })
+    expect(getAngleListApi).toHaveBeenCalledWith('p1', { confirmed: false })
     expect(result.current.loadFailed).toBe(false)
   })
 

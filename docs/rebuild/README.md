@@ -29,6 +29,7 @@
 | `contract-extension.md` | 给插件线的执行端对接文档 | 插件线 |
 | `contract-settings.md` | 设置页重做、Bark 网页配置、通知规则 | 设置这一轮的 Agent |
 | `contract-collect-xhs.md` | **采集小红书创作平台数据**：工单类型、插件侧、服务端、数据结构、调度 | 插件线 + 服务端 |
+| `contract-project-chat.md` | **项目级 AI 对话面板**：右侧常驻对话、会话归属项目、工具调用展示、方向待确认 | 对话面板这一轮的 Agent |
 | `debt-visual.md` | 视觉欠账清单（两批） | 清理欠账的 Agent |
 
 ## 开工须知

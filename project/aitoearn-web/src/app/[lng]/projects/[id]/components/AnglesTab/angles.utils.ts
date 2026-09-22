@@ -247,15 +247,21 @@ export function suggestChildSlug(parentSlug: string, takenSlugs: string[]): stri
 
 /**
  * 「让 AI 提炼方向」的提示词。
- * 技能是靠描述匹配触发的，所以这里把技能名、物料范围和铁律都写明，
- * 免得 Agent 跑去凭空编方向。
+ *
+ * 这句话是发进项目那条长对话里的，**不是从零起一轮**。第一句必须先把前面聊过的东西圈进来：
+ * 人多半是先聊了一阵才点这个按钮的，不说清楚，Agent 会当成全新任务，
+ * 从头读一遍 background/ 然后提出一堆跟刚才讨论无关的方向。
+ *
+ * 技能是靠描述匹配触发的，所以技能名、物料范围和铁律还是要写明，免得它凭空编。
  */
 export function buildExtractAnglesPrompt(projectName: string, existingSlugs: string[]): string {
   const lines = [
     `请用 extracting-angles 技能，为项目 ${projectName} 提炼候选发布方向。`,
-    '读 background/ 下的全部物料，提炼 3~6 个候选方向，每个说清楚切什么痛点、用什么噱头、面向谁。',
-    '事实只能来自 background/ 里的材料，缺材料就直说缺，不要编。',
-    '每个方向写成 angles/<slug>.md，frontmatter 里带上 slug、name、source、parent、status 和来源物料路径。',
+    '先把我们这条对话里已经聊到的想法、约束和倾向当作输入；如果前面没聊过什么，就只按物料来。',
+    '在此基础上读 background/ 下的物料，提炼 3~6 个候选方向，每个说清楚切什么痛点、用什么噱头、面向谁。',
+    '事实只能来自 background/ 里的材料或我在这条对话里告诉你的信息，缺材料就直说缺，不要编。',
+    '每个方向写成 angles/<slug>.md，frontmatter 里带上 slug、name、source、parent、status 和来源物料路径；',
+    '某条方向的依据是对话里聊的而不是某个物料文件，就在来源里标明它来自对话。',
   ]
 
   if (existingSlugs.length > 0)

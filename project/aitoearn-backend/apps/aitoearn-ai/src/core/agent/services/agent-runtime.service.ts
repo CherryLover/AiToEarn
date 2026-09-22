@@ -790,8 +790,11 @@ export class AgentRuntimeService {
       await this.downloadAgentSession(originalTask, dto.projectName)
     }
     else {
+      // projectName 只在建任务时落一次：这条对话属于哪个项目是不变的，
+      // 续聊时 dto 里带的 projectName 只用来定位工作目录，不回写，免得中途被改成别的项目
       task = await this.contentGenerateRepository.create({
         userId,
+        projectName: dto.projectName,
       })
       this.logger.debug({ taskId: task.id }, `Created new task ${task.id} for user ${userId}`)
     }

@@ -49,6 +49,8 @@ describe('方向接口的路由装配', () => {
       derive: vi.fn(),
       remove: vi.fn(),
       syncFromFiles: vi.fn(),
+      confirm: vi.fn(),
+      confirmMany: vi.fn(),
     }
 
     // compile() 会把 controller 和它身上的装饰器真的装配一遍，写错在这里就炸
@@ -63,9 +65,9 @@ describe('方向接口的路由装配', () => {
   it('列表把 service 的结果转成 VO，并补上指引文件路径', async () => {
     anglesService.list!.mockResolvedValue([angleDoc({ desc: '切焦虑', sourceAssetPaths: ['background/a.md'] })])
 
-    const result = await controller.list(TOKEN, PROJECT_ID, { status: undefined } as never)
+    const result = await controller.list(TOKEN, PROJECT_ID, { status: undefined, confirmed: undefined } as never)
 
-    expect(anglesService.list).toHaveBeenCalledWith(PROJECT_ID, 'user-1', undefined)
+    expect(anglesService.list).toHaveBeenCalledWith(PROJECT_ID, 'user-1', undefined, undefined)
     expect(result[0]).toMatchObject({
       id: ANGLE_ID,
       slug: 'pain-point',
@@ -108,6 +110,41 @@ describe('方向接口的路由装配', () => {
       slug: 'pain-point',
       filePath: 'angles/pain-point.md',
     })
+  })
+
+  it('列表把「只看待确认」原样透传下去', async () => {
+    anglesService.list!.mockResolvedValue([])
+
+    await controller.list(TOKEN, PROJECT_ID, { status: undefined, confirmed: false } as never)
+
+    expect(anglesService.list).toHaveBeenCalledWith(PROJECT_ID, 'user-1', undefined, false)
+  })
+
+  it('采用单条：路径上的方向传下去，返回带确认时间的 VO', async () => {
+    const confirmedAt = new Date('2026-09-22T03:00:00.000Z')
+    anglesService.confirm!.mockResolvedValue(angleDoc({ confirmedAt }))
+
+    const result = await controller.confirm(TOKEN, PROJECT_ID, ANGLE_ID)
+
+    expect(anglesService.confirm).toHaveBeenCalledWith(PROJECT_ID, ANGLE_ID, 'user-1')
+    expect(result.confirmedAt).toEqual(confirmedAt)
+  })
+
+  it('待确认的方向转成 VO 时不带确认时间', async () => {
+    anglesService.list!.mockResolvedValue([angleDoc()])
+
+    const result = await controller.list(TOKEN, PROJECT_ID, { status: undefined, confirmed: false } as never)
+
+    expect(result[0]!.confirmedAt).toBeUndefined()
+  })
+
+  it('批量采用把 body 里的 id 列表传下去', async () => {
+    anglesService.confirmMany!.mockResolvedValue([angleDoc({ confirmedAt: NOW })])
+
+    const result = await controller.confirmMany(TOKEN, PROJECT_ID, { angleIds: [ANGLE_ID] } as never)
+
+    expect(anglesService.confirmMany).toHaveBeenCalledWith(PROJECT_ID, 'user-1', [ANGLE_ID])
+    expect(result).toHaveLength(1)
   })
 
   it('登记接口把文件里的方向列表转成 VO', async () => {

@@ -17,6 +17,8 @@ export interface ListContentGenerationTaskParams extends Pagination {
 export interface GetUserTasksParams extends Pagination {
   keyword?: string
   favoriteOnly?: boolean
+  /** 只看某个项目下的对话；不传就是全部（含不属于任何项目的老对话） */
+  projectName?: string
 }
 
 export class ContentGenerationTaskRepository extends BaseRepository<ContentGenerationTask> {
@@ -71,8 +73,12 @@ export class ContentGenerationTaskRepository extends BaseRepository<ContentGener
   }
 
   async getUserTasksWithPagination(userId: string, params: GetUserTasksParams) {
-    const { page, pageSize, keyword, favoriteOnly } = params
+    const { page, pageSize, keyword, favoriteOnly, projectName } = params
     const filter: FilterQuery<ContentGenerationTask> = { userId, deletedAt: null }
+
+    if (projectName) {
+      filter.projectName = projectName
+    }
 
     if (keyword) {
       const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

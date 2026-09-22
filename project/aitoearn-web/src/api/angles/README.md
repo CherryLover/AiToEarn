@@ -8,6 +8,8 @@
 
 AI 提炼方向只写文件、不写库，所以跑完 AI 任务必须调一次 `syncAnglesApi` 把新方向登记进来，否则列表里什么都不会出现。
 
+登记进来的方向是**待确认**的（没有 `confirmedAt`），要人点了采用才进正式列表。手建和派生的方向服务端建的时候就写上确认时间，不用再确认一遍。演进树（`getAngleTreeApi`）只含已确认的。
+
 ## 文件清单
 
 - `angle.api.ts`
@@ -18,11 +20,13 @@ AI 提炼方向只写文件、不写库，所以跑完 AI 任务必须调一次 
 
 | 方法             | 请求                                              | 说明                                       |
 | ---------------- | ------------------------------------------------- | ------------------------------------------ |
+| `confirmAngleApi` | `POST projects/{projectId}/angles/{angleId}/confirm` | 采用一条待确认的方向，幂等。            |
+| `confirmAnglesApi`| `POST projects/{projectId}/angles/confirm`       | 批量采用，body `{ angleIds }`，幂等。      |
 | `createAngleApi` | `POST projects/{projectId}/angles/create`         | 手建一个方向，同时写出方向文件。           |
 | `deleteAngleApi` | `DELETE projects/{projectId}/angles/{angleId}`    | 删除方向，同时删掉方向文件。               |
 | `deriveAngleApi` | `POST projects/{projectId}/angles/{angleId}/derive` | 从这个方向派生子方向，血统由服务端填。   |
-| `getAngleListApi`| `GET projects/{projectId}/angles/list`            | 方向列表，可按状态筛选。                   |
-| `getAngleTreeApi`| `GET projects/{projectId}/angles/tree`            | 服务端组装好的方向演进树。                 |
+| `getAngleListApi`| `GET projects/{projectId}/angles/list`            | 方向列表，可按状态和确认与否筛选。         |
+| `getAngleTreeApi`| `GET projects/{projectId}/angles/tree`            | 服务端组装好的方向演进树，只含已确认的。   |
 | `syncAnglesApi`  | `POST projects/{projectId}/angles/sync`           | 登记 AI 写出来的方向文件，返回登记后的全量方向。 |
 | `updateAngleApi` | `POST projects/{projectId}/angles/{angleId}/update` | 改名字、说明、状态。                     |
 
@@ -36,6 +40,7 @@ AI 提炼方向只写文件、不写库，所以跑完 AI 任务必须调一次 
 | `AngleSource`        | `enum`      | 方向来源：AI / 手建 / 派生。           |
 | `AngleStatus`        | `enum`      | 方向状态：候选 / 测试中 / 有效 / 淘汰。|
 | `AngleTreeNode`      | `interface` | 演进树节点，比方向多一个 children。    |
+| `ConfirmAnglesParams`| `interface` | 批量采用请求参数。                     |
 | `CreateAngleParams`  | `interface` | 新建方向请求参数。                     |
 | `DeriveAngleParams`  | `interface` | 派生子方向请求参数。                   |
 | `UpdateAngleParams`  | `interface` | 修改方向请求参数。                     |
@@ -57,5 +62,6 @@ AI 提炼方向只写文件、不写库，所以跑完 AI 任务必须调一次 
 
 - slug 同时是文件名（`angles/<slug>.md`），命名规则与项目英文名一致；服务端允许改，但页面目前不提供改 slug 的入口。
 - 血统只能通过 derive 产生，`create` 不接受 `parentAngleId`。
+- `confirmedAt` 缺省即待确认；服务端用的是可选字段不是 `null`，别在页面里拿 `=== null` 判。存量数据由后端 `migrations/` 下的脚本补齐，前端不做判空兼容。
 - 状态、来源、错误码与服务端契约一一对应，改动必须两端同步。
 - 通用规则见 `src/api/README.md`。

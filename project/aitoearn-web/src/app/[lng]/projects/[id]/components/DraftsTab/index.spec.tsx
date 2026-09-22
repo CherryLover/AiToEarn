@@ -1,9 +1,9 @@
 import type { Angle } from '@/api/angles/angle.types'
 import type { FileNode } from '@/api/projects/project-file.types'
+import { chooseOption, openSelect } from '@test/radix'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { chooseOption, openSelect } from '@test/radix'
 import { AngleSource, AngleStatus } from '@/api/angles/angle.types'
 import { ProjectFileType } from '@/api/projects/project-file.types'
 
@@ -94,13 +94,24 @@ beforeEach(() => {
   readProjectFileApi.mockResolvedValue({ code: 0, data: { path: 'x', content: '# 标题\n正文', size: 10, updatedAt: '2026-09-01T00:00:00.000Z' } })
 })
 
+/** 生成现在只是把一句话丢给右侧对话，用例靠它断言丢了什么 */
+const onAskAi = vi.fn()
+
 async function renderTab(readOnly = false) {
-  const view = render(<DraftsTab projectId="p1" projectName="forty-weeks" readOnly={readOnly} />)
+  const view = render(
+    <DraftsTab
+      projectId="p1"
+      projectName="forty-weeks"
+      readOnly={readOnly}
+      onAskAi={onAskAi}
+      refreshSignal={0}
+    />,
+  )
   await waitFor(() => expect(getProjectFileTreeApi).toHaveBeenCalled())
   return view
 }
 
-describe('DraftsTab 草稿列表', () => {
+describe('draftsTab 草稿列表', () => {
   it('把 drafts/ 下的草稿列出来', async () => {
     await renderTab()
 
@@ -145,7 +156,7 @@ describe('DraftsTab 草稿列表', () => {
   })
 })
 
-describe('DraftsTab 生成一条内容', () => {
+describe('draftsTab 生成一条内容', () => {
   it('没有可用方向时让人先去提炼', async () => {
     getAngleListApi.mockResolvedValue({ code: 0, data: [] })
     await renderTab()
@@ -169,7 +180,8 @@ describe('DraftsTab 生成一条内容', () => {
     expect(screen.queryByRole('option', { name: /试过不行/ })).not.toBeInTheDocument()
   })
 
-  it('选好方向才让生成，起任务时带上项目英文名', async () => {
+  /** 生成不再自己起任务：它只是把拼好的一句话丢进右侧那条项目对话 */
+  it('选好方向才让生成，丢给对话的话里带着方向和项目名', async () => {
     await renderTab()
 
     expect(screen.getByRole('button', { name: /drafts.generate.submit/ })).toBeDisabled()
@@ -177,35 +189,42 @@ describe('DraftsTab 生成一条内容', () => {
     await chooseOption(await screen.findByLabelText(/drafts.generate.angleLabel/), /孕晚期焦虑/)
     await userEvent.click(screen.getByRole('button', { name: /drafts.generate.submit/ }))
 
-    await waitFor(() => expect(agentParams).not.toBeNull())
-    expect(agentParams).toMatchObject({ projectName: 'forty-weeks' })
-    expect((agentParams as { prompt: string }).prompt).toContain('pain-point')
+    expect(onAskAi).toHaveBeenCalledTimes(1)
+    const prompt = onAskAi.mock.calls[0][0] as string
+    expect(prompt).toContain('pain-point')
+    expect(prompt).toContain('forty-weeks')
   })
 
-  it('跑完之后重新列一遍草稿', async () => {
+  /** 过程在对话里，这张卡片不再自己转圈、也不再有停止按钮 */
+  it('卡片里不再有运行中和停止', async () => {
     await renderTab()
 
     await chooseOption(await screen.findByLabelText(/drafts.generate.angleLabel/), /孕晚期焦虑/)
     await userEvent.click(screen.getByRole('button', { name: /drafts.generate.submit/ }))
-    await waitFor(() => expect(onAgentDone).not.toBeNull())
+
+    expect(screen.queryByRole('button', { name: /drafts.generate.running/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /drafts.generate.stop/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /drafts.generate.submit/ })).toBeEnabled()
+  })
+
+  /** 对话跑完一轮，页面把 refreshSignal 加一，草稿列表要跟着重列 */
+  it('对话跑完之后重新列一遍草稿', async () => {
+    const view = await renderTab()
 
     const before = getProjectFileTreeApi.mock.calls.length
     await act(async () => {
-      onAgentDone?.()
+      view.rerender(
+        <DraftsTab
+          projectId="p1"
+          projectName="forty-weeks"
+          readOnly={false}
+          onAskAi={onAskAi}
+          refreshSignal={1}
+        />,
+      )
     })
 
     await waitFor(() => expect(getProjectFileTreeApi.mock.calls.length).toBeGreaterThan(before))
-    expect(await screen.findByText('drafts.generate.done')).toBeInTheDocument()
-  })
-
-  it('跑起来之后换成运行中 + 停止', async () => {
-    await renderTab()
-
-    await chooseOption(await screen.findByLabelText(/drafts.generate.angleLabel/), /孕晚期焦虑/)
-    await userEvent.click(screen.getByRole('button', { name: /drafts.generate.submit/ }))
-
-    expect(await screen.findByRole('button', { name: /drafts.generate.running/ })).toBeDisabled()
-    expect(screen.getByRole('button', { name: /drafts.generate.stop/ })).toBeInTheDocument()
   })
 
   /** 归档项目只读：草稿还能看，但不给再生成 */

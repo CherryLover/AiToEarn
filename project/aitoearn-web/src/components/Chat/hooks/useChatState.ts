@@ -3,11 +3,11 @@ import type { IDisplayMessage, IWorkflowStep } from '@/store/agent'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { agentApi } from '@/api/ai/ai.api'
+import { convertMessages, isTaskCompleted } from '@/components/Chat/utils'
 import { useAgentStore } from '@/store/agent'
 import { getDefaultTaskData } from '@/store/agent/agent.state'
 import { useUserStore } from '@/store/user'
 import { toast } from '@/utils/ui/toast'
-import { convertMessages, isTaskCompleted } from '../utils'
 import { useTaskPolling } from './useTaskPolling'
 
 export interface IChatStateOptions {

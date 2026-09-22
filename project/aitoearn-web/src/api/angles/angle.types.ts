@@ -42,6 +42,11 @@ export interface Angle {
   sourceAssetPaths: string[] | null
   /** 提炼时用的提示词 */
   promptSnapshot: string | null
+  /**
+   * 人确认采用的时间，缺省表示还在待确认区里等人看。
+   * 服务端用的是可选字段（不是 null），没确认时这个键根本不会出现在响应里。
+   */
+  confirmedAt?: string
   createdAt: string
   updatedAt: string
 }
@@ -58,6 +63,8 @@ export interface AngleTreeNode extends Angle {
  */
 export interface AngleListParams {
   status?: AngleStatus
+  /** 按确认与否筛：true 只要人已经采用的，false 只要待确认的，不传则全部 */
+  confirmed?: boolean
 }
 
 /**
@@ -88,6 +95,14 @@ export interface DeriveAngleParams {
   slug: string
   name: string
   desc?: string
+}
+
+/**
+ * 批量采用请求参数，对应服务端 ConfirmAnglesDto。
+ * 只要有一个 id 不属于当前项目，服务端整单拒绝，不会采用一半。
+ */
+export interface ConfirmAnglesParams {
+  angleIds: string[]
 }
 
 /**

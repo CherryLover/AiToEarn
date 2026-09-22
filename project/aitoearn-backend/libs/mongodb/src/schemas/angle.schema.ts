@@ -96,6 +96,19 @@ export class Angle extends WithTimestampSchema {
   /** 提炼时用的提示词 */
   @Prop()
   promptSnapshot?: string
+
+  /**
+   * 人确认采用的时间。空 = 待确认。
+   *
+   * 「人看过没有」和 `status`（这个假设验到哪一步了）是两个维度，不能合成一个枚举：
+   * 一条待确认的方向本身也有候选/测试中的状态。
+   *
+   * 手建（`/create`）和派生（`/derive`）建的时候就写当前时间——人自己建的不用再确认一遍；
+   * `/sync` 登记 AI 写出来的方向时不写，等人在待确认区里点采用。
+   * 存量数据由 `migrations/` 下的迁移脚本一次性补成 `createdAt`，读取逻辑里不做判空兼容。
+   */
+  @Prop()
+  confirmedAt?: Date
 }
 
 export const AngleSchema = SchemaFactory.createForClass(Angle)
@@ -104,3 +117,5 @@ export const AngleSchema = SchemaFactory.createForClass(Angle)
 AngleSchema.index({ projectId: 1, slug: 1 }, { unique: true })
 /** 组装方向演进树时按项目取全量，再按血统串起来 */
 AngleSchema.index({ projectId: 1, parentAngleId: 1 })
+/** 已确认列表、待确认区、演进树都要按项目 + 确认与否取数 */
+AngleSchema.index({ projectId: 1, confirmedAt: 1 })

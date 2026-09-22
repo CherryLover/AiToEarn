@@ -33,6 +33,7 @@ interface StoredAngle {
   status: string
   sourceAssetPaths?: string[]
   promptSnapshot?: string
+  confirmedAt?: Date
   createdAt: Date
   updatedAt: Date
 }
@@ -46,6 +47,8 @@ function angleDoc(overrides: Partial<StoredAngle> = {}): StoredAngle {
     name: '痛点切入',
     source: 'user',
     status: 'candidate',
+    // 默认造已确认的：存量方向迁移之后都有 confirmedAt，待确认的在用例里显式传 undefined
+    confirmedAt: NOW,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,
@@ -66,9 +69,21 @@ function createService(options: {
   let seq = 0
 
   const angleRepository = {
-    listByProjectId: vi.fn(async (projectId: string, status?: string) => stored
-      .filter(angle => angle.projectId === projectId && (!status || angle.status === status))
+    listByProjectId: vi.fn(async (projectId: string, filters: { status?: string, confirmed?: boolean } = {}) => stored
+      .filter(angle => angle.projectId === projectId
+        && (!filters.status || angle.status === filters.status)
+        && (filters.confirmed === undefined || Boolean(angle.confirmedAt) === filters.confirmed))
       .map(angle => ({ ...angle }))),
+    listByProjectIdAndIds: vi.fn(async (projectId: string, angleIds: string[]) => stored
+      .filter(angle => angle.projectId === projectId && angleIds.includes(angle.id))
+      .map(angle => ({ ...angle }))),
+    updateManyConfirmedAtByIds: vi.fn(async (angleIds: string[], confirmedAt: Date) => {
+      stored
+        .filter(angle => angleIds.includes(angle.id) && !angle.confirmedAt)
+        .forEach((angle) => {
+          angle.confirmedAt = confirmedAt
+        })
+    }),
     getById: vi.fn(async (id: string) => {
       const found = stored.find(angle => angle.id === id)
       return found ? { ...found } : null
@@ -148,6 +163,7 @@ describe('angles service · 手建方向', () => {
       desc: '切孕期焦虑',
       source: 'user',
       status: 'candidate',
+      confirmedAt: expect.any(Date),
     })
     expect(angleFileService.write).toHaveBeenCalledWith(
       'fortyweeks',
@@ -581,5 +597,150 @@ describe('angles service · 登记 AI 写出来的方向文件', () => {
     await service.syncFromFiles(PROJECT_ID, 'user-1')
 
     expect(stored.map(angle => angle.slug)).toEqual(['fine'])
+  })
+})
+
+describe('angles service · 待确认与采用', () => {
+  it('手建的方向建的时候就算已确认，不进待确认区', async () => {
+    const { service, stored } = createService()
+
+    await service.create(PROJECT_ID, 'user-1', { slug: 'pain-point', name: '痛点切入' } as never)
+
+    expect(stored[0]!.confirmedAt).toBeInstanceOf(Date)
+  })
+
+  it('派生出来的方向同样建的时候就算已确认', async () => {
+    const { service, angleRepository } = createService({ stored: [angleDoc()] })
+
+    await service.derive(PROJECT_ID, ANGLE_A, 'user-1', { slug: 'pain-point-deep', name: '痛点深挖' } as never)
+
+    expect(angleRepository.create).toHaveBeenCalledWith(expect.objectContaining({
+      source: 'derived',
+      confirmedAt: expect.any(Date),
+    }))
+  })
+
+  it('登记进来的 AI 方向不写确认时间，留在待确认区', async () => {
+    const { service, stored } = createService({
+      angleFileService: {
+        listSlugs: vi.fn(async () => ['ai-angle']),
+        read: vi.fn(async () => ({ path: '', meta: { name: 'AI 提的' }, body: '' })),
+      },
+    })
+
+    await service.syncFromFiles(PROJECT_ID, 'user-1')
+
+    expect(stored[0]).toMatchObject({ slug: 'ai-angle', source: 'ai' })
+    expect(stored[0]!.confirmedAt).toBeUndefined()
+  })
+
+  it('列表把确认与否原样透传给仓储', async () => {
+    const { service, angleRepository } = createService()
+
+    await service.list(PROJECT_ID, 'user-1', undefined, false)
+
+    expect(angleRepository.listByProjectId).toHaveBeenCalledWith(PROJECT_ID, { status: undefined, confirmed: false })
+  })
+
+  it('演进树只含已确认的，待确认的不进树', async () => {
+    const { service } = createService({
+      stored: [
+        angleDoc(),
+        angleDoc({ id: ANGLE_B, slug: 'ai-pending', source: 'ai', confirmedAt: undefined }),
+      ],
+    })
+
+    const tree = await service.tree(PROJECT_ID, 'user-1')
+
+    expect(tree.map(node => node.angle.slug)).toEqual(['pain-point'])
+  })
+
+  it('采用一条：写入确认时间', async () => {
+    const { service, stored, angleRepository } = createService({
+      stored: [angleDoc({ source: 'ai', confirmedAt: undefined })],
+    })
+
+    const confirmed = await service.confirm(PROJECT_ID, ANGLE_A, 'user-1')
+
+    expect(angleRepository.updateById).toHaveBeenCalledWith(ANGLE_A, { $set: { confirmedAt: expect.any(Date) } })
+    expect(confirmed.confirmedAt).toBeInstanceOf(Date)
+    expect(stored[0]!.confirmedAt).toBeInstanceOf(Date)
+  })
+
+  it('已确认的再采用一次：不报错，也不刷新时间', async () => {
+    const earlier = new Date('2026-09-01T00:00:00.000Z')
+    const { service, angleRepository } = createService({ stored: [angleDoc({ confirmedAt: earlier })] })
+
+    const confirmed = await service.confirm(PROJECT_ID, ANGLE_A, 'user-1')
+
+    expect(angleRepository.updateById).not.toHaveBeenCalled()
+    expect(confirmed.confirmedAt).toEqual(earlier)
+  })
+
+  it('别人的方向一律报不存在，不给采用', async () => {
+    const { service } = createService({ stored: [angleDoc({ userId: 'user-2', confirmedAt: undefined })] })
+
+    await expect(service.confirm(PROJECT_ID, ANGLE_A, 'user-1'))
+      .rejects
+      .toMatchObject({ code: ResponseCode.AngleNotFound })
+  })
+
+  it('批量采用：全部写上时间，已确认的那条不动', async () => {
+    const earlier = new Date('2026-09-01T00:00:00.000Z')
+    const { service, stored } = createService({
+      stored: [
+        angleDoc({ confirmedAt: earlier }),
+        angleDoc({ id: ANGLE_B, slug: 'ai-one', source: 'ai', confirmedAt: undefined }),
+        angleDoc({ id: ANGLE_C, slug: 'ai-two', source: 'ai', confirmedAt: undefined }),
+      ],
+    })
+
+    const result = await service.confirmMany(PROJECT_ID, 'user-1', [ANGLE_A, ANGLE_B, ANGLE_C, ANGLE_B])
+
+    expect(result).toHaveLength(3)
+    expect(stored[0]!.confirmedAt).toEqual(earlier)
+    expect(stored[1]!.confirmedAt).toBeInstanceOf(Date)
+    expect(stored[2]!.confirmedAt).toBeInstanceOf(Date)
+  })
+
+  it('批量里混进不属于这个项目的：整单拒绝，一条都不采用', async () => {
+    const { service, stored, angleRepository } = createService({
+      stored: [
+        angleDoc({ confirmedAt: undefined }),
+        angleDoc({ id: ANGLE_B, slug: 'other-project', projectId: '68c4b3f0a1b2c3d4e5f60999', confirmedAt: undefined }),
+      ],
+    })
+
+    await expect(service.confirmMany(PROJECT_ID, 'user-1', [ANGLE_A, ANGLE_B]))
+      .rejects
+      .toMatchObject({ code: ResponseCode.AngleNotFound })
+
+    expect(angleRepository.updateManyConfirmedAtByIds).not.toHaveBeenCalled()
+    expect(stored[0]!.confirmedAt).toBeUndefined()
+  })
+
+  it('批量里混进别人的方向：整单拒绝', async () => {
+    const { service, angleRepository } = createService({
+      stored: [
+        angleDoc({ confirmedAt: undefined }),
+        angleDoc({ id: ANGLE_B, slug: 'someone-else', userId: 'user-2', confirmedAt: undefined }),
+      ],
+    })
+
+    await expect(service.confirmMany(PROJECT_ID, 'user-1', [ANGLE_A, ANGLE_B]))
+      .rejects
+      .toMatchObject({ code: ResponseCode.AngleNotFound })
+
+    expect(angleRepository.updateManyConfirmedAtByIds).not.toHaveBeenCalled()
+  })
+
+  it('批量里混进不像 id 的字符串：按不存在报，不让 $in 炸成 500', async () => {
+    const { service, angleRepository } = createService({ stored: [angleDoc({ confirmedAt: undefined })] })
+
+    await expect(service.confirmMany(PROJECT_ID, 'user-1', [ANGLE_A, '不是一个 id']))
+      .rejects
+      .toMatchObject({ code: ResponseCode.AngleNotFound })
+
+    expect(angleRepository.listByProjectIdAndIds).not.toHaveBeenCalled()
   })
 })

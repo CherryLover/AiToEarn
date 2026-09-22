@@ -378,6 +378,15 @@
       "draftWriteFailed": "The draft could not be written. Try again.",
       "draftMetaInvalid": "The draft lineage record is broken. Open the file and check.",
       "platformNotSupported": "That platform is not supported yet."
+    },
+    "pending": {
+      "banner": "{{num}} angle(s) the AI just proposed are waiting on you",
+      "hint": "They only join the list and the tree once you accept them",
+      "confirm": "Accept",
+      "confirmAll": "Accept all",
+      "edit": "Touch it up",
+      "confirmSuccess": "“{{name}}” accepted",
+      "confirmAllSuccess": "All {{num}} angle(s) accepted"
     }
   },
   "drafts": {
@@ -398,7 +407,8 @@
       "failed": "Could not generate it",
       "waiting": "Sent. Waiting for it to start reading the material…",
       "noLog": "No trace from this run.",
-      "noAngles": "No usable angle yet. Distill or create one in the Angles tab first, then come back."
+      "noAngles": "No usable angle yet. Distill or create one in the Angles tab first, then come back.",
+      "runsInChat": "It runs in the chat on the right — follow up or ask for changes there."
     },
     "platform": {
       "xhs": "Xiaohongshu",
@@ -588,5 +598,25 @@
     "urlInvalid": "That post link is not valid, it has to be a full http or https address",
     "createFailed": "It could not be created, try again later",
     "statusInvalid": "That is not allowed in the current state, try refreshing"
+  },
+  "chat": {
+    "open": "AI chat",
+    "title": "AI chat",
+    "close": "Collapse",
+    "startNew": "Start a new thread",
+    "placeholder": "Share a rough idea — talk it through, then extract angles…",
+    "sendFailed": "Could not send. Try again.",
+    "busyTip": "Still running. Wait for it to finish before starting a new thread.",
+    "empty": {
+      "title": "Start by talking it through",
+      "desc": "A rough thought is fine: float an idea, drop in some material, or just ask. Extract angles once it is clear."
+    },
+    "history": {
+      "title": "Past threads",
+      "loading": "Loading…",
+      "loadFailed": "Could not load past threads",
+      "empty": "No threads for this project yet",
+      "untitled": "Untitled thread"
+    }
   }
 }

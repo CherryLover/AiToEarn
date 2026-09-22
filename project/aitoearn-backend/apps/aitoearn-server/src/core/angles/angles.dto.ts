@@ -4,8 +4,15 @@ import { z } from 'zod'
 
 const AngleListQueryDtoSchema = z.object({
   status: z.enum(AngleStatus).optional().describe('按状态过滤：candidate / testing / effective / retired，不传则全部返回'),
+  confirmed: z.stringbool().optional().describe('按确认与否过滤：true 只看人已经采用的，false 只看 AI 刚提还没人看过的，不传则全部返回'),
 })
 export class AngleListQueryDto extends createZodDto(AngleListQueryDtoSchema, 'AngleListQueryDto') {}
+
+/** 批量采用待确认的方向。id 里只要有一个不属于这个项目就整单拒绝，不做「能采几条算几条」 */
+const ConfirmAnglesDtoSchema = z.object({
+  angleIds: z.array(z.string()).min(1).max(200).describe('要采用的方向 ID 列表；重复的会去重，已确认的再传一次不报错也不刷新时间'),
+})
+export class ConfirmAnglesDto extends createZodDto(ConfirmAnglesDtoSchema, 'ConfirmAnglesDto') {}
 
 const CreateAngleDtoSchema = z.object({
   slug: z.string().describe('方向 slug，同时是 angles/<slug>.md 的文件名。规则同项目英文名，但允许后续修改'),

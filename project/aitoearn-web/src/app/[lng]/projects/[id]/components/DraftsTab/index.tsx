@@ -23,9 +23,13 @@ interface DraftsTabProps {
   projectName: string
   /** 归档项目只读 */
   readOnly: boolean
+  /** 把一句话丢进右侧的项目对话里 */
+  onAskAi: (prompt: string) => void
+  /** 页面每跑完一轮 AI 任务就加一，收到就刷新草稿列表 */
+  refreshSignal: number
 }
 
-export function DraftsTab({ projectId, projectName, readOnly }: DraftsTabProps) {
+export function DraftsTab({ projectId, projectName, readOnly, onAskAi, refreshSignal }: DraftsTabProps) {
   const { t } = useTransClient('projects')
 
   const { drafts, isLoading, loadFailed, refresh } = useDrafts(projectId)
@@ -39,6 +43,13 @@ export function DraftsTab({ projectId, projectName, readOnly }: DraftsTabProps) 
       setSelectedPath(null)
   }, [drafts, selectedPath])
 
+  // 右侧对话每跑完一轮，AI 可能往 drafts/ 里写了新草稿。
+  // 初始值 0 不处理，否则一进页面就会白刷一次。
+  useEffect(() => {
+    if (refreshSignal > 0)
+      void refresh()
+  }, [refreshSignal, refresh])
+
   const selectedDraft = drafts.find(draft => draft.path === selectedPath) ?? null
 
   return (
@@ -48,7 +59,7 @@ export function DraftsTab({ projectId, projectName, readOnly }: DraftsTabProps) 
         angles={angles}
         isAnglesLoading={isAnglesLoading}
         readOnly={readOnly}
-        onFinished={refresh}
+        onAskAi={onAskAi}
       />
 
       {isLoading && drafts.length === 0 ? (

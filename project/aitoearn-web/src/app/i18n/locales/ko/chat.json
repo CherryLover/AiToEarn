@@ -211,5 +211,14 @@
       "publish": "게시 중...",
       "complete": "게시 완료"
     }
+  },
+  "toolAction": {
+    "bash": "실행",
+    "edit": "수정",
+    "glob": "파일 찾기",
+    "grep": "내용 검색",
+    "read": "읽기",
+    "todo": "할 일 목록",
+    "write": "쓰기"
   }
 }

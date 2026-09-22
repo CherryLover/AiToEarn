@@ -233,5 +233,14 @@
       "publish": "Publishing...",
       "complete": "Published"
     }
+  },
+  "toolAction": {
+    "bash": "Ran",
+    "edit": "Edited",
+    "glob": "Found files",
+    "grep": "Searched",
+    "read": "Read",
+    "todo": "To-do list",
+    "write": "Wrote"
   }
 }

@@ -50,16 +50,19 @@ export class AnglesService {
     private readonly angleFileService: AngleFileService,
   ) {}
 
-  /** 列出项目下的方向，可按状态过滤 */
-  async list(projectId: string, userId: string, status?: AngleStatus): Promise<AngleDoc[]> {
+  /** 列出项目下的方向，可按状态和确认与否过滤 */
+  async list(projectId: string, userId: string, status?: AngleStatus, confirmed?: boolean): Promise<AngleDoc[]> {
     const project = await this.projectsService.getWritableProject(projectId, userId)
-    return await this.angleRepository.listByProjectId(project.id, status)
+    return await this.angleRepository.listByProjectId(project.id, { status, confirmed })
   }
 
-  /** 方向演进树：按血统组装，父方向缺失或成环的节点提到根上，保证一个不丢 */
+  /**
+   * 方向演进树：按血统组装，父方向缺失或成环的节点提到根上，保证一个不丢。
+   * **只含已确认的**——演进树是用来看哪条线在往下长的，混进没人看过的候选会看不清。
+   */
   async tree(projectId: string, userId: string): Promise<AngleTreeNode<AngleDoc>[]> {
     const project = await this.projectsService.getWritableProject(projectId, userId)
-    const angles = await this.angleRepository.listByProjectId(project.id)
+    const angles = await this.angleRepository.listByProjectId(project.id, { confirmed: true })
     return buildAngleTree(angles)
   }
 
@@ -78,6 +81,8 @@ export class AnglesService {
       desc: dto.desc,
       source: AngleSource.USER,
       status: dto.status ?? AngleStatus.CANDIDATE,
+      // 人自己建的方向不用再确认一遍，建的时候就算已采用
+      confirmedAt: new Date(),
     })
 
     await this.writeGuideOrRollback(project.dirName, angle, dto.guide ?? '', null)
@@ -115,6 +120,8 @@ export class AnglesService {
       source: AngleSource.DERIVED,
       parentAngleId: parent.id,
       status: AngleStatus.CANDIDATE,
+      // 派生同理：是人点出来的，不进待确认区
+      confirmedAt: new Date(),
     })
 
     await this.writeGuideOrRollback(project.dirName, angle, body, parent.slug)
@@ -194,11 +201,52 @@ export class AnglesService {
   }
 
   /**
+   * 采用一条待确认的方向。
+   *
+   * 已经确认过的再确认一次直接原样返回：不报错，也不刷新时间——
+   * 「什么时候被人采用的」是一次性事实，重复点不该把它往后挪。
+   */
+  async confirm(projectId: string, angleId: string, userId: string): Promise<AngleDoc> {
+    const project = await this.projectsService.getWritableProject(projectId, userId)
+    const angle = await this.getAngleInProject(project.id, userId, angleId)
+
+    if (angle.confirmedAt)
+      return angle
+
+    return await this.applyUpdate(angle.id, { $set: { confirmedAt: new Date() } })
+  }
+
+  /**
+   * 批量采用（待确认区的「全部采用」走这里）。
+   *
+   * 只要有一个 id 不属于这个人、这个项目，整单拒绝，不做「能采几条算几条」：
+   * 半成功之后人根本说不清到底采用了哪些。已确认的混在里面不影响，更新条件会把它们跳过。
+   */
+  async confirmMany(projectId: string, userId: string, angleIds: string[]): Promise<AngleDoc[]> {
+    const project = await this.projectsService.getWritableProject(projectId, userId)
+    const uniqueIds = [...new Set(angleIds)]
+
+    // 不像 id 的字符串别拿去查库，`$in` 会当场 CastError 炸成 500
+    if (uniqueIds.some(id => !OBJECT_ID_PATTERN.test(id)))
+      throw new AppException(ResponseCode.AngleNotFound)
+
+    const angles = await this.angleRepository.listByProjectIdAndIds(project.id, uniqueIds)
+    if (angles.length !== uniqueIds.length || angles.some(angle => angle.userId !== userId))
+      throw new AppException(ResponseCode.AngleNotFound)
+
+    await this.angleRepository.updateManyConfirmedAtByIds(uniqueIds, new Date())
+    return await this.angleRepository.listByProjectIdAndIds(project.id, uniqueIds)
+  }
+
+  /**
    * 把 `angles/` 下 AI 写出来的方向文件登记进数据库。
    *
    * 契约里没写这个接口，但少了它 AI 提炼出来的方向永远进不了库
    * （AI 技能只会写文件，`sourceAssetPaths` 契约里明说「供服务端回填」）。
    * 只认库里还没有的 slug，已经登记过的一个字段都不动——文件说了算的是正文，库说了算的是元信息。
+   *
+   * **这里登记进来的方向一律不写 `confirmedAt`**，也就是待确认：AI 一次提五个，好的坏的混着，
+   * 直接进列表会把方向列表弄脏。人在待确认区里点了采用才算数。
    */
   async syncFromFiles(projectId: string, userId: string): Promise<AngleDoc[]> {
     const project = await this.projectsService.getWritableProject(projectId, userId)

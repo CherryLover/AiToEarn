@@ -41,6 +41,19 @@ export class ContentGenerationTask extends WithTimestampSchema {
   })
   title?: string
 
+  /**
+   * 属于哪个项目（项目英文名，即物料目录名）。建任务时写入，续聊不改。
+   *
+   * 存名字不存项目主键：aitoearn-ai 只认目录名，拿不到 aitoearn-server 那边的项目表，
+   * 为了一个筛选去跨服务反查不值当。名字和主键的映射由网页做（两个它都有）。
+   * 空表示不属于任何项目，是老的通用对话。
+   */
+  @Prop({
+    required: false,
+    index: true,
+  })
+  projectName?: string
+
   @Prop({
     required: false,
     default: [],
@@ -125,5 +138,6 @@ export class ContentGenerationTask extends WithTimestampSchema {
 export const ContentGenerationTaskSchema = SchemaFactory.createForClass(ContentGenerationTask)
 
 ContentGenerationTaskSchema.index({ userId: 1, deletedAt: 1, createdAt: -1 })
+ContentGenerationTaskSchema.index({ userId: 1, projectName: 1, deletedAt: 1, createdAt: -1 })
 ContentGenerationTaskSchema.index({ userId: 1, favoritedAt: -1, deletedAt: 1 })
 ContentGenerationTaskSchema.index({ status: 1, deletedAt: 1, updatedAt: 1 })

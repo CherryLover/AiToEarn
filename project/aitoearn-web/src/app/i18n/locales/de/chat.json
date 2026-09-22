@@ -211,5 +211,14 @@
       "publish": "Wird veröffentlicht...",
       "complete": "Veröffentlicht"
     }
+  },
+  "toolAction": {
+    "bash": "Ausgeführt",
+    "edit": "Bearbeitet",
+    "glob": "Dateien gesucht",
+    "grep": "Inhalt gesucht",
+    "read": "Gelesen",
+    "todo": "Aufgabenliste",
+    "write": "Geschrieben"
   }
 }

@@ -302,8 +302,13 @@ export const agentApi = {
    * @param params 查询参数
    */
   async getTaskList(params: GetTaskListParams = {}) {
-    const { page = 1, pageSize = 10, keyword, favoriteOnly } = params
+    const { page = 1, pageSize = 10, keyword, favoriteOnly, projectName } = params
     const queryParams: Record<string, string | number | boolean> = { page, pageSize }
+
+    // 只看某个项目下的对话
+    if (projectName?.trim()) {
+      queryParams.projectName = projectName.trim()
+    }
 
     // 添加搜索关键词（截取前100字符）
     if (keyword?.trim()) {

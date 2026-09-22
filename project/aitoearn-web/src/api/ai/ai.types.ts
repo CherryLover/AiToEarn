@@ -200,6 +200,9 @@ export interface TaskDetail {
   ratingComment?: string | null
 
   favoritedAt?: string | null
+
+  /** 属于哪个项目（项目英文名）；空表示不属于任何项目 */
+  projectName?: string
 }
 
 /**
@@ -224,6 +227,9 @@ export interface TaskListItem
   userId: string
 
   title?: string
+
+  /** 属于哪个项目（项目英文名）；空表示不属于任何项目 */
+  projectName?: string
 
   createdAt: string
 
@@ -260,6 +266,9 @@ export interface GetTaskListParams {
   keyword?: string
 
   favoriteOnly?: boolean
+
+  /** 只看某个项目下的对话；不传就是全部（含不属于任何项目的通用对话） */
+  projectName?: string
 }
 
 /**
@@ -270,6 +279,7 @@ export interface CreateAgentTaskParams {
   taskId?: string // 可选，传入则继续上一次对话
   messageUuid?: string // 可选，重置到对应的消息继续
   includePartialMessages?: boolean // 使用流式消息
+  projectName?: string // 可选，项目英文名；传了 Agent 就在该项目的物料目录里工作，会话也会归到这个项目名下
 }
 
 /**

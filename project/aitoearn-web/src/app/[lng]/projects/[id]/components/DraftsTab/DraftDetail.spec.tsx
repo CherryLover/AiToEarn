@@ -77,7 +77,7 @@ function renderDetail(item = draft(), readOnly = false) {
   return { onSaved, ...view }
 }
 
-describe('DraftDetail 正文', () => {
+describe('draftDetail 正文', () => {
   it('把标题、话题和正文读出来', async () => {
     renderDetail()
 
@@ -149,7 +149,7 @@ describe('DraftDetail 正文', () => {
   })
 })
 
-describe('DraftDetail 配图', () => {
+describe('draftDetail 配图', () => {
   it('外链图片直接显示，不去读物料', async () => {
     mockFiles({
       'drafts/20260901-xhs-pain/content.md': `${DRAFT_BODY}\n![](https://oss.example.com/a.png)\n`,
@@ -215,7 +215,7 @@ describe('DraftDetail 配图', () => {
   })
 })
 
-describe('DraftDetail 血缘', () => {
+describe('draftDetail 血缘', () => {
   it('回答「这条是怎么来的」：方向、平台、物料、提示词、模型', async () => {
     renderDetail()
 

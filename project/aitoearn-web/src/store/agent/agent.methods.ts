@@ -157,7 +157,7 @@ export function createStoreMethods(ctx: IMethodsContext) {
      * 使用 TaskInstance 架构：创建独立实例，SSE 回调绑定到实例
      */
     async createTask(params: ICreateTaskParams): Promise<string | null> {
-      const { prompt, medias = [], t, onTaskIdReady, onLoginRequired } = params
+      const { prompt, medias = [], t, projectName, onTaskIdReady, onLoginRequired } = params
 
       if (!prompt.trim()) {
         return null
@@ -273,7 +273,7 @@ export function createStoreMethods(ctx: IMethodsContext) {
 
         // 创建任务（SSE）- SSE 消息通过 TaskInstance 处理
         const abortFn = await agentApi.createTaskWithSSE(
-          { prompt: apiPrompt, includePartialMessages: true },
+          { prompt: apiPrompt, includePartialMessages: true, projectName },
           (sseMessage: ISSEMessage) => {
             // 使用 TaskInstance 处理 SSE 消息（消息会自动写入实例的 taskId）
             instance.handleSSEMessage(sseMessage, taskSSECallbacks)
@@ -339,7 +339,7 @@ export function createStoreMethods(ctx: IMethodsContext) {
      * 使用 TaskInstance 架构：获取或创建实例，SSE 回调绑定到实例
      */
     async continueTask(params: ICreateTaskParams & { taskId: string }): Promise<void> {
-      const { prompt, medias = [], t, taskId } = params
+      const { prompt, medias = [], t, taskId, projectName } = params
 
       if (!prompt.trim() || !taskId) {
         return
@@ -442,7 +442,7 @@ export function createStoreMethods(ctx: IMethodsContext) {
 
         // 创建任务（SSE）- SSE 消息通过 TaskInstance 处理
         const abortFn = await agentApi.createTaskWithSSE(
-          { prompt: apiPrompt, taskId, includePartialMessages: true },
+          { prompt: apiPrompt, taskId, includePartialMessages: true, projectName },
           (sseMessage: ISSEMessage) => {
             // 使用 TaskInstance 处理 SSE 消息
             instance!.handleSSEMessage(sseMessage, taskSSECallbacks)

@@ -4,7 +4,7 @@ import { GetToken, TokenInfo } from '@yikart/aitoearn-auth'
 import { ApiDoc, ParseObjectIdPipe } from '@yikart/common'
 import { angleRelPath } from './angle-slug.util'
 import { AngleTreeNode } from './angle-tree.util'
-import { AngleListQueryDto, CreateAngleDto, DeriveAngleDto, UpdateAngleDto } from './angles.dto'
+import { AngleListQueryDto, ConfirmAnglesDto, CreateAngleDto, DeriveAngleDto, UpdateAngleDto } from './angles.dto'
 import { AngleDoc, AnglesService } from './angles.service'
 import { AngleDeletedVo, AngleTreeNodeShape, AngleTreeNodeVo, AngleVo } from './angles.vo'
 
@@ -21,6 +21,7 @@ function toAngleShape(angle: AngleDoc) {
     sourceAssetPaths: angle.sourceAssetPaths ?? [],
     promptSnapshot: angle.promptSnapshot ?? null,
     filePath: angleRelPath(angle.slug),
+    confirmedAt: angle.confirmedAt,
     createdAt: angle.createdAt,
     updatedAt: angle.updatedAt,
   }
@@ -44,7 +45,7 @@ export class AnglesController {
 
   @ApiDoc({
     summary: '方向列表',
-    description: '方向是待验证的假设，不是预先定死的分类；可按状态过滤',
+    description: '方向是待验证的假设，不是预先定死的分类；可按状态过滤，也可按确认与否过滤（confirmed=false 就是待确认区）',
     query: AngleListQueryDto.schema,
     response: [AngleVo],
   })
@@ -54,13 +55,13 @@ export class AnglesController {
     @Param('projectId', ParseObjectIdPipe) projectId: string,
     @Query() query: AngleListQueryDto,
   ): Promise<AngleVo[]> {
-    const angles = await this.anglesService.list(projectId, token.id, query.status)
+    const angles = await this.anglesService.list(projectId, token.id, query.status, query.confirmed)
     return angles.map(angle => toAngleVo(angle))
   }
 
   @ApiDoc({
     summary: '方向演进树',
-    description: '按血统（parentAngleId）组装成树，一眼看出哪条线在往下长；父方向缺失的节点会被提到根上',
+    description: '按血统（parentAngleId）组装成树，一眼看出哪条线在往下长；父方向缺失的节点会被提到根上。只含已确认的方向，待确认的不污染演进树',
     response: [AngleTreeNodeVo],
   })
   @Get('/tree')
@@ -100,6 +101,38 @@ export class AnglesController {
   ): Promise<AngleVo[]> {
     const angles = await this.anglesService.syncFromFiles(projectId, token.id)
     return angles.map(angle => toAngleVo(angle))
+  }
+
+  @ApiDoc({
+    summary: '批量采用待确认的方向',
+    description: '待确认区的「全部采用」走这里；已确认的再传一次不报错，也不刷新确认时间。任何一条不属于本项目就整单拒绝',
+    body: ConfirmAnglesDto.schema,
+    response: [AngleVo],
+  })
+  // 声明在 `/:angleId/...` 那些动态段之前，免得以后加了单段动态路由把 `/confirm` 吃掉
+  @Post('/confirm')
+  async confirmMany(
+    @GetToken() token: TokenInfo,
+    @Param('projectId', ParseObjectIdPipe) projectId: string,
+    @Body() dto: ConfirmAnglesDto,
+  ): Promise<AngleVo[]> {
+    const angles = await this.anglesService.confirmMany(projectId, token.id, dto.angleIds)
+    return angles.map(angle => toAngleVo(angle))
+  }
+
+  @ApiDoc({
+    summary: '采用一条待确认的方向',
+    description: '写入 confirmedAt，方向从待确认区进到列表、演进树和状态分组；已确认的再点一次不报错也不刷新时间',
+    response: AngleVo,
+  })
+  @Post('/:angleId/confirm')
+  async confirm(
+    @GetToken() token: TokenInfo,
+    @Param('projectId', ParseObjectIdPipe) projectId: string,
+    @Param('angleId', ParseObjectIdPipe) angleId: string,
+  ): Promise<AngleVo> {
+    const angle = await this.anglesService.confirm(projectId, angleId, token.id)
+    return toAngleVo(angle)
   }
 
   @ApiDoc({

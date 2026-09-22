@@ -1,12 +1,13 @@
 /**
  * GenerateDraftPanel - 选方向 + 选平台 → 生成一条内容
- * 起一个带 projectName 的 Agent 任务，它在项目物料目录里读方向和物料、写 drafts/。
+ * 这里只负责把选项拼成一句话，真正跑在右侧那条项目对话里：过程、工具调用、追问都在那边。
+ * 生成常常要来回改（换个说法、加个限制），塞在这张卡片里只能单向发一次，不够用。
  * 没有方向就先去「方向」标签页提炼，这里只提示，不越权替人建。
  */
 'use client'
 
 import type { Angle } from '@/api/angles/angle.types'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { AngleStatus } from '@/api/angles/angle.types'
 import { useTransClient } from '@/app/i18n/client'
@@ -20,7 +21,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { useProjectAgentTask } from '../AnglesTab/useProjectAgentTask'
 import { DEFAULT_DRAFT_PLATFORM, DRAFT_PLATFORMS } from './drafts.constants'
 import { buildDraftPrompt } from './drafts.utils'
 
@@ -30,15 +30,13 @@ interface GenerateDraftPanelProps {
   angles: Angle[]
   isAnglesLoading: boolean
   readOnly: boolean
-  /** 生成完刷新草稿列表 */
-  onFinished: () => void
+  /** 把拼好的一句话丢进右侧的项目对话 */
+  onAskAi: (prompt: string) => void
 }
 
 export function GenerateDraftPanel(props: GenerateDraftPanelProps) {
-  const { projectName, angles, isAnglesLoading, readOnly, onFinished } = props
+  const { projectName, angles, isAnglesLoading, readOnly, onAskAi } = props
   const { t } = useTransClient('projects')
-
-  const { status, logs, errorText, run, stop } = useProjectAgentTask()
 
   const [angleId, setAngleId] = useState('')
   const [platform, setPlatform] = useState<string>(DEFAULT_DRAFT_PLATFORM)
@@ -51,25 +49,18 @@ export function GenerateDraftPanel(props: GenerateDraftPanelProps) {
   )
 
   const selectedAngle = usableAngles.find(angle => angle.id === angleId) ?? null
-  const isRunning = status === 'running'
 
   const handleGenerate = () => {
     if (!selectedAngle)
       return
 
-    run(
-      {
-        prompt: buildDraftPrompt({
-          projectName,
-          angleSlug: selectedAngle.slug,
-          angleName: selectedAngle.name,
-          platform,
-          extra,
-        }),
-        projectName,
-      },
-      onFinished,
-    )
+    onAskAi(buildDraftPrompt({
+      projectName,
+      angleSlug: selectedAngle.slug,
+      angleName: selectedAngle.name,
+      platform,
+      extra,
+    }))
   }
 
   return (
@@ -92,7 +83,7 @@ export function GenerateDraftPanel(props: GenerateDraftPanelProps) {
               <Label htmlFor="draft-angle-select">{t('drafts.generate.angleLabel')}</Label>
               <Select
                 value={angleId}
-                disabled={readOnly || isRunning || isAnglesLoading}
+                disabled={readOnly || isAnglesLoading}
                 onValueChange={setAngleId}
               >
                 <SelectTrigger id="draft-angle-select">
@@ -114,7 +105,7 @@ export function GenerateDraftPanel(props: GenerateDraftPanelProps) {
               <Label htmlFor="draft-platform-select">{t('drafts.generate.platformLabel')}</Label>
               <Select
                 value={platform}
-                disabled={readOnly || isRunning}
+                disabled={readOnly}
                 onValueChange={setPlatform}
               >
                 <SelectTrigger id="draft-platform-select">
@@ -140,57 +131,21 @@ export function GenerateDraftPanel(props: GenerateDraftPanelProps) {
               id="draft-extra-input"
               className="min-h-16"
               value={extra}
-              disabled={readOnly || isRunning}
+              disabled={readOnly}
               placeholder={t('drafts.generate.extraPlaceholder')}
               onChange={event => setExtra(event.target.value)}
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {isRunning ? (
-              <>
-                <Button disabled>
-                  <Loader2 className="size-4 animate-spin" />
-                  {t('drafts.generate.running')}
-                </Button>
-                <Button variant="outline" onClick={stop}>
-                  {t('drafts.generate.stop')}
-                </Button>
-              </>
-            ) : (
-              <Button disabled={readOnly || !selectedAngle} onClick={handleGenerate}>
-                <Sparkles className="size-4" />
-                {t('drafts.generate.submit')}
-              </Button>
-            )}
-
-            {status === 'done' && (
-              <span className="text-xs text-muted-foreground">{t('drafts.generate.done')}</span>
-            )}
-            {status === 'error' && (
-              <span className="text-xs text-destructive">
-                {t('drafts.generate.failed')}
-                {errorText ? `：${errorText}` : ''}
-              </span>
-            )}
+            <Button disabled={readOnly || !selectedAngle} onClick={handleGenerate}>
+              <Sparkles className="size-4" />
+              {t('drafts.generate.submit')}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              {t('drafts.generate.runsInChat')}
+            </span>
           </div>
-
-          {status !== 'idle' && (
-            <div className="max-h-40 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs leading-relaxed text-muted-foreground">
-              {logs.length === 0 ? (
-                <p>{isRunning ? t('drafts.generate.waiting') : t('drafts.generate.noLog')}</p>
-              ) : (
-                logs.map((line, index) => (
-                  <p
-                    key={`${index}-${line.slice(0, 12)}`}
-                    className="whitespace-pre-wrap break-words"
-                  >
-                    {line}
-                  </p>
-                ))
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>
