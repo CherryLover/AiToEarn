@@ -617,6 +617,8 @@
       "loadFailed": "Impossible de charger les fils précédents",
       "empty": "Aucun fil pour ce projet pour l'instant",
       "untitled": "Fil sans titre"
-    }
+    },
+    "resize": "Glisser pour redimensionner",
+    "resizeHint": "Glissez pour redimensionner, double-cliquez pour réinitialiser"
   }
 }

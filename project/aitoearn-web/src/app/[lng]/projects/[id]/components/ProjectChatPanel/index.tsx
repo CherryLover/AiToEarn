@@ -24,6 +24,11 @@ import { useAgentStore } from '@/store/agent'
 import { cn } from '@/utils/className'
 import { toast } from '@/utils/ui/toast'
 import { ProjectChatHistory } from './ProjectChatHistory'
+import {
+  MAX_CHAT_PANEL_WIDTH,
+  MIN_CHAT_PANEL_WIDTH,
+  useChatPanelWidth,
+} from './useChatPanelWidth'
 import { useProjectChatSession } from './useProjectChatSession'
 
 /** 空会话时用的常量空数组，避免每次渲染都造新引用 */
@@ -53,6 +58,7 @@ export function ProjectChatPanel(props: ProjectChatPanelProps) {
   const { t } = useTransClient('projects')
 
   const session = useProjectChatSession(projectName)
+  const panelWidth = useChatPanelWidth()
   const { createTask, continueTask, stopTask } = useAgentStore()
 
   const [inputValue, setInputValue] = useState('')
@@ -212,12 +218,52 @@ export function ProjectChatPanel(props: ProjectChatPanelProps) {
       />
 
       <aside
+        // 宽度只在宽屏生效：窄屏是盖上来的抽屉，占满宽度，没什么可调的。
+        // 所以断点交给 CSS，这里只把值以变量形式给出去
+        style={{ '--chat-panel-width': `${panelWidth.width}px` } as React.CSSProperties}
         className={cn(
           // 窄屏：盖在右边；宽屏：变成正常的一列，把主体内容挤窄，不遮挡
           'fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-border bg-background shadow-xl',
-          'xl:static xl:z-auto xl:h-full xl:w-[26rem] xl:max-w-none xl:shrink-0 xl:shadow-none',
+          // 宽屏用 relative 而不是 static：拖拽手柄是绝对定位的，
+          // static 不是定位上下文，手柄会跑去贴 body 的左边缘
+          'xl:relative xl:z-auto xl:h-full xl:w-[var(--chat-panel-width)] xl:max-w-none xl:shrink-0 xl:shadow-none',
         )}
       >
+        {/* 拖左边框改宽度。拖动时在 body 上挂 select-none，否则会把页面文字一路选中 */}
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label={t('chat.resize')}
+          aria-valuenow={panelWidth.width}
+          aria-valuemin={MIN_CHAT_PANEL_WIDTH}
+          aria-valuemax={MAX_CHAT_PANEL_WIDTH}
+          tabIndex={0}
+          title={t('chat.resizeHint')}
+          onPointerDown={panelWidth.startResize}
+          onDoubleClick={panelWidth.reset}
+          onKeyDown={(event) => {
+            // 键盘也能调：光靠拖，只用键盘的人改不了
+            if (event.key === 'ArrowLeft') {
+              event.preventDefault()
+              panelWidth.nudge(event.shiftKey ? 64 : 16)
+            }
+            else if (event.key === 'ArrowRight') {
+              event.preventDefault()
+              panelWidth.nudge(event.shiftKey ? -64 : -16)
+            }
+            else if (event.key === 'Home') {
+              event.preventDefault()
+              panelWidth.reset()
+            }
+          }}
+          className={cn(
+            // 命中区域比看得见的那条线宽，不然很难对准
+            'absolute inset-y-0 left-0 z-10 hidden w-2 -translate-x-1/2 cursor-col-resize xl:block',
+            'after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:-translate-x-1/2 after:bg-transparent after:transition-colors',
+            'hover:after:bg-primary/40 focus-visible:outline-none focus-visible:after:bg-primary',
+            panelWidth.isResizing && 'after:bg-primary',
+          )}
+        />
         <header className="flex shrink-0 items-center gap-1 border-b border-border px-3 py-2.5">
           <Sparkles className="size-4 shrink-0 text-primary" />
           <div className="min-w-0 flex-1">

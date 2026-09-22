@@ -617,6 +617,8 @@
       "loadFailed": "Could not load past threads",
       "empty": "No threads for this project yet",
       "untitled": "Untitled thread"
-    }
+    },
+    "resize": "Drag to resize",
+    "resizeHint": "Drag to resize, double-click to reset"
   }
 }

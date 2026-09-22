@@ -617,6 +617,8 @@
       "loadFailed": "Frühere Verläufe konnten nicht geladen werden",
       "empty": "Für dieses Projekt gibt es noch keine Verläufe",
       "untitled": "Unbenannter Verlauf"
-    }
+    },
+    "resize": "Breite ziehen",
+    "resizeHint": "Ziehen zum Anpassen, Doppelklick setzt zurück"
   }
 }
