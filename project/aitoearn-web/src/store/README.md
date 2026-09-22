@@ -10,6 +10,7 @@ src/store/
 ├── account.ts               # 社交账户管理
 ├── user/                    # 用户登录态（store 与私有 utils）
 ├── system.ts                # 系统配置
+├── readiness.ts             # 必需配置的就绪检查结果
 ├── settingsModal.ts         # 全局设置弹窗状态
 ├── configManagerDialog.ts   # 全局配置管理弹窗状态
 ├── login-dialog/            # 全局登录弹窗状态
@@ -29,6 +30,7 @@ src/store/
 | `account.ts`              | `useAccountStore`                        | 社交账户管理、账户分组、余额不足弹框                     | 否              |
 | `user/`                   | `useUserStore`                           | 用户登录态、Credits 余额、语言、侧边栏                   | 是              |
 | `system.ts`               | `useSystemStore`                         | 系统配置、Agent 测试提示、日历视图与日历节日过滤         | 是（IndexedDB） |
+| `readiness.ts`            | `useReadinessStore`                      | 必需配置的就绪检查结果，同会话只拉一次，引导页可手动复检 | 否              |
 | `settingsModal.ts`        | `useSettingsModalStore`                  | 全局设置弹窗可见性、默认 Tab 与子 Tab                    | 否              |
 | `configManagerDialog.ts`  | `useConfigManagerDialogStore`            | 全局配置管理弹窗可见性与触发来源                         | 否              |
 | `login-dialog/`           | `useLoginDialogStore`                    | 全局登录弹窗、登录后跳转与邀请码                         | 否              |

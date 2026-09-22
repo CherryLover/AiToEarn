@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "title": "Configuration guidée",
+    "description": "Renseignez la configuration nécessaire étape par étape pour que l'extraction d'angles par l'IA, la génération d'éléments et le stockage des fichiers fonctionnent.",
+    "keywords": "configuration guidée,vérification de disponibilité,IA en amont,stockage objet"
+  },
+  "page": {
+    "title": "Configuration guidée",
+    "subtitle": "Chaque point ci-dessous doit être configuré pour que la fonctionnalité correspondante marche. Les étapes déjà validées sont repliées."
+  },
+  "login": {
+    "title": "Connectez-vous d'abord",
+    "hint": "La vérification de configuration nécessite d'être connecté.",
+    "action": "Se connecter"
+  },
+  "load": {
+    "failedTitle": "La vérification n'a pas abouti",
+    "failedDesc": "Impossible de lire le résultat : le service est peut-être encore en train de démarrer. Réessayez dans un instant.",
+    "retry": "Vérifier à nouveau"
+  },
+  "summary": {
+    "blocking": "Encore {{count}} point(s) à configurer",
+    "optionalLeft": "{{count}} autre(s) point(s) sont facultatifs",
+    "allDone": "Tout ce qui est nécessaire fonctionne"
+  },
+  "status": {
+    "ok": "Fonctionne",
+    "missing": "Non configuré",
+    "error": "Configuré mais inopérant",
+    "optional": "Facultatif",
+    "skipped": "Ignoré"
+  },
+  "banner": {
+    "action": "Configurer",
+    "dismiss": "Plus tard",
+    "more": "{{count}} autre(s) point(s) ne sont pas configurés non plus."
+  },
+  "step": {
+    "label": "Étape {{index}}",
+    "what": "De quoi il s'agit",
+    "impact": "Ce qui casse sans ça",
+    "where": "Où le récupérer",
+    "detail": "Raison renvoyée par le serveur"
+  },
+  "item": {
+    "agentUpstream": {
+      "title": "IA en amont",
+      "broken": "L'extraction d'angles par l'IA ne marche pas : l'IA en amont n'est pas configurée",
+      "what": "Les fonctions du type « faire extraire les angles par l'IA » transmettent la demande à un service d'IA en amont. Il s'agit ici de l'adresse et de la clé de ce service.",
+      "impact": "Sans ça, « faire extraire les angles par l'IA » ne renvoie qu'un Internal server error. La clé livrée dans le dépôt est un espace réservé, systématiquement refusé en amont.",
+      "where": "Créez une clé d'API dans la console de votre fournisseur de modèles, puis collez ici son point d'accès messages et cette clé. Si vous avez votre propre passerelle, indiquez son adresse."
+    },
+    "aiChatModels": {
+      "title": "Canal des modèles de discussion",
+      "broken": "La discussion IA et la génération d'éléments ne marchent pas : le canal de modèles n'est pas configuré",
+      "what": "La discussion IA, les réponses aux commentaires et les éléments générés par l'IA passent par ce canal. La liste de modèles est livrée avec le dépôt et change rarement : c'est la clé qui compte.",
+      "impact": "Sans ça, toutes les pages qui utilisent l'IA échouent ou tournent indéfiniment.",
+      "where": "Récupérez une clé d'API dans la même console. Pour le point d'accès officiel, laissez l'adresse telle quelle ; sinon, indiquez votre propre passerelle."
+    },
+    "assets": {
+      "title": "Stockage objet",
+      "broken": "Impossible de stocker les images et vidéos : le stockage objet n'est pas configuré",
+      "what": "Les avatars, les éléments et tout ce que l'IA génère sont conservés dans le stockage objet.",
+      "impact": "Sans ça, les envois échouent et les éléments déjà générés ne s'ouvrent plus.",
+      "where": "Ce point fait partie des fondations : il ne se change que dans le .env du serveur (les variables ASSETS_), suivi d'un nouveau passage du script de déploiement."
+    },
+    "projectsRoot": {
+      "title": "Répertoire racine des fichiers",
+      "broken": "Impossible de lire les fichiers de projet : le répertoire racine n'est pas configuré",
+      "what": "Tous les fichiers d'un projet se trouvent sous ce répertoire sur le serveur.",
+      "impact": "Si le répertoire n'existe pas ou que le conteneur ne peut pas y écrire, les fichiers de projet ne s'ouvriront ni ne s'enregistreront.",
+      "where": "Là aussi, uniquement via le .env. Vérifiez que le répertoire est bien monté dans le conteneur et accessible en écriture."
+    },
+    "notify": {
+      "title": "Canal de notification",
+      "broken": "Aucune notification n'arrivera : le canal de notification n'est pas configuré",
+      "what": "Envoie une notification sur votre téléphone lorsqu'une tâche ou une génération d'éléments se termine.",
+      "impact": "Rien d'autre ne casse : vous ne serez simplement pas prévenu quand quelque chose se termine.",
+      "where": "Votre adresse de notification personnelle se renseigne dans « Paramètres – Notifications ». Le canal de secours commun est dans le .env du serveur."
+    },
+    "unknown": {
+      "title": "{{key}}",
+      "broken": "Une vérification échoue : {{key}}",
+      "what": "Cette vérification a été ajoutée côté serveur et l'interface web n'a pas encore de description dédiée.",
+      "impact": "Tant qu'elle échoue, la fonctionnalité correspondante risque de mal marcher.",
+      "where": "Elle correspond à {{path}} dans la configuration, que vous retrouverez sur la page de configuration."
+    }
+  },
+  "field": {
+    "agent": {
+      "baseUrl": {
+        "label": "Point d'accès en amont",
+        "desc": "Indiquez le point d'accès messages, pas seulement le domaine.",
+        "placeholder": "https://votre-passerelle/v1/messages"
+      },
+      "apiKey": {
+        "label": "Clé en amont",
+        "desc": "La clé d'API émise par votre fournisseur. Elle n'est plus affichée après l'enregistrement."
+      },
+      "defaultModel": {
+        "label": "Modèle par défaut",
+        "desc": "Utilisé quand aucun modèle n'est précisé. Reprenez le nom de modèle exactement comme dans la documentation de votre fournisseur.",
+        "placeholder": "Nom de modèle de la documentation du fournisseur"
+      }
+    },
+    "ai": {
+      "openai": {
+        "apiKey": {
+          "label": "Clé du canal",
+          "desc": "La clé d'API utilisée pour la discussion et la génération d'éléments. Elle n'est plus affichée après l'enregistrement."
+        },
+        "baseUrl": {
+          "label": "Adresse du canal",
+          "desc": "Laissez la valeur par défaut pour le point d'accès officiel ; ne la changez que si vous avez une passerelle.",
+          "placeholder": "https://votre-passerelle"
+        }
+      }
+    },
+    "generic": {
+      "label": "{{path}}",
+      "desc": "Correspond à {{path}} dans la configuration."
+    }
+  },
+  "secret": {
+    "configured": "Déjà renseignée. Laissez vide pour la conserver ; saisissez une nouvelle valeur pour la remplacer.",
+    "empty": "Pas encore renseignée.",
+    "placeholderSet": "Laissez vide pour conserver la clé actuelle",
+    "placeholderEmpty": "Collez votre clé"
+  },
+  "form": {
+    "required": "Ce champ est obligatoire"
+  },
+  "actions": {
+    "save": "Enregistrer et vérifier",
+    "recheck": "Vérifier à nouveau",
+    "restart": "Redémarrer le service",
+    "skip": "Ignorer ce point pour l'instant",
+    "undoSkip": "Annuler l'ignorance",
+    "openConfig": "Ouvrir la page de configuration",
+    "openNotifySettings": "Renseigner dans les paramètres",
+    "backHome": "Retour à l'accueil"
+  },
+  "save": {
+    "success": "Enregistré",
+    "hotHint": "Ce point prend effet immédiatement, sans redémarrage.",
+    "restartHint": "Enregistré. Ce point ne prendra effet qu'après le redémarrage du service.",
+    "error": {
+      "failed": "Enregistrement impossible",
+      "loadConfig": "Impossible de lire la configuration actuelle : vérifiez que le service est joignable.",
+      "protectedKey": "Ce point ne se change que dans le .env du serveur ; la couche de surcharge à l'exécution le refuse.",
+      "writeFailed": "Impossible d'écrire le fichier de configuration. Vérifiez que le fichier de surcharge est monté en écriture.",
+      "readFailed": "Impossible de lire le fichier de surcharge existant : son format est peut-être cassé.",
+      "invalid": "La valeur ne passe pas la validation de configuration. Comparez-la aux indications ci-dessus.",
+      "unsupportedFormat": "Le serveur ne reconnaît pas l'extension du fichier de surcharge ; seuls yaml, yml et json sont pris en charge."
+    }
+  },
+  "restart": {
+    "success": "Le service redémarre. Revérifiez dans quelques secondes.",
+    "failed": "Le redémarrage n'a pas abouti"
+  },
+  "recheck": {
+    "passed": "Ce point fonctionne maintenant",
+    "failed": "Toujours en échec : la raison est ci-dessous.",
+    "failedNoDetail": "Toujours en échec."
+  },
+  "manual": {
+    "title": "Ce point ne se change que sur le serveur",
+    "desc": "Il fait partie des fondations, la couche de surcharge à l'exécution ne l'accepte donc pas. Modifiez le .env, relancez le script de déploiement, puis revenez appuyer sur « Vérifier à nouveau »."
+  },
+  "notEditable": {
+    "title": "Ce point ne se renseigne pas ici",
+    "desc": "Sa valeur est une liste, pas une ligne de texte : un champ de saisie ne peut pas la modifier. Changez-la sur la page de configuration."
+  },
+  "skip": {
+    "hint": "Ce point est facultatif : vous pouvez l'ignorer et y revenir plus tard.",
+    "done": "Ignoré. Cela ne bloque pas les autres étapes."
+  },
+  "done": {
+    "title": "Tout est configuré",
+    "desc": "Tout ce qui est nécessaire fonctionne. Revenez à l'accueil et lancez-vous."
+  }
+}

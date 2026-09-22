@@ -27,5 +27,6 @@
   "xhsData": "Interaction IA",
   "groundPromotion": "Ground Promotion",
   "settings": "Paramètres",
-  "configManagement": "Configuration"
+  "configManagement": "Configuration",
+  "setup": "Configuration guidée"
 }

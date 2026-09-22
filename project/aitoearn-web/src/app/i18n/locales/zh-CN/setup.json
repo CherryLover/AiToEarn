@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "title": "分步配置",
+    "description": "一步步把必需的配置填好，让 AI 提炼方向、素材生成、文件存储都能正常用。",
+    "keywords": "分步配置,就绪检查,上游 AI,对象存储"
+  },
+  "page": {
+    "title": "分步配置",
+    "subtitle": "下面每一项都要配好，对应的功能才能用。已经通过的会自动收起来。"
+  },
+  "login": {
+    "title": "先登录",
+    "hint": "配置检查要登录之后才能做。",
+    "action": "去登录"
+  },
+  "load": {
+    "failedTitle": "检查没做成",
+    "failedDesc": "读不到检查结果，可能是服务还没起来。过一会儿再试一次。",
+    "retry": "重新检查"
+  },
+  "summary": {
+    "blocking": "还有 {{count}} 项必须配好",
+    "optionalLeft": "另外 {{count}} 项是可选的",
+    "allDone": "必需的几项都通过了"
+  },
+  "status": {
+    "ok": "已通过",
+    "missing": "还没配",
+    "error": "配了但用不了",
+    "optional": "可选",
+    "skipped": "已跳过"
+  },
+  "banner": {
+    "action": "去配置",
+    "dismiss": "先不管",
+    "more": "另外还有 {{count}} 项没配好。"
+  },
+  "step": {
+    "label": "第 {{index}} 步",
+    "what": "这是什么",
+    "impact": "不配会怎样",
+    "where": "去哪拿",
+    "detail": "服务端给的原因"
+  },
+  "item": {
+    "agentUpstream": {
+      "title": "上游 AI",
+      "broken": "AI 提炼方向现在用不了：上游 AI 还没配",
+      "what": "「让 AI 提炼方向」这类功能，是把请求转给一个上游 AI 服务来完成的。这里填的就是那个服务的地址和密钥。",
+      "impact": "不配的话，点「让 AI 提炼方向」只会得到一句 Internal server error。仓库里自带的是占位密钥，上游一定会拒。",
+      "where": "在你用的模型服务商后台新建一个 API Key，把它的 messages 接口地址和这个 Key 填进来。用自建中转就填中转的地址。"
+    },
+    "aiChatModels": {
+      "title": "对话模型通道",
+      "broken": "AI 对话和素材生成现在用不了：模型通道还没配",
+      "what": "网页里的 AI 对话、评论回复、AI 生成素材走的是这条通道。模型清单随仓库带了一份，一般不用动，要动的是密钥。",
+      "impact": "不配的话，所有用到 AI 的页面都会报错或者一直转圈。",
+      "where": "同样在模型服务商后台拿一个 API Key。用官方接口就把地址留空，用中转就填中转地址。"
+    },
+    "assets": {
+      "title": "对象存储",
+      "broken": "图片和视频存不下来：对象存储还没配好",
+      "what": "头像、素材、AI 生成出来的图和视频，都存在对象存储里。",
+      "impact": "不配的话上传会失败，已经生成的素材也打不开。",
+      "where": "这一项是运行的基石，只能在服务器的 .env 里改（ASSETS_ 开头那几个），改完重新跑一次部署脚本。"
+    },
+    "projectsRoot": {
+      "title": "物料根目录",
+      "broken": "项目物料读不了：物料根目录还没配好",
+      "what": "项目里的文件都放在服务器上的这个目录下面。",
+      "impact": "目录不存在、或者容器里写不进去，项目文件就打不开也存不上。",
+      "where": "同样只能在服务器的 .env 里改，并且要确认这个目录真的挂进了容器、而且可写。"
+    },
+    "notify": {
+      "title": "通知通道",
+      "broken": "收不到通知：通知通道还没配",
+      "what": "任务跑完、素材生成完，往你手机上推一条。",
+      "impact": "不配也不影响别的功能，只是收不到提醒。",
+      "where": "你自己的推送地址在「设置 - 通知」里填；给所有人兜底的默认通道在服务器的 .env 里。"
+    },
+    "unknown": {
+      "title": "{{key}}",
+      "broken": "有一项检查没通过：{{key}}",
+      "what": "这是服务端新加的检查项，网页这边还没有专门的说明。",
+      "impact": "它没通过时，对应的功能可能不正常。",
+      "where": "它对应的配置是 {{path}}，在配置管理页里能找到。"
+    }
+  },
+  "field": {
+    "agent": {
+      "baseUrl": {
+        "label": "上游接口地址",
+        "desc": "填到 messages 接口那一层，不是只填域名。",
+        "placeholder": "https://你的网关/v1/messages"
+      },
+      "apiKey": {
+        "label": "上游密钥",
+        "desc": "服务商给你的 API Key。保存之后网页不会再把它显示出来。"
+      },
+      "defaultModel": {
+        "label": "默认模型",
+        "desc": "不指定模型时用哪个。照服务商文档里写的模型名填。",
+        "placeholder": "服务商文档里的模型名"
+      }
+    },
+    "ai": {
+      "openai": {
+        "apiKey": {
+          "label": "通道密钥",
+          "desc": "对话和素材生成用的 API Key。保存之后网页不会再把它显示出来。"
+        },
+        "baseUrl": {
+          "label": "通道地址",
+          "desc": "用官方接口就保持默认，用中转才改。",
+          "placeholder": "https://你的中转地址"
+        }
+      }
+    },
+    "generic": {
+      "label": "{{path}}",
+      "desc": "这一项对应配置里的 {{path}}。"
+    }
+  },
+  "secret": {
+    "configured": "已经设置过了。留空就是不改，填了新值才覆盖。",
+    "empty": "还没设置。",
+    "placeholderSet": "留空表示不改",
+    "placeholderEmpty": "粘贴你的密钥"
+  },
+  "form": {
+    "required": "这一项必须填"
+  },
+  "actions": {
+    "save": "保存并检查",
+    "recheck": "重新检查",
+    "restart": "重启服务",
+    "skip": "先跳过这一项",
+    "undoSkip": "取消跳过",
+    "openConfig": "去配置管理页",
+    "openNotifySettings": "去设置里填",
+    "backHome": "回首页"
+  },
+  "save": {
+    "success": "已保存",
+    "hotHint": "这一项改完立刻生效，不用重启。",
+    "restartHint": "已保存。这一项要重启服务之后才生效。",
+    "error": {
+      "failed": "保存失败",
+      "loadConfig": "读不到当前配置，先确认服务连得上。",
+      "protectedKey": "这一项只能在服务器的 .env 里改，运行时覆盖不接受它。",
+      "writeFailed": "配置文件写不进去。确认覆盖文件挂载成了可写。",
+      "readFailed": "现有的覆盖文件读不出来，格式可能坏了。",
+      "invalid": "填的值过不了配置校验，按上面的说明再核对一遍。",
+      "unsupportedFormat": "覆盖文件的后缀服务端不认，只支持 yaml、yml、json。"
+    }
+  },
+  "restart": {
+    "success": "服务正在重启，几秒后再点重新检查。",
+    "failed": "重启没成功"
+  },
+  "recheck": {
+    "passed": "这一项通过了",
+    "failed": "还是没通过，原因在下面。",
+    "failedNoDetail": "还是没通过。"
+  },
+  "manual": {
+    "title": "这一项只能在服务器上改",
+    "desc": "它属于运行的基石，运行时覆盖层不接受它。改完 .env 重新跑一次部署脚本，再回来点「重新检查」。"
+  },
+  "notEditable": {
+    "title": "这一项在网页上填不了",
+    "desc": "它的值是一份清单，不是一行字，单行输入框改不了。去配置管理页改。"
+  },
+  "skip": {
+    "hint": "这一项不是必需的，可以先跳过，以后再来配。",
+    "done": "已跳过，不影响别的步骤。"
+  },
+  "done": {
+    "title": "都配好了",
+    "desc": "必需的几项都通过了，回首页开始用吧。"
+  }
+}

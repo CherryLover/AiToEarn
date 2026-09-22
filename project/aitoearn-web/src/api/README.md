@@ -30,3 +30,4 @@
 | `projects/`      | 项目元信息与项目物料文件的浏览、读写与上传。       | `projects/README.md`      |
 | `publishing/`    | 发布登记：从草稿建手动发布工单、回填链接与发布记录。 | `publishing/README.md`    |
 | `settings/`      | 设置页里按用户存服务端的配置：Bark 通知与通知规则。 | `settings/README.md`      |
+| `system/`        | 就绪检查，以及引导页写运行时配置覆盖层的那层薄包装。 | `system/README.md`        |
