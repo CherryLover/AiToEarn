@@ -6,7 +6,7 @@
   },
   "page": {
     "title": "Configuration",
-    "subtitle": "Consultez et modifiez la configuration d'exécution du service, une section à la fois. Les modifications enregistrées prennent effet après le redémarrage."
+    "subtitle": "Consultez et modifiez la configuration d'exécution du service, une section à la fois. La plupart des changements prennent effet après un redémarrage ; la section amont IA s'applique immédiatement."
   },
   "sections": {
     "relay": {
@@ -228,6 +228,16 @@
     "modified": "Modifié",
     "notRecommended": "Déconseillé"
   },
+  "override": {
+    "introTitle": "Cette page modifie la couche de surcharge d'exécution",
+    "introDescription": "Les modifications enregistrées ici sont écrites dans le fichier de surcharge d'exécution (config.override.yaml) et survivent à un nouveau déploiement. Les éléments marqués « Déploiement » ne se modifient pas ici : modifiez le .env sur le serveur, puis redéployez.",
+    "protectedListLabel": "Modifiable uniquement via .env : ",
+    "runtimeBadge": "Exécution",
+    "runtimeBadgeCount": "Exécution {{count}}",
+    "runtimeBadgeTitle": "Cette valeur provient de la couche de surcharge d'exécution : elle a été modifiée depuis cette page.",
+    "protectedBadge": "Déploiement",
+    "protectedHint": "Ce paramètre ne peut être modifié que dans l'environnement de déploiement : modifiez le .env sur le serveur, puis redéployez. Les surcharges d'exécution sont refusées pour lui."
+  },
   "actions": {
     "reload": "Reload",
     "validate": "Validate",
@@ -278,7 +288,9 @@
     "jsonRootObject": "La valeur racine doit être un objet JSON.",
     "noResponse": "La requête n'a pas atteint le serveur, ou le serveur n'a pas répondu.",
     "serverNoReason": "Le serveur a renvoyé un code d'erreur sans en indiquer la raison.",
-    "codeSuffix": "(code d'erreur {{code}})"
+    "codeSuffix": "(code d'erreur {{code}})",
+    "protectedKeyRejected": "Ces paramètres ne peuvent être modifiés que dans l'environnement de déploiement ; ils n'ont pas été envoyés : {{keys}}",
+    "moreDetails": "({{count}} de plus)"
   },
   "common": {
     "enabled": "Activé",

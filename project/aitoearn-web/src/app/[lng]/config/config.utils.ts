@@ -154,14 +154,49 @@ function getIssueText(issue: Record<string, unknown>) {
   return message || path
 }
 
-/** 把服务端 data 里的 issues 摊成一行一条 */
-function readFailureDetails(data: unknown): string[] {
-  if (!isRecord(data) || !Array.isArray(data.issues))
+/** 服务端列违规键路径时可能用的几种字段名。多认几个不亏，少认一个就少显示一条关键信息 */
+const failureKeyListFields = ['keys', 'paths', 'protectedKeys', 'protectedPaths', 'invalidKeys']
+
+/** 一串纯字符串的键路径，比如受保护键被拒时逐个列出来的那些 */
+function readStringList(value: unknown): string[] {
+  if (!Array.isArray(value))
     return []
 
-  return data.issues
-    .map(issue => (isRecord(issue) ? getIssueText(issue) : ''))
-    .filter((detail): detail is string => detail.length > 0)
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map(item => item.trim())
+    .filter(item => item.length > 0)
+}
+
+/**
+ * 把服务端 data 里的细项摊成一行一条。
+ *
+ * 两种形态都认：
+ * - zod 那种 `issues: [{ path, message }]`（校验失败走这条）；
+ * - 一串键路径（`ConfigOverrideProtectedKey` 会逐个列出违规的键，见契约 3.3）。
+ *   服务端用哪个字段名装这串键还没定死，所以几个常见名字都试一遍，
+ *   实在没有就退回把 `data` 本身当字符串数组读——宁可多认，不能把「是哪个键」这条信息弄丢。
+ */
+function readFailureDetails(data: unknown): string[] {
+  if (Array.isArray(data))
+    return readStringList(data)
+
+  if (!isRecord(data))
+    return []
+
+  if (Array.isArray(data.issues)) {
+    return data.issues
+      .map(issue => (isRecord(issue) ? getIssueText(issue) : ''))
+      .filter((detail): detail is string => detail.length > 0)
+  }
+
+  for (const field of failureKeyListFields) {
+    const keys = readStringList(data[field])
+    if (keys.length > 0)
+      return keys
+  }
+
+  return []
 }
 
 /**
@@ -196,6 +231,13 @@ export function readThrownFailure(error: unknown): ConfigApiFailure {
 type FailureTranslator = (key: string, options?: Record<string, unknown>) => string
 
 /**
+ * 一次最多摊开几条细项。
+ * 以前是 4 条，现在放宽到 8：受保护键被拒时这几条就是「到底哪个键」，
+ * 截断等于把最该看的信息吞了。超出的部分明说还有几条，不装作没有。
+ */
+const failureDetailLimit = 8
+
+/**
  * 拼出给用户看的那句话。
  * 顺序固定：原因 →（错误码 X）→ 细项。缺哪段就跳过哪段，**绝不补一句含糊话**。
  */
@@ -212,8 +254,11 @@ export function formatConfigFailure(failure: ConfigApiFailure, t: FailureTransla
   if (failure.code !== null && failure.code !== undefined)
     segments.push(t('errors.codeSuffix', { code: String(failure.code) }))
 
-  if (failure.details.length > 0)
-    segments.push(failure.details.slice(0, 4).join(' / '))
+  if (failure.details.length > 0) {
+    segments.push(failure.details.slice(0, failureDetailLimit).join(' / '))
+    if (failure.details.length > failureDetailLimit)
+      segments.push(t('errors.moreDetails', { count: failure.details.length - failureDetailLimit }))
+  }
 
   return segments.join(' ')
 }

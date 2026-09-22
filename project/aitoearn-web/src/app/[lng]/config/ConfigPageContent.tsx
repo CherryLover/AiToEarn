@@ -5,18 +5,25 @@
  * 外壳和交互约定照设置页（`app/[lng]/settings`）抄——左边分区导航、右边内容区、
  * 显式保存按钮、反馈走 toast、手机宽度下导航换行不做横向滚动。
  *
- * **功能一个字没动**：读取、校验、保存、重启、恢复检查走的还是同一套接口和同一套流程。
+ * ## 这一版：接上运行时覆盖层
  *
- * 需要知道但这一轮不修的事：当前部署把配置文件以只读方式挂进容器（`:ro`），
- * 所以保存必然失败；就算写进去了，下次部署也会被 `.env` + overrides 重新渲染覆盖。
- * 这是两套配置模型打架，要认真设计权限和审计才能解，不在这一轮范围里。
- * 这一轮能做的是**别把失败原因藏起来**——见 `config.utils.ts` 里 `formatConfigFailure` 的说明。
+ * 之前这个页面的保存是**必然失败**的——配置文件以只读方式挂进容器（`:ro`），服务端写不动。
+ * 现在服务端把保存改成写 `config.override.yaml`（挂在数据盘上，重新部署不会被覆盖），
+ * 于是页面要把这套分层讲清楚（契约 `docs/rebuild/contract-runtime-config.md` 第三节）：
+ *
+ * - 顶上一句话说明这个页面和 `.env` 的分工，别让人以为这里什么都能改；
+ * - `protectedPaths` 里的项**直接禁用**，不让人填完再被服务端拒；
+ * - `overriddenPaths` 里的项挂一个「运行时」小徽标，一眼看出哪些值是在网页上改过的；
+ * - 保存失败照旧把服务端原话摆出来，尤其是受保护键被拒那条要指名道姓——
+ *   见 `config.utils.ts` 里 `formatConfigFailure` 的说明。
+ *
+ * 服务端可能还没升级，那两个字段会缺；缺了就当空数组，页面退回原来的样子，不许白屏。
  */
 'use client'
 
 import type { ConfigApiFailure } from './config.utils'
 import type { ConfigEditorStatus, ConfigPath, ConfigPathFocusRequest, ConfigValue } from './types'
-import { AlertCircle, Bot, Braces, CheckCircle2, FileSliders, Loader2, RefreshCw, RotateCcw, Save, Server, ShieldCheck, SlidersHorizontal } from 'lucide-react'
+import { AlertCircle, Bot, Braces, CheckCircle2, FileSliders, Layers, Loader2, RefreshCw, RotateCcw, Save, Server, ShieldCheck, SlidersHorizontal } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   checkConfigEditorConfigReadyApi,
@@ -37,6 +44,7 @@ import { cn } from '@/utils/className'
 import { toast } from '@/utils/ui/toast'
 import { ConfigFormPanel } from './components/ConfigFormPanel'
 import { ConfigJsonPanel } from './components/ConfigJsonPanel'
+import { ConfigOverrideProvider } from './components/ConfigOverrideContext'
 import { ConfigCard, ConfigSectionShell } from './components/ConfigSection'
 import { ConfigSectionNav } from './components/ConfigSectionNav'
 import {
@@ -48,6 +56,11 @@ import {
   readThrownFailure,
   stripInsertedRelayPlaceholder,
 } from './config.utils'
+import {
+  createConfigOverrideMeta,
+  findProtectedConfigChanges,
+  normalizeConfigPathList,
+} from './utils/configOverride'
 import { isRecord, joinPath, setValueAtPath, stableStringify } from './utils/configPath'
 import { buildConfigSections } from './utils/configSections'
 
@@ -120,6 +133,10 @@ export function ConfigPageContent() {
   const [healthAttempts, setHealthAttempts] = useState(0)
   const [serviceStatus, setServiceStatus] = useState<ConfigEditorStatus['service']>('unknown')
   const [serviceTarget, setServiceTarget] = useState(ConfigEditorServiceTarget.Server)
+  /** 哪些键路径当前来自运行时覆盖层。老服务端不给这个字段，那就是空的 */
+  const [overriddenPaths, setOverriddenPaths] = useState<string[]>([])
+  /** 顶层受保护键：只能从 .env 改，页面上一律禁用 */
+  const [protectedPaths, setProtectedPaths] = useState<string[]>([])
   const [insertedRelayPath, setInsertedRelayPath] = useState<ConfigPath | null>(null)
   const [editMode, setEditMode] = useState<ConfigEditMode>('visual')
   const [jsonText, setJsonText] = useState('')
@@ -161,6 +178,11 @@ export function ConfigPageContent() {
   const sections = useMemo(
     () => config ? buildConfigSections(config, originalConfig, serviceTarget, t) : [],
     [config, originalConfig, serviceTarget, t],
+  )
+
+  const overrideMeta = useMemo(
+    () => createConfigOverrideMeta({ overriddenPaths, protectedPaths }),
+    [overriddenPaths, protectedPaths],
   )
 
   // 分区列表是配置加载完才有的，所以 hash 只能等在这里认领
@@ -246,6 +268,9 @@ export function ConfigPageContent() {
       setJsonScrollTop(0)
       setInsertedRelayPath(normalizedConfig.insertedRelayPath)
       setFormat(response.data.format)
+      // 老服务端没有这两个字段，`normalizeConfigPathList` 会把 undefined 收成空数组
+      setOverriddenPaths(normalizeConfigPathList(response.data.overriddenPaths))
+      setProtectedPaths(normalizeConfigPathList(response.data.protectedPaths))
       setServiceStatus('running')
       setHealthAttempts(0)
     }
@@ -273,6 +298,8 @@ export function ConfigPageContent() {
     setJsonText('')
     setInsertedRelayPath(null)
     setFormat(undefined)
+    setOverriddenPaths([])
+    setProtectedPaths([])
     setHealthAttempts(0)
     setServiceStatus('unknown')
     setEditMode('visual')
@@ -440,11 +467,35 @@ export function ConfigPageContent() {
     }
   }, [getEditableConfig, insertedRelayPath, reportFailure, serviceTarget, t])
 
+  /**
+   * 保存成功后把覆盖层清单刷一遍。
+   * 刚保存的那几个字段现在才算「来自覆盖层」，不重新问一次，徽标就会慢一拍。
+   * 拿不到就算了：值已经存进去了，下次加载自然对上，不该为一个徽标报错。
+   */
+  const refreshOverridePaths = useCallback(async () => {
+    const response = await getConfigEditorConfigApi(serviceTarget, true).catch(() => null)
+    if (!response || response.code !== 0 || !response.data)
+      return
+
+    setOverriddenPaths(normalizeConfigPathList(response.data.overriddenPaths))
+    setProtectedPaths(normalizeConfigPathList(response.data.protectedPaths))
+  }, [serviceTarget])
+
   const saveConfig = useCallback(async (action: LoadingAction = 'save') => {
     const editableConfig = getEditableConfig()
     if (!editableConfig)
       return false
     const submittableConfig = stripInsertedRelayPlaceholder(editableConfig, insertedRelayPath, serviceTarget)
+
+    // 可视化表单里受保护字段是禁用的，但 JSON 模式是一整块文本，手改一个 auth.secret 完全可能。
+    // 与其提交完等服务端回 ConfigOverrideProtectedKey，不如现在就指名道姓说是哪个键。
+    const protectedChanges = findProtectedConfigChanges(submittableConfig, originalConfig, protectedPaths)
+    if (protectedChanges.length > 0) {
+      const description = t('errors.protectedKeyRejected', { keys: protectedChanges.join(', ') })
+      setError({ title: t('errors.saveFailed'), description })
+      toast.error(`${t('errors.saveFailed')}：${description}`)
+      return false
+    }
 
     setLoadingAction(action)
     setError(null)
@@ -467,6 +518,7 @@ export function ConfigPageContent() {
       setOriginalConfig(normalizedConfig.config)
       setJsonText(formatJsonConfig(normalizedConfig.config))
       setInsertedRelayPath(normalizedConfig.insertedRelayPath)
+      await refreshOverridePaths()
       if (action === 'save') {
         setSuccessMessage(t('messages.saveSuccess'))
         toast.success(t('messages.saveSuccess'))
@@ -481,7 +533,17 @@ export function ConfigPageContent() {
       if (action === 'save')
         setLoadingAction(null)
     }
-  }, [getEditableConfig, insertedRelayPath, reportFailure, serviceTarget, t, validateConfig])
+  }, [
+    getEditableConfig,
+    insertedRelayPath,
+    originalConfig,
+    protectedPaths,
+    refreshOverridePaths,
+    reportFailure,
+    serviceTarget,
+    t,
+    validateConfig,
+  ])
 
   const waitForHealth = useCallback(async () => {
     setServiceStatus('restarting')
@@ -566,22 +628,25 @@ export function ConfigPageContent() {
       )
     }
 
+    // 覆盖层状态只有递归字段树用得上，所以 Provider 就套在这儿，不去动整页的缩进
     return (
-      <ConfigFormPanel
-        section={activeSection}
-        sections={sections}
-        config={config}
-        originalConfig={originalConfig}
-        disabled={disabled}
-        focusRequest={visualFocusRequest}
-        highlightedPathKey={highlightedVisualPathKey}
-        searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
-        onSectionSelect={handleSectionSelect}
-        onFocusRequestHandled={handleVisualFocusRequestHandled}
-        onValueChange={handleValueChange}
-        onNavigateToJson={handleNavigateToJson}
-      />
+      <ConfigOverrideProvider meta={overrideMeta}>
+        <ConfigFormPanel
+          section={activeSection}
+          sections={sections}
+          config={config}
+          originalConfig={originalConfig}
+          disabled={disabled}
+          focusRequest={visualFocusRequest}
+          highlightedPathKey={highlightedVisualPathKey}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          onSectionSelect={handleSectionSelect}
+          onFocusRequestHandled={handleVisualFocusRequestHandled}
+          onValueChange={handleValueChange}
+          onNavigateToJson={handleNavigateToJson}
+        />
+      </ConfigOverrideProvider>
     )
   }
 
@@ -604,6 +669,33 @@ export function ConfigPageContent() {
           )}
         </div>
       </header>
+
+      {/*
+        分工说明：这个页面改的是运行时覆盖层，不是全部配置。
+        不写在这儿，用户点开一看有些字段是灰的，只会以为页面坏了。
+
+        只在服务端确实给了覆盖层清单时才说这句话。老服务端不分层，
+        那时候说「保存进覆盖层、重新部署不会被冲掉」就是假话——宁可不说。
+      */}
+      {overrideMeta.available && (
+        <Alert className="mt-5 border-border bg-muted/40">
+          <Layers className="h-4 w-4 text-muted-foreground" />
+          <div className="min-w-0">
+            <AlertTitle>{t('override.introTitle')}</AlertTitle>
+            <AlertDescription className="text-muted-foreground">
+              <p>{t('override.introDescription')}</p>
+              {overrideMeta.protectedPaths.length > 0 && (
+                <p className="mt-1.5">
+                  {t('override.protectedListLabel')}
+                  <span className="break-all font-mono text-xs">
+                    {overrideMeta.protectedPaths.join(', ')}
+                  </span>
+                </p>
+              )}
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={serviceTarget} onValueChange={handleServiceTargetChange}>

@@ -6,7 +6,7 @@
   },
   "page": {
     "title": "配置管理",
-    "subtitle": "查看和修改服务运行配置，一屏一个分区，保存后需要重启服务才生效。"
+    "subtitle": "查看和修改服务运行配置，一屏一个分区。保存后多数项要点重启才生效，AI 上游那一段不用重启。"
   },
   "sections": {
     "relay": {
@@ -228,6 +228,16 @@
     "modified": "已修改",
     "notRecommended": "不推荐"
   },
+  "override": {
+    "introTitle": "这个页面改的是运行时覆盖层",
+    "introDescription": "在这里保存的改动写进运行时覆盖层文件（config.override.yaml），重新部署不会被冲掉。标着「部署配置」的项不在这里改：那些要改服务器上的 .env，再重新部署。",
+    "protectedListLabel": "只能从 .env 改的项：",
+    "runtimeBadge": "运行时",
+    "runtimeBadgeCount": "运行时 {{count}}",
+    "runtimeBadgeTitle": "这个值来自运行时覆盖层，也就是在网页上改过的。",
+    "protectedBadge": "部署配置",
+    "protectedHint": "这一项只能在部署环境改：改服务器上的 .env 再重新部署，运行时覆盖不接受它。"
+  },
   "actions": {
     "reload": "重新加载",
     "validate": "校验配置",
@@ -278,7 +288,9 @@
     "jsonRootObject": "根节点必须是 JSON 对象。",
     "noResponse": "请求没有到达服务端，或者服务端没有响应。",
     "serverNoReason": "服务端只回了错误码，没有说明原因。",
-    "codeSuffix": "（错误码 {{code}}）"
+    "codeSuffix": "（错误码 {{code}}）",
+    "protectedKeyRejected": "这些项只能在部署环境改，没有提交：{{keys}}",
+    "moreDetails": "（另有 {{count}} 条）"
   },
   "common": {
     "enabled": "已启用",

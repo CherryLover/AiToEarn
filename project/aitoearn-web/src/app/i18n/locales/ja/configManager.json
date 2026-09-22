@@ -6,7 +6,7 @@
   },
   "page": {
     "title": "設定管理",
-    "subtitle": "サービスの実行時設定を 1 画面に 1 セクションずつ表示・編集します。保存した変更はサービス再起動後に有効になります。"
+    "subtitle": "サービスの実行時設定を 1 画面 1 セクションで確認・変更します。多くの項目は再起動後に反映されますが、AI 上流の設定は再起動なしで反映されます。"
   },
   "sections": {
     "relay": {
@@ -228,6 +228,16 @@
     "modified": "変更あり",
     "notRecommended": "非推奨"
   },
+  "override": {
+    "introTitle": "このページで変更するのは実行時オーバーライドです",
+    "introDescription": "ここで保存した変更は実行時オーバーライドファイル（config.override.yaml）に書き込まれ、再デプロイしても消えません。「デプロイ設定」と表示された項目はここでは変更できません。サーバーの .env を変更して再デプロイしてください。",
+    "protectedListLabel": ".env でしか変更できない項目：",
+    "runtimeBadge": "実行時",
+    "runtimeBadgeCount": "実行時 {{count}}",
+    "runtimeBadgeTitle": "この値は実行時オーバーライドから来ています。つまりこの画面で変更されたものです。",
+    "protectedBadge": "デプロイ設定",
+    "protectedHint": "この項目はデプロイ環境でしか変更できません。サーバーの .env を変更して再デプロイしてください。実行時オーバーライドは受け付けられません。"
+  },
   "actions": {
     "reload": "Reload",
     "validate": "Validate",
@@ -278,7 +288,9 @@
     "jsonRootObject": "ルート値は JSON オブジェクトである必要があります。",
     "noResponse": "リクエストがサーバーに届かなかったか、サーバーが応答しませんでした。",
     "serverNoReason": "サーバーはエラーコードのみを返し、理由を示しませんでした。",
-    "codeSuffix": "（エラーコード {{code}}）"
+    "codeSuffix": "（エラーコード {{code}}）",
+    "protectedKeyRejected": "次の項目はデプロイ環境でしか変更できないため、送信しませんでした：{{keys}}",
+    "moreDetails": "（ほか {{count}} 件）"
   },
   "common": {
     "enabled": "有効",

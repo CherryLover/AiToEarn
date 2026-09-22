@@ -6,7 +6,7 @@
   },
   "page": {
     "title": "Configuration",
-    "subtitle": "View and edit the service runtime configuration, one section at a time. Saved changes take effect after the service restarts."
+    "subtitle": "View and edit the service runtime configuration, one section at a time. Most changes take effect after a restart; the AI upstream section applies immediately."
   },
   "sections": {
     "relay": {
@@ -228,6 +228,16 @@
     "modified": "Modified",
     "notRecommended": "Not recommended"
   },
+  "override": {
+    "introTitle": "This page edits the runtime override layer",
+    "introDescription": "Changes saved here are written to the runtime override file (config.override.yaml) and survive a redeploy. Items marked \"Deployment\" are not changed here: edit the .env on the server and redeploy.",
+    "protectedListLabel": "Changeable only through .env: ",
+    "runtimeBadge": "Runtime",
+    "runtimeBadgeCount": "Runtime {{count}}",
+    "runtimeBadgeTitle": "This value comes from the runtime override layer, so it was changed from this page.",
+    "protectedBadge": "Deployment",
+    "protectedHint": "This setting can only be changed in the deployment environment: edit the .env on the server and redeploy. Runtime overrides are rejected for it."
+  },
   "actions": {
     "reload": "Reload",
     "validate": "Validate",
@@ -278,7 +288,9 @@
     "jsonRootObject": "The root value must be a JSON object.",
     "noResponse": "The request never reached the server, or the server did not respond.",
     "serverNoReason": "The server returned an error code without a reason.",
-    "codeSuffix": "(error code {{code}})"
+    "codeSuffix": "(error code {{code}})",
+    "protectedKeyRejected": "These settings can only be changed in the deployment environment, so they were not submitted: {{keys}}",
+    "moreDetails": "({{count}} more)"
   },
   "common": {
     "enabled": "Enabled",
