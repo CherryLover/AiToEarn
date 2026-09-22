@@ -1,6 +1,5 @@
 import { dir } from 'i18next'
 import { headers } from 'next/headers'
-import Script from 'next/script'
 import { useTranslation } from '@/app/i18n'
 import { getHreflang } from '@/app/i18n/languageConfig'
 import { fallbackLng, languages } from '@/app/i18n/settings'
@@ -56,9 +55,6 @@ export default async function RootLayout({
 }>) {
   const { lng } = await params
   const autoLoginToken = process.env.AUTO_LOGIN_TOKEN?.trim() || undefined
-  // 推广返佣脚本的站点 ID。自部署一般不用返佣，没填就一行脚本都不插——
-  // `r.wdfl.co` 在国内连不上，插了浏览器会一直等它，标签页转圈停不下来
-  const rewardfulId = process.env.REWARDFUL_ID?.trim() || undefined
 
   return (
     <html lang={lng} dir={dir(lng)} suppressHydrationWarning>
@@ -74,19 +70,6 @@ export default async function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        {/* Rewardful 推广返佣脚本：只有配了 REWARDFUL_ID 才插 */}
-        {rewardfulId && (
-          <>
-            <Script
-              id="rewardful-init"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`,
-              }}
-            />
-            <Script src="https://r.wdfl.co/rw.js" data-rewardful={rewardfulId} strategy="afterInteractive" />
-          </>
-        )}
         <Providers lng={lng} autoLoginToken={autoLoginToken}>
           {/* 全局频道管理弹框 */}
           <ChannelManager />

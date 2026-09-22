@@ -5,7 +5,7 @@
  * **别往这里加会发外部请求的 Provider。** 这里原本挂着 `GoogleOAuthProvider`，
  * 它一挂载就去加载 `accounts.google.com/gsi/client`；那个域名在国内连不上，
  * 浏览器一直等它，标签页的转圈就停不下来——这正是「主站一直 loading 却没内容」的来源。
- * 现在它跟着 Google 按钮走（`LoginContent/GoogleAuthScope.tsx`），谁用谁包。
+ * 自部署只用 Pocket ID（OIDC）登录，Google 登录整条链路已经删掉了。
  */
 
 'use client'

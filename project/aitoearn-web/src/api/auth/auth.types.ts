@@ -1,65 +1,9 @@
-import type { UserInfo } from '@/store/user'
-
-// Source: types/auth.ts
-
 /**
- * SendEmailCodeParams 请求参数。
+ * 认证相关类型
+ *
+ * 自部署只走 Pocket ID（OIDC）登录。邮箱/手机验证码登录和 Google 登录的参数类型
+ * 随对应表单和接口一起删了，别再照着上游补回来。
  */
-export interface SendEmailCodeParams {
-  mail: string
-}
-
-/**
- * EmailCodeLoginParams 请求参数。
- */
-export interface EmailCodeLoginParams {
-  mail: string
-  code: string
-  inviteCode?: string
-}
-
-/**
- * SendPhoneCodeParams 请求参数。
- */
-export interface SendPhoneCodeParams {
-  phone: string
-}
-
-/**
- * PhoneCodeLoginParams 请求参数。
- */
-export interface PhoneCodeLoginParams {
-  phone: string
-  code: string
-}
-
-/**
- * CodeLoginResponse 响应数据。
- */
-export interface CodeLoginResponse {
-  token?: string
-  userInfo?: UserInfo
-}
-
-// Source: auth/auth.api.ts inline types
-// Source: apiReq.ts
-
-/**
- * LoginResponse 响应数据。
- */
-export interface LoginResponse {
-  token?: string
-  userInfo?: UserInfo
-}
-
-/**
- * GoogleLoginParams 请求参数。
- */
-export interface GoogleLoginParams {
-  clientId: string
-  credential: string
-  placeId?: string
-}
 
 /**
  * 鉴权请求选项。
