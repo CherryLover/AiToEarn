@@ -1114,8 +1114,9 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
   [ResponseCode.CreatorNoteRowAdoptFailed]: {
     'en-US': 'Could not turn this collected row into a post record',
     'zh-CN': '把这一行建成发布记录失败了',
+  },
 
-  // 20700 (config override)
+  // 20800 (config override)
   [ResponseCode.ConfigOverrideProtectedKey]: {
     'en-US': 'This setting can only be changed through the deployment environment, not at runtime',
     'zh-CN': '这一项只能在部署环境里改（.env 加重新部署），不接受运行时覆盖',
@@ -1137,7 +1138,7 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'zh-CN': '覆盖文件的格式不支持',
   },
 
-  // 20750 (system readiness)
+  // 20850 (system readiness)
   [ResponseCode.SystemReadinessProbeFailed]: {
     'en-US': 'Readiness probe could not be completed',
     'zh-CN': '就绪检查没跑完',

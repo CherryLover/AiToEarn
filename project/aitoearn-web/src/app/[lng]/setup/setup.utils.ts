@@ -184,7 +184,7 @@ export function countBlockingItems(items: ReadinessItemVo[]): number {
 
 /**
  * 保存失败时用哪句文案。
- * 命中 20700 段就用本地人话，没命中返回 null——调用方要显示服务端原始 message，
+ * 命中 20800 段就用本地人话，没命中返回 null——调用方要显示服务端原始 message，
  * **不要包装成「稍后重试」**：真实原因比安慰话有用。
  */
 export function getConfigOverrideErrorKey(code?: string | number): string | null {

@@ -190,7 +190,7 @@ server 用现成的 `Bearer internalToken` + axios 那套调。**探测就是探
 
 ## 五、错误码
 
-`20700-20749` 运行时配置覆盖，`20750-20799` 就绪检查。已在 `response-code.enum.ts`
+`20800-20849` 运行时配置覆盖，`20850-20899` 就绪检查。已在 `response-code.enum.ts`
 和 `i18n/messages.ts` 里建好，直接用，**不要自己新增编号**。
 
 ## 六、验收
