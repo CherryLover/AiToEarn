@@ -9,6 +9,7 @@ import { MainContent } from '@/app/layout/MainContent'
 import MobileNav from '@/app/layout/MobileNav'
 import { ChannelManager } from '@/components/ChannelManager'
 import { Providers } from '../layout/Providers'
+import { ReadinessBanner } from './setup/components/ReadinessBanner'
 import '../globals.css'
 
 export const dynamic = 'force-dynamic'
@@ -88,8 +89,12 @@ export default async function RootLayout({
           <div className="flex h-screen w-full">
             {/* 桌面端侧边栏 */}
             <LayoutSidebar />
-            {/* 主内容区域 - 根据页面类型动态控制 pt-14 */}
-            <MainContent>{children}</MainContent>
+            {/*
+              主内容区域 - 根据页面类型动态控制 pt-14
+              banner 位挂就绪检查横幅：进站在这里拉一次 /system/readiness，
+              有必需项没通过就在内容上方说清楚是哪个功能坏了。未登录时它自己什么都不渲染。
+            */}
+            <MainContent banner={<ReadinessBanner />}>{children}</MainContent>
           </div>
         </Providers>
       </body>

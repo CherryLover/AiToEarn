@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "title": "Geführte Einrichtung",
+    "description": "Richten Sie die erforderliche Konfiguration Schritt für Schritt ein, damit KI-Richtungsanalyse, Asset-Erzeugung und Dateispeicher funktionieren.",
+    "keywords": "geführte Einrichtung,Bereitschaftsprüfung,vorgelagerte KI,Objektspeicher"
+  },
+  "page": {
+    "title": "Geführte Einrichtung",
+    "subtitle": "Jeder Punkt unten muss eingerichtet sein, damit die zugehörige Funktion läuft. Bereits bestandene Schritte sind eingeklappt."
+  },
+  "login": {
+    "title": "Zuerst anmelden",
+    "hint": "Für die Konfigurationsprüfung müssen Sie angemeldet sein.",
+    "action": "Anmelden"
+  },
+  "load": {
+    "failedTitle": "Die Prüfung ist nicht gelaufen",
+    "failedDesc": "Das Ergebnis konnte nicht gelesen werden – der Dienst startet möglicherweise noch. Versuchen Sie es gleich noch einmal.",
+    "retry": "Erneut prüfen"
+  },
+  "summary": {
+    "blocking": "Noch {{count}} Punkte einzurichten",
+    "optionalLeft": "{{count}} weitere sind optional",
+    "allDone": "Alles Erforderliche funktioniert"
+  },
+  "status": {
+    "ok": "Funktioniert",
+    "missing": "Nicht eingerichtet",
+    "error": "Eingerichtet, funktioniert aber nicht",
+    "optional": "Optional",
+    "skipped": "Übersprungen"
+  },
+  "banner": {
+    "action": "Einrichten",
+    "dismiss": "Später",
+    "more": "{{count}} weitere Punkte sind ebenfalls nicht eingerichtet."
+  },
+  "step": {
+    "label": "Schritt {{index}}",
+    "what": "Worum es geht",
+    "impact": "Was ohne diesen Punkt kaputt ist",
+    "where": "Wo Sie das bekommen",
+    "detail": "Begründung des Servers"
+  },
+  "item": {
+    "agentUpstream": {
+      "title": "Vorgelagerte KI",
+      "broken": "Die KI-Richtungsanalyse funktioniert nicht: Die vorgelagerte KI ist nicht eingerichtet",
+      "what": "Funktionen wie „KI Richtungen herausarbeiten lassen“ leiten die Anfrage an einen vorgelagerten KI-Dienst weiter. Hier stehen dessen Adresse und Schlüssel.",
+      "impact": "Ohne diesen Punkt liefert „KI Richtungen herausarbeiten lassen“ nur Internal server error. Der im Repository mitgelieferte Schlüssel ist ein Platzhalter, den die Gegenstelle immer ablehnt.",
+      "where": "Legen Sie in der Konsole Ihres Modellanbieters einen API-Schlüssel an und tragen Sie dessen messages-Endpunkt und den Schlüssel hier ein. Bei eigenem Gateway nehmen Sie stattdessen dessen Adresse."
+    },
+    "aiChatModels": {
+      "title": "Kanal für Chat-Modelle",
+      "broken": "KI-Chat und Asset-Erzeugung funktionieren nicht: Der Modellkanal ist nicht eingerichtet",
+      "what": "KI-Chat, Kommentarantworten und KI-erzeugte Assets laufen über diesen Kanal. Die Modellliste liegt dem Repository bei und muss selten geändert werden – der Schlüssel schon.",
+      "impact": "Ohne diesen Punkt bricht jede Seite mit KI ab oder lädt endlos.",
+      "where": "Holen Sie sich einen API-Schlüssel aus derselben Anbieterkonsole. Für den offiziellen Endpunkt lassen Sie die Adresse stehen, sonst tragen Sie Ihr eigenes Gateway ein."
+    },
+    "assets": {
+      "title": "Objektspeicher",
+      "broken": "Bilder und Videos lassen sich nicht speichern: Der Objektspeicher ist nicht eingerichtet",
+      "what": "Profilbilder, Assets und alles von der KI Erzeugte liegen im Objektspeicher.",
+      "impact": "Ohne diesen Punkt schlagen Uploads fehl, und bereits erzeugte Assets lassen sich nicht öffnen.",
+      "where": "Dieser Punkt gehört zum Fundament und lässt sich nur in der .env des Servers ändern (die ASSETS_-Variablen), danach muss das Deploy-Skript erneut laufen."
+    },
+    "projectsRoot": {
+      "title": "Wurzelverzeichnis der Projektdateien",
+      "broken": "Projektdateien lassen sich nicht lesen: Das Wurzelverzeichnis ist nicht eingerichtet",
+      "what": "Alle Dateien eines Projekts liegen unter diesem Verzeichnis auf dem Server.",
+      "impact": "Fehlt das Verzeichnis oder kann der Container nicht hineinschreiben, lassen sich Projektdateien weder öffnen noch speichern.",
+      "where": "Ebenfalls nur über die .env. Stellen Sie sicher, dass das Verzeichnis wirklich in den Container eingehängt und beschreibbar ist."
+    },
+    "notify": {
+      "title": "Benachrichtigungskanal",
+      "broken": "Es kommen keine Benachrichtigungen an: Der Benachrichtigungskanal ist nicht eingerichtet",
+      "what": "Schickt eine Push-Nachricht auf Ihr Telefon, wenn eine Aufgabe oder eine Asset-Erzeugung fertig ist.",
+      "impact": "Sonst geht nichts kaputt – Sie erfahren nur nicht, wann etwas fertig ist.",
+      "where": "Ihre eigene Push-Adresse tragen Sie unter „Einstellungen – Benachrichtigungen“ ein. Der serverweite Ersatzkanal steht in der .env des Servers."
+    },
+    "unknown": {
+      "title": "{{key}}",
+      "broken": "Eine Prüfung schlägt fehl: {{key}}",
+      "what": "Diese Prüfung wurde serverseitig ergänzt; die Weboberfläche hat dafür noch keine eigene Beschreibung.",
+      "impact": "Solange sie fehlschlägt, funktioniert die zugehörige Funktion möglicherweise nicht richtig.",
+      "where": "Sie entspricht {{path}} in der Konfiguration und ist auf der Konfigurationsseite zu finden."
+    }
+  },
+  "field": {
+    "agent": {
+      "baseUrl": {
+        "label": "Endpunkt der Gegenstelle",
+        "desc": "Bis zum messages-Endpunkt eintragen, nicht nur die Domain.",
+        "placeholder": "https://ihr-gateway/v1/messages"
+      },
+      "apiKey": {
+        "label": "Schlüssel der Gegenstelle",
+        "desc": "Der API-Schlüssel Ihres Anbieters. Nach dem Speichern wird er nicht mehr angezeigt."
+      },
+      "defaultModel": {
+        "label": "Standardmodell",
+        "desc": "Wird verwendet, wenn kein Modell angegeben ist. Nehmen Sie den Modellnamen genau so, wie ihn Ihr Anbieter dokumentiert.",
+        "placeholder": "Modellname aus der Anbieterdokumentation"
+      }
+    },
+    "ai": {
+      "openai": {
+        "apiKey": {
+          "label": "Kanalschlüssel",
+          "desc": "Der API-Schlüssel für Chat und Asset-Erzeugung. Nach dem Speichern wird er nicht mehr angezeigt."
+        },
+        "baseUrl": {
+          "label": "Kanaladresse",
+          "desc": "Für den offiziellen Endpunkt den Standard stehen lassen; nur bei eigenem Gateway ändern.",
+          "placeholder": "https://ihr-gateway"
+        }
+      }
+    },
+    "generic": {
+      "label": "{{path}}",
+      "desc": "Entspricht {{path}} in der Konfiguration."
+    }
+  },
+  "secret": {
+    "configured": "Bereits gesetzt. Leer lassen heißt unverändert; ein neuer Wert überschreibt ihn.",
+    "empty": "Noch nicht gesetzt.",
+    "placeholderSet": "Leer lassen, um den Schlüssel zu behalten",
+    "placeholderEmpty": "Schlüssel einfügen"
+  },
+  "form": {
+    "required": "Dieses Feld ist erforderlich"
+  },
+  "actions": {
+    "save": "Speichern und prüfen",
+    "recheck": "Erneut prüfen",
+    "restart": "Dienst neu starten",
+    "skip": "Diesen Punkt vorerst überspringen",
+    "undoSkip": "Überspringen rückgängig machen",
+    "openConfig": "Konfigurationsseite öffnen",
+    "openNotifySettings": "In den Einstellungen eintragen",
+    "backHome": "Zurück zur Startseite"
+  },
+  "save": {
+    "success": "Gespeichert",
+    "hotHint": "Dieser Punkt wirkt sofort, ein Neustart ist nicht nötig.",
+    "restartHint": "Gespeichert. Dieser Punkt wirkt erst nach einem Neustart des Dienstes.",
+    "error": {
+      "failed": "Speichern fehlgeschlagen",
+      "loadConfig": "Die aktuelle Konfiguration lässt sich nicht lesen – prüfen Sie, ob der Dienst erreichbar ist.",
+      "protectedKey": "Dieser Punkt lässt sich nur in der .env des Servers ändern; die Overlay-Ebene zur Laufzeit lehnt ihn ab.",
+      "writeFailed": "Die Konfigurationsdatei ließ sich nicht schreiben. Prüfen Sie, ob die Overlay-Datei beschreibbar eingehängt ist.",
+      "readFailed": "Die vorhandene Overlay-Datei ließ sich nicht lesen – ihr Format ist möglicherweise beschädigt.",
+      "invalid": "Der Wert besteht die Konfigurationsprüfung nicht. Gleichen Sie ihn mit den Hinweisen oben ab.",
+      "unsupportedFormat": "Der Server kennt die Dateiendung der Overlay-Datei nicht; unterstützt werden yaml, yml und json."
+    }
+  },
+  "restart": {
+    "success": "Der Dienst startet neu. Prüfen Sie in ein paar Sekunden erneut.",
+    "failed": "Der Neustart hat nicht geklappt"
+  },
+  "recheck": {
+    "passed": "Dieser Punkt funktioniert jetzt",
+    "failed": "Schlägt weiterhin fehl – der Grund steht unten.",
+    "failedNoDetail": "Schlägt weiterhin fehl."
+  },
+  "manual": {
+    "title": "Dieser Punkt lässt sich nur auf dem Server ändern",
+    "desc": "Er gehört zum Fundament, deshalb nimmt ihn die Overlay-Ebene zur Laufzeit nicht an. Ändern Sie die .env, lassen Sie das Deploy-Skript erneut laufen und drücken Sie dann hier „Erneut prüfen“."
+  },
+  "notEditable": {
+    "title": "Dieser Punkt lässt sich hier nicht eintragen",
+    "desc": "Sein Wert ist eine Liste, keine einzelne Zeile – ein Textfeld kann ihn nicht bearbeiten. Ändern Sie ihn auf der Konfigurationsseite."
+  },
+  "skip": {
+    "hint": "Dieser Punkt ist optional – Sie können ihn überspringen und später nachholen.",
+    "done": "Übersprungen. Er hält die anderen Schritte nicht auf."
+  },
+  "done": {
+    "title": "Alles eingerichtet",
+    "desc": "Alles Erforderliche funktioniert. Gehen Sie zurück zur Startseite und legen Sie los."
+  }
+}

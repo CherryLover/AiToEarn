@@ -33,5 +33,6 @@
   "xhsData": "AI互动",
   "groundPromotion": "地推管理",
   "settings": "设置",
-  "configManagement": "配置管理"
+  "configManagement": "配置管理",
+  "setup": "分步配置"
 }
