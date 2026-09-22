@@ -6,7 +6,7 @@
   },
   "page": {
     "title": "Konfiguration",
-    "subtitle": "Laufzeitkonfiguration des Dienstes ansehen und bearbeiten – ein Bereich pro Ansicht. Gespeicherte Änderungen werden nach einem Neustart wirksam."
+    "subtitle": "Laufzeitkonfiguration des Dienstes ansehen und ändern, ein Abschnitt pro Ansicht. Die meisten Änderungen wirken erst nach einem Neustart; der Abschnitt zum KI-Upstream greift sofort."
   },
   "sections": {
     "relay": {
@@ -228,6 +228,16 @@
     "modified": "Geändert",
     "notRecommended": "Nicht empfohlen"
   },
+  "override": {
+    "introTitle": "Diese Seite bearbeitet die Laufzeit-Überlagerung",
+    "introDescription": "Hier gespeicherte Änderungen landen in der Laufzeit-Überlagerungsdatei (config.override.yaml) und überstehen ein erneutes Deployment. Mit „Deployment“ markierte Einträge werden nicht hier geändert: Passen Sie die .env auf dem Server an und deployen Sie erneut.",
+    "protectedListLabel": "Nur über .env änderbar: ",
+    "runtimeBadge": "Laufzeit",
+    "runtimeBadgeCount": "Laufzeit {{count}}",
+    "runtimeBadgeTitle": "Dieser Wert stammt aus der Laufzeit-Überlagerung, wurde also auf dieser Seite geändert.",
+    "protectedBadge": "Deployment",
+    "protectedHint": "Diese Einstellung lässt sich nur in der Deployment-Umgebung ändern: die .env auf dem Server anpassen und erneut deployen. Laufzeit-Überlagerungen werden dafür abgelehnt."
+  },
   "actions": {
     "reload": "Reload",
     "validate": "Validate",
@@ -278,7 +288,9 @@
     "jsonRootObject": "Der Root-Wert muss ein JSON-Objekt sein.",
     "noResponse": "Die Anfrage hat den Server nicht erreicht oder der Server hat nicht geantwortet.",
     "serverNoReason": "Der Server hat nur einen Fehlercode ohne Begründung zurückgegeben.",
-    "codeSuffix": "(Fehlercode {{code}})"
+    "codeSuffix": "(Fehlercode {{code}})",
+    "protectedKeyRejected": "Diese Einstellungen lassen sich nur in der Deployment-Umgebung ändern und wurden deshalb nicht gesendet: {{keys}}",
+    "moreDetails": "({{count}} weitere)"
   },
   "common": {
     "enabled": "Aktiviert",

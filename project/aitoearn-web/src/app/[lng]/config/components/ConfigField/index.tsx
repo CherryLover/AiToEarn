@@ -14,13 +14,20 @@
  *
  * 折叠状态各节点自己记，所以「展开全部 / 收起全部」只能靠 `expandSignal` 广播（见 types）。
  *
- * **功能一行没动**：取值、改值、敏感字段遮蔽、跳 JSON、修改标记走的还是原来的逻辑。
+ * ## 运行时覆盖层
+ *
+ * 配置现在是两层的（契约 3.3 / 3.4），字段因此多了两种状态，都从 `ConfigOverrideContext` 读：
+ *
+ * - **受保护**（`protectedPaths`）：只能改 `.env` 再重新部署。**输入框直接禁用**，
+ *   不让人填完再被服务端拒；说明只在受保护子树的最外层讲一遍，免得每个字段都念一句。
+ * - **来自覆盖层**（`overriddenPaths`）：这个值是有人在网页上改过的，给一个「运行时」小徽标。
+ *   分组上显示子树里有几个这样的值，方便一眼看出哪张卡被动过。
  */
 'use client'
 
 import type { ReactNode } from 'react'
 import type { ConfigFieldProps, ConfigPath, ConfigValue } from '../../types'
-import { Braces, ChevronDown, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
+import { Braces, ChevronDown, Eye, EyeOff, Lock, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTransClient } from '@/app/i18n/client'
 import { Badge } from '@/components/ui/badge'
@@ -43,6 +50,7 @@ import {
   isSensitiveConfigPath,
 } from '../../utils/configFieldMeta'
 import { createEmptyValue, isRecord, joinPath } from '../../utils/configPath'
+import { useConfigOverrideMeta } from '../ConfigOverrideContext'
 import { ConfigCard } from '../ConfigSection'
 
 const selectOptions: Record<string, string[]> = {
@@ -77,6 +85,9 @@ export function useConfigFieldDescriptions(): Record<string, string> {
 
 const countBadgeClassName = 'h-5 shrink-0 whitespace-nowrap px-1.5 py-0 text-[11px] font-normal leading-none'
 const modifiedBadgeClassName = cn(countBadgeClassName, 'border-warning/40 bg-warning/10 text-warning-text')
+/** 「运行时」标记：看得见就行，别抢戏——所以是描边加一层浅底，不是实心块 */
+const overrideBadgeClassName = cn(countBadgeClassName, 'gap-1 border-primary/40 bg-primary/10 text-primary')
+const protectedBadgeClassName = cn(countBadgeClassName, 'gap-1 border-border bg-muted text-muted-foreground')
 /** 说明文字：和设置页 `FormDescription` 同一档，别自己另调字号 */
 const descriptionClassName = 'max-w-2xl text-[0.8rem] leading-relaxed text-muted-foreground'
 
@@ -140,6 +151,39 @@ function ModifiedBadge({ count }: { count?: number }) {
   )
 }
 
+/**
+ * 「运行时」徽标：这个值来自 `config.override.yaml`，也就是有人在网页上改过。
+ * 分组上带个数，叶子上不带——一个字段就是一个值，写「运行时 1」纯属废话。
+ */
+function OverrideBadge({ count }: { count?: number }) {
+  const { t } = useTransClient('configManager')
+
+  return (
+    <Badge variant="outline" className={overrideBadgeClassName} title={t('override.runtimeBadgeTitle')}>
+      {count !== undefined && count > 1 ? t('override.runtimeBadgeCount', { count }) : t('override.runtimeBadge')}
+    </Badge>
+  )
+}
+
+/** 「部署配置」徽标：这一项只能从 `.env` 改，页面上是只读的 */
+function ProtectedBadge() {
+  const { t } = useTransClient('configManager')
+
+  return (
+    <Badge variant="outline" className={protectedBadgeClassName} title={t('override.protectedHint')}>
+      <Lock className="size-3" aria-hidden />
+      {t('override.protectedBadge')}
+    </Badge>
+  )
+}
+
+/** 受保护字段下面那句解释。只在子树最外层、或搜索结果里出现一次 */
+function ProtectedHint() {
+  const { t } = useTransClient('configManager')
+
+  return <p className={descriptionClassName}>{t('override.protectedHint')}</p>
+}
+
 function PathJumpButton({ path, onNavigateToJson }: {
   path: ConfigPath
   onNavigateToJson: (path: ConfigPath) => void
@@ -165,7 +209,7 @@ function PathJumpButton({ path, onNavigateToJson }: {
 }
 
 /**
- * 字段的标签块：来路（只有搜索结果里才有）+ 标签 + 修改标记 + 说明。
+ * 字段的标签块：来路（只有搜索结果里才有）+ 标签 + 修改/运行时/部署标记 + 说明。
  * 和设置页一样用 `space-y-1.5` 把标签和说明收在一起。
  */
 function FieldLabelBlock({
@@ -174,6 +218,9 @@ function FieldLabelBlock({
   description,
   contextLabel,
   modified,
+  overridden,
+  protectedField,
+  showProtectedHint,
   path,
   onNavigateToJson,
 }: {
@@ -182,6 +229,9 @@ function FieldLabelBlock({
   description?: string
   contextLabel?: string
   modified: boolean
+  overridden: boolean
+  protectedField: boolean
+  showProtectedHint: boolean
   path: ConfigPath
   onNavigateToJson: (path: ConfigPath) => void
 }) {
@@ -193,9 +243,12 @@ function FieldLabelBlock({
       <div className="flex min-w-0 flex-wrap items-center gap-2">
         <Label htmlFor={inputId} className="min-w-0 break-words text-foreground">{label}</Label>
         {modified && <ModifiedBadge />}
+        {overridden && <OverrideBadge />}
+        {protectedField && <ProtectedBadge />}
         <PathJumpButton path={path} onNavigateToJson={onNavigateToJson} />
       </div>
       {description && <p className={descriptionClassName}>{description}</p>}
+      {showProtectedHint && <ProtectedHint />}
     </div>
   )
 }
@@ -215,6 +268,7 @@ function GroupShell({
   description,
   contextLabel,
   trailing,
+  notice,
   highlightClassName,
   children,
 }: {
@@ -227,6 +281,8 @@ function GroupShell({
   contextLabel?: string
   /** 标题右边：数量徽章、新增按钮之类 */
   trailing?: ReactNode
+  /** 标题下面、折叠内容外面的一句话：收起状态也看得见，受保护分组的说明放这儿 */
+  notice?: ReactNode
   highlightClassName?: string | false
   children: ReactNode
 }) {
@@ -254,6 +310,8 @@ function GroupShell({
     </div>
   )
 
+  const noticeBlock = notice ? <div className="mt-2 pl-6">{notice}</div> : null
+
   const body = (
     <CollapsibleContent>
       <div className={cn('mt-5', !isCard && 'border-l border-border pl-4 sm:pl-5')}>
@@ -270,6 +328,7 @@ function GroupShell({
           className={cn('scroll-mt-24', highlightClassName)}
         >
           {header}
+          {noticeBlock}
           {body}
         </ConfigCard>
       </Collapsible>
@@ -284,6 +343,7 @@ function GroupShell({
       className={cn('scroll-mt-24 rounded-lg', highlightClassName)}
     >
       {header}
+      {noticeBlock}
       {body}
     </Collapsible>
   )
@@ -302,6 +362,7 @@ function PrimitiveField({
 }: ConfigFieldProps) {
   const { t } = useTransClient('configManager')
   const fieldDescriptions = useConfigFieldDescriptions()
+  const overrideMeta = useConfigOverrideMeta()
   const [showSensitiveValue, setShowSensitiveValue] = useState(false)
   const label = getConfigFieldLabel(t, path, fieldKey)
   const description = getConfigFieldDescription(fieldDescriptions, path, fieldKey)
@@ -311,6 +372,12 @@ function PrimitiveField({
   const options = selectOptions[lastKey]
   const modified = isConfigValueModified(value, originalValue)
   const sensitive = isSensitiveConfigPath(path)
+  const protectedField = overrideMeta.isProtected(path)
+  const overridden = overrideMeta.isOverridden(path)
+  // 受保护的字段不让改：与其让人填完再被服务端拒，不如一开始就禁用
+  const fieldDisabled = disabled || protectedField
+  // 说明只在最外层讲一遍；搜索结果是直接跳进来的，看不到外层，所以那里也讲一遍
+  const showProtectedHint = protectedField && (overrideMeta.isProtectedRoot(path) || !!contextLabel)
 
   const labelBlock = (
     <FieldLabelBlock
@@ -319,6 +386,9 @@ function PrimitiveField({
       description={description}
       contextLabel={contextLabel}
       modified={modified}
+      overridden={overridden}
+      protectedField={protectedField}
+      showProtectedHint={showProtectedHint}
       path={path}
       onNavigateToJson={onNavigateToJson}
     />
@@ -339,7 +409,7 @@ function PrimitiveField({
           <Switch
             id={inputId}
             checked={value}
-            disabled={disabled}
+            disabled={fieldDisabled}
             aria-label={label}
             onCheckedChange={checked => onValueChange(path, checked)}
           />
@@ -362,14 +432,14 @@ function PrimitiveField({
         <NumberInput
           id={inputId}
           value={value}
-          disabled={disabled}
+          disabled={fieldDisabled}
           className="sm:max-w-xs"
           onValueChange={nextValue => onValueChange(path, nextValue ?? 0)}
         />
       )}
 
       {typeof value === 'string' && options && (
-        <Select value={value} disabled={disabled} onValueChange={nextValue => onValueChange(path, nextValue)}>
+        <Select value={value} disabled={fieldDisabled} onValueChange={nextValue => onValueChange(path, nextValue)}>
           <SelectTrigger id={inputId} className="sm:max-w-xs">
             <SelectValue />
           </SelectTrigger>
@@ -384,7 +454,7 @@ function PrimitiveField({
           <Input
             id={inputId}
             value={value}
-            disabled={disabled}
+            disabled={fieldDisabled}
             autoComplete="off"
             data-lpignore="true"
             data-form-type="other"
@@ -409,7 +479,7 @@ function PrimitiveField({
         <Textarea
           id={inputId}
           value={value}
-          disabled={disabled}
+          disabled={fieldDisabled}
           rows={3}
           className="min-h-20 max-w-3xl text-sm"
           onChange={event => onValueChange(path, event.target.value)}
@@ -420,7 +490,7 @@ function PrimitiveField({
         <Input
           id={inputId}
           value={value}
-          disabled={disabled}
+          disabled={fieldDisabled}
           className="sm:max-w-xl"
           onChange={event => onValueChange(path, event.target.value)}
         />
@@ -430,7 +500,7 @@ function PrimitiveField({
         <Input
           id={inputId}
           value=""
-          disabled={disabled}
+          disabled={fieldDisabled}
           placeholder={t('common.emptyValue')}
           className="sm:max-w-xl"
           onChange={event => onValueChange(path, event.target.value)}
@@ -537,10 +607,13 @@ function PrimitiveArrayItem({
   onRemove: () => void
 }) {
   const { t } = useTransClient('configManager')
+  const overrideMeta = useConfigOverrideMeta()
   const itemPath = [...parentPath, index]
   const pathKey = joinPath(itemPath)
   const inputId = getInputId(pathKey)
   const modified = isConfigValueModified(value, originalValue)
+  const overridden = overrideMeta.isOverridden(itemPath)
+  const fieldDisabled = disabled || overrideMeta.isProtected(itemPath)
 
   return (
     <div
@@ -561,7 +634,7 @@ function PrimitiveArrayItem({
             <Switch
               id={inputId}
               checked={value}
-              disabled={disabled}
+              disabled={fieldDisabled}
               onCheckedChange={checked => onValueChange(itemPath, checked)}
             />
             <span className="text-sm text-muted-foreground">
@@ -574,7 +647,7 @@ function PrimitiveArrayItem({
           <NumberInput
             id={inputId}
             value={value}
-            disabled={disabled}
+            disabled={fieldDisabled}
             onValueChange={nextValue => onValueChange(itemPath, nextValue ?? 0)}
           />
         )}
@@ -583,7 +656,7 @@ function PrimitiveArrayItem({
           <Input
             id={inputId}
             value={value}
-            disabled={disabled}
+            disabled={fieldDisabled}
             onChange={event => onValueChange(itemPath, event.target.value)}
           />
         )}
@@ -592,7 +665,7 @@ function PrimitiveArrayItem({
           <Input
             id={inputId}
             value=""
-            disabled={disabled}
+            disabled={fieldDisabled}
             placeholder={t('common.emptyValue')}
             onChange={event => onValueChange(itemPath, event.target.value)}
           />
@@ -600,8 +673,9 @@ function PrimitiveArrayItem({
       </div>
 
       {modified && <ModifiedBadge />}
+      {overridden && <OverrideBadge />}
       <PathJumpButton path={itemPath} onNavigateToJson={onNavigateToJson} />
-      <ArrayItemRemoveButton disabled={disabled} onRemove={onRemove} />
+      <ArrayItemRemoveButton disabled={fieldDisabled} onRemove={onRemove} />
     </div>
   )
 }
@@ -635,12 +709,15 @@ function ObjectArrayItem({
   onRemove: () => void
 }) {
   const { t } = useTransClient('configManager')
+  const overrideMeta = useConfigOverrideMeta()
   const itemPath = [...parentPath, index]
   const pathKey = joinPath(itemPath)
   const originalRecord = isRecord(originalValue) ? originalValue : {}
   const modifiedCount = countModifiedLeafFields(value, originalValue)
   const leafCount = countLeafFields(value)
   const groupChildCount = countGroupChildren(value)
+  const overriddenCount = overrideMeta.countOverridden(itemPath)
+  const fieldDisabled = disabled || overrideMeta.isProtected(itemPath)
   const fallbackTitle = t('common.arrayItem', { index: index + 1 })
   const title = getArrayItemTitle(value, fallbackTitle)
   const [open, setOpen] = useState(false)
@@ -680,11 +757,12 @@ function ObjectArrayItem({
         </CollapsibleTrigger>
         <div className="flex shrink-0 items-center gap-1.5">
           {modifiedCount > 0 && <ModifiedBadge count={modifiedCount} />}
+          {overriddenCount > 0 && <OverrideBadge count={overriddenCount} />}
           <Badge variant="outline" className={countBadgeClassName}>
             {t('panel.fieldSummary', { count: leafCount })}
           </Badge>
           <PathJumpButton path={itemPath} onNavigateToJson={onNavigateToJson} />
-          <ArrayItemRemoveButton disabled={disabled} onRemove={onRemove} />
+          <ArrayItemRemoveButton disabled={fieldDisabled} onRemove={onRemove} />
         </div>
       </div>
       <CollapsibleContent>
@@ -696,7 +774,7 @@ function ObjectArrayItem({
               fieldKey={key}
               value={itemValue}
               originalValue={originalRecord[key]}
-              disabled={disabled}
+              disabled={fieldDisabled}
               depth={depth + 1}
               siblingGroupCount={groupChildCount}
               focusPath={focusPath}
@@ -729,6 +807,7 @@ function ArrayField({
 }: ConfigFieldProps & { value: unknown[] }) {
   const { t } = useTransClient('configManager')
   const fieldDescriptions = useConfigFieldDescriptions()
+  const overrideMeta = useConfigOverrideMeta()
   const label = getConfigFieldLabel(t, path, fieldKey)
   const description = getConfigFieldDescription(fieldDescriptions, path, fieldKey)
   const pathKey = joinPath(path)
@@ -736,6 +815,10 @@ function ArrayField({
   const originalArray = Array.isArray(originalValue) ? originalValue : []
   const modifiedCount = countModifiedLeafFields(value, originalValue)
   const leafCount = countLeafFields(value)
+  const protectedField = overrideMeta.isProtected(path)
+  const overriddenCount = overrideMeta.countOverridden(path)
+  const fieldDisabled = disabled || protectedField
+  const showProtectedHint = protectedField && (overrideMeta.isProtectedRoot(path) || !!contextLabel)
   const [open, setOpen] = useState(() => resolveDefaultOpen(depth, leafCount, siblingGroupCount))
   const focusPathKey = focusPath ? joinPath(focusPath) : ''
 
@@ -759,15 +842,18 @@ function ArrayField({
       description={description}
       contextLabel={contextLabel}
       highlightClassName={getPathHighlightClassName(pathKey, highlightedPathKey)}
+      notice={showProtectedHint ? <ProtectedHint /> : undefined}
       trailing={(
         <>
           {modifiedCount > 0 && <ModifiedBadge count={modifiedCount} />}
+          {overriddenCount > 0 && <OverrideBadge count={overriddenCount} />}
+          {protectedField && <ProtectedBadge />}
           <Badge variant="secondary" className={countBadgeClassName}>
             {t('common.itemCount', { count: value.length })}
           </Badge>
           <PathJumpButton path={path} onNavigateToJson={onNavigateToJson} />
           <ArrayItemAddButton
-            disabled={disabled}
+            disabled={fieldDisabled}
             onAdd={() => onValueChange(path, [...value, createEmptyValue(sampleValue)])}
           />
         </>
@@ -793,7 +879,7 @@ function ArrayField({
                       index={index}
                       value={item}
                       originalValue={originalArray[index]}
-                      disabled={disabled}
+                      disabled={fieldDisabled}
                       depth={depth + 1}
                       focusPath={focusPath}
                       highlightedPathKey={highlightedPathKey}
@@ -813,7 +899,7 @@ function ArrayField({
                       index={index}
                       value={item}
                       originalValue={originalArray[index]}
-                      disabled={disabled}
+                      disabled={fieldDisabled}
                       highlightedPathKey={highlightedPathKey}
                       onValueChange={onValueChange}
                       onNavigateToJson={onNavigateToJson}
@@ -829,7 +915,7 @@ function ArrayField({
                     fieldKey={`${fieldKey}.${index}`}
                     value={item}
                     originalValue={originalArray[index]}
-                    disabled={disabled}
+                    disabled={fieldDisabled}
                     depth={depth + 1}
                     focusPath={focusPath}
                     highlightedPathKey={highlightedPathKey}
@@ -862,6 +948,7 @@ function ObjectField({
 }: ConfigFieldProps & { value: Record<string, unknown> }) {
   const { t } = useTransClient('configManager')
   const fieldDescriptions = useConfigFieldDescriptions()
+  const overrideMeta = useConfigOverrideMeta()
   const label = getConfigFieldLabel(t, path, fieldKey)
   const description = getConfigFieldDescription(fieldDescriptions, path, fieldKey)
   const entries = useMemo(() => Object.entries(value), [value])
@@ -870,6 +957,10 @@ function ObjectField({
   const modifiedCount = countModifiedLeafFields(value, originalValue)
   const leafCount = countLeafFields(value)
   const groupChildCount = countGroupChildren(value)
+  const protectedField = overrideMeta.isProtected(path)
+  const overriddenCount = overrideMeta.countOverridden(path)
+  const fieldDisabled = disabled || protectedField
+  const showProtectedHint = protectedField && (overrideMeta.isProtectedRoot(path) || !!contextLabel)
   const [open, setOpen] = useState(() => resolveDefaultOpen(depth, leafCount, siblingGroupCount))
   const focusPathKey = focusPath ? joinPath(focusPath) : ''
 
@@ -893,9 +984,12 @@ function ObjectField({
       description={description}
       contextLabel={contextLabel}
       highlightClassName={getPathHighlightClassName(pathKey, highlightedPathKey)}
+      notice={showProtectedHint ? <ProtectedHint /> : undefined}
       trailing={(
         <>
           {modifiedCount > 0 && <ModifiedBadge count={modifiedCount} />}
+          {overriddenCount > 0 && <OverrideBadge count={overriddenCount} />}
+          {protectedField && <ProtectedBadge />}
           <Badge variant="outline" className={countBadgeClassName}>
             {t('panel.fieldSummary', { count: leafCount })}
           </Badge>
@@ -918,7 +1012,7 @@ function ObjectField({
                   fieldKey={key}
                   value={itemValue}
                   originalValue={originalRecord[key]}
-                  disabled={disabled}
+                  disabled={fieldDisabled}
                   depth={depth + 1}
                   siblingGroupCount={groupChildCount}
                   focusPath={focusPath}

@@ -4,21 +4,23 @@
 
 ## 目录结构
 
-| 目录/文件                       | 说明                                                                     |
-| ------------------------------- | ------------------------------------------------------------------------ |
-| `page.tsx`                      | 路由入口与 SEO 元数据。                                                  |
-| `ConfigPageContent.tsx`         | 页面外壳与全部流程：服务切换、加载、校验、保存、重启、恢复检查。         |
-| `config.utils.ts`               | relay 占位节点补全/剔除，以及失败原因的提取与拼装。                      |
-| `components/ConfigSection.tsx`  | 分区外壳（标题 + 说明 + 卡片），排版与设置页一致。                       |
-| `components/ConfigSectionNav/`  | 左侧分区导航，手机宽度下换行成胶囊。                                     |
-| `components/ConfigFormPanel/`   | 当前分区的卡片编排、跨分区搜索、展开/收起全部。                          |
-| `components/ConfigField/`       | 递归字段渲染：对象、数组、字符串、数字、布尔值转成表单控件。             |
-| `components/ConfigJsonPanel/`   | JSON 模式编辑区，叠加字段定位按钮与行级高亮。                            |
-| `utils/configSections.ts`       | 按服务类型维护分区定义、字段数量与修改数量统计。                         |
-| `utils/configFieldMeta.ts`      | 字段标签、说明、修改状态、敏感字段与叶子字段统计。                       |
-| `utils/configPath.ts`           | 配置路径读写、稳定序列化与字段名格式化。                                 |
-| `utils/configSearch.ts`         | 跨分区的配置项扁平索引与关键词匹配。                                     |
-| `types/`                        | 页面内部类型。                                                           |
+| 目录/文件                              | 说明                                                             |
+| -------------------------------------- | ---------------------------------------------------------------- |
+| `page.tsx`                             | 路由入口与 SEO 元数据。                                          |
+| `ConfigPageContent.tsx`                | 页面外壳与全部流程：服务切换、加载、校验、保存、重启、恢复检查。 |
+| `config.utils.ts`                      | relay 占位节点补全/剔除，以及失败原因的提取与拼装。              |
+| `components/ConfigSection.tsx`         | 分区外壳（标题 + 说明 + 卡片），排版与设置页一致。               |
+| `components/ConfigSectionNav/`         | 左侧分区导航，手机宽度下换行成胶囊。                             |
+| `components/ConfigFormPanel/`          | 当前分区的卡片编排、跨分区搜索、展开/收起全部。                  |
+| `components/ConfigField/`              | 递归字段渲染：对象、数组、字符串、数字、布尔值转成表单控件。     |
+| `components/ConfigJsonPanel/`          | JSON 模式编辑区，叠加字段定位按钮与行级高亮。                    |
+| `components/ConfigOverrideContext.tsx` | 运行时覆盖层状态的 context，供递归字段树读取。                   |
+| `utils/configSections.ts`              | 按服务类型维护分区定义、字段数量与修改数量统计。                 |
+| `utils/configFieldMeta.ts`             | 字段标签、说明、修改状态、敏感字段与叶子字段统计。               |
+| `utils/configPath.ts`                  | 配置路径读写、稳定序列化与字段名格式化。                         |
+| `utils/configOverride.ts`              | 覆盖层/受保护键路径的解析与判定，受保护改动的提交前自查。        |
+| `utils/configSearch.ts`                | 跨分区的配置项扁平索引与关键词匹配。                             |
+| `types/`                               | 页面内部类型。                                                   |
 
 ## 右侧的排版
 
@@ -51,11 +53,42 @@
 - 后端配置文件缺少 `relay` 节点时，前端补一个可编辑占位；占位没被改过不会提交。
 - 旧弹窗目录 `src/app/layout/ConfigManagerDialog/` 只剩一个跳转壳子，不再包含任何配置编辑实现。
 
-## 已知问题（这一轮不修）
+## 运行时覆盖层（这一版新增）
 
-当前部署把配置文件以只读方式挂进容器（`docker-compose.yml` 里的 `:ro`），**保存必然失败**；
-就算写进去了，`deploy.sh` 下次部署也会用 `.env` + `overrides/*.yaml` 重新渲染覆盖。
+后端把保存改成写**运行时覆盖层**了（契约 `docs/rebuild/contract-runtime-config.md` 第三节）：
 
-这是两套配置模型打架，要改得先认真设计权限和审计，不在「搬 UI」这一轮范围内。
-这一轮唯一相关的要求是：**失败时把服务端返回的真实原因显示出来**，不要包装成「稍后重试」。
-实现见 `config.utils.ts` 的 `formatConfigFailure`。
+```
+config.yaml（.env 渲染，基石）→ config.override.yaml（运行时可改）→ zod 校验
+```
+
+覆盖文件挂在数据盘上，`deploy.sh` 不生成也不碰它，**重新部署不会被冲掉**——
+之前「保存必然失败、就算写进去下次部署也没了」的那件事，修的就是这个。
+
+`GET config` 因此多了两个字段，**字段名照服务端 VO 抄，不要自己起名**：
+
+| 字段              | 含义                           | 页面怎么用                                       |
+| ----------------- | ------------------------------ | ------------------------------------------------ |
+| `overriddenPaths` | 哪些键路径当前来自覆盖层       | 挂一个「运行时」小徽标；分组上显示子树里有几个   |
+| `protectedPaths`  | 顶层受保护键，只能从 `.env` 改 | **输入框直接禁用** + 「部署配置」徽标 + 一句说明 |
+
+规矩：
+
+- **受保护的项不让填**。填完再被服务端回 `ConfigOverrideProtectedKey` 是最差的体验。
+  说明只在受保护子树的最外层讲一遍（搜索结果里也讲一遍，因为那是直接跳进来的，看不到外层）。
+- **JSON 模式绕得过禁用**，所以保存前再用 `findProtectedConfigChanges` 拦一道，逐个列出是哪个键。
+  服务端那道拦截照旧留着，这只是提前说一声。
+- **数组是整体替换的**，覆盖层报的是数组自己的路径，所以 `isOverridden` 认祖先前缀。
+- **老服务端没有这两个字段**：一律走 `normalizeConfigPathList`，拿到什么都退化成空数组，
+  页面退回原来的样子，不许白屏。
+- 保存成功后重新拉一次覆盖层清单，不然刚改的字段要等下次加载才挂上徽标。
+- 顶部那句分工说明**只在服务端确实给了清单时才显示**：老服务端不分层，
+  说「保存进覆盖层、重新部署不会被冲掉」就是假话，宁可不说。
+
+覆盖层状态走 `components/ConfigOverrideContext`：`ConfigField` 是递归的，层数不定，
+一层层传 props 要改十来个函数签名。整棵树都要读、谁都不改的东西走 context。
+
+## 失败原因照抄服务端
+
+保存失败时**把服务端返回的真实原因显示出来**，不要包装成「稍后重试」。
+实现见 `config.utils.ts` 的 `formatConfigFailure`：服务端说什么就显示什么，
+没说原因就明说「只回了错误码」，细项（zod issue、受保护键列表）一行一条摊开。
