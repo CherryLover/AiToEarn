@@ -30,6 +30,7 @@ import { PublishModule } from './core/publish-record/publish-record.module'
 import { PublishingModule } from './core/publishing/publishing.module'
 import { SettingsModule } from './core/settings/settings.module'
 import { ShortLinkModule } from './core/short-link/short-link.module'
+import { SystemModule } from './core/system/system.module'
 import { UnifiedMcpModule } from './core/unified-mcp/unified-mcp.module'
 import { UserModule } from './core/user/user.module'
 
@@ -94,6 +95,7 @@ import { UserModule } from './core/user/user.module'
     CreatorNoteIngestModule,
     CreatorNotesModule,
     SettingsModule,
+    SystemModule,
     RelayModule,
     // MCP modules (after business modules to ensure @Global services are available)
     ChannelsMcpModule,

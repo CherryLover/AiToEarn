@@ -142,12 +142,15 @@ interface ReadinessVo {
 | `aiChatModels` | 是 | `ai.models.chat` 非空，且 `ai.openai.apiKey` 有值 |
 | `assets` | 是 | 对象存储能列一次桶 |
 | `projectsRoot` | 是 | 物料根目录存在且可写 |
-| `notify` | 否 | 配了就探一次，没配就是 `missing` |
+| `notify` | 否 | **只看配齐没配齐**，配齐了就是 `ok`，没配就是 `missing` |
 
 `agentUpstream` 落在 ai 侧：`GET /internal/readiness`，挂 `@Internal()`，
 server 用现成的 `Bearer internalToken` + axios 那套调。**探测就是探测**：
 拿 `agent.baseUrl` + `agent.apiKey` + `agent.defaultModel` 发一个最小的 messages 请求，
 看回的是不是 2xx；占位值 `sk-placeholder` 会被上游拒掉，正好就是我们要抓的那个状态。
+
+`notify` 是唯一一项**不真探**的：就绪检查是进站自动跑的，顺手推一条等于每开一次网页
+震一下手机，比没配推送还烦。真探活在设置页那个「发送测试通知」按钮上，那是人主动点的。
 
 超时 5 秒。探测失败**不抛异常**，回 `status: 'error'` + `detail`。
 整个就绪检查不许影响任何主流程。
