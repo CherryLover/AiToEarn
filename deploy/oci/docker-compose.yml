@@ -10,10 +10,20 @@
 
 name: aitoearn
 
+# 容器日志默认是不封顶的 json 文件，跑几个月能把小机器的盘吃光，而且没有任何东西会去收它。
+# 封到每个容器最多 3×10MB，旧的自动滚掉。应用容器每次部署都重建，改完下次部署就生效；
+# 基础服务要等它们下次重建（或者 `docker compose up -d --force-recreate mongodb …`）
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   mongodb:
     image: mongo:8
     container_name: aitoearn-mongodb
+    logging: *default-logging
     restart: unless-stopped
     entrypoint: ["bash", "-c", "openssl rand -base64 756 > /data/mongodb-keyfile && chmod 400 /data/mongodb-keyfile && chown mongodb:mongodb /data/mongodb-keyfile && exec docker-entrypoint.sh mongod --replSet rs0 --keyFile /data/mongodb-keyfile"]
     environment:
@@ -32,6 +42,7 @@ services:
   mongodb-rs-init:
     image: mongo:8
     container_name: aitoearn-mongodb-rs-init
+    logging: *default-logging
     depends_on:
       mongodb:
         condition: service_started
@@ -43,6 +54,7 @@ services:
   redis:
     image: redis:8-alpine
     container_name: aitoearn-redis
+    logging: *default-logging
     restart: unless-stopped
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?}"]
     environment:
@@ -59,6 +71,7 @@ services:
   rustfs:
     image: rustfs/rustfs:latest
     container_name: aitoearn-rustfs
+    logging: *default-logging
     hostname: rustfs.local
     restart: unless-stopped
     environment:
@@ -80,6 +93,7 @@ services:
   rustfs-init:
     image: quay.io/minio/mc:latest  # Docker Hub 上的 minio/mc 已经拉不到
     container_name: aitoearn-rustfs-init
+    logging: *default-logging
     depends_on:
       rustfs:
         condition: service_healthy
@@ -92,6 +106,7 @@ services:
   aitoearn-ai:
     image: ghcr.io/cherrylover/aitoearn-ai:${AI_TAG:?}
     container_name: aitoearn-ai
+    logging: *default-logging
     restart: unless-stopped
     depends_on:
       mongodb:
@@ -116,6 +131,7 @@ services:
   aitoearn-server:
     image: ghcr.io/cherrylover/aitoearn-server:${SERVER_TAG:?}
     container_name: aitoearn-server
+    logging: *default-logging
     restart: unless-stopped
     depends_on:
       mongodb:
@@ -140,6 +156,7 @@ services:
   aitoearn-web:
     image: ghcr.io/cherrylover/aitoearn-web:${WEB_TAG:?}
     container_name: aitoearn-web
+    logging: *default-logging
     restart: unless-stopped
     depends_on:
       aitoearn-server:
@@ -157,6 +174,7 @@ services:
   nginx:
     image: nginx:1-alpine
     container_name: aitoearn-nginx
+    logging: *default-logging
     restart: unless-stopped
     depends_on:
       aitoearn-web:

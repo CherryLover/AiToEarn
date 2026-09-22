@@ -138,6 +138,45 @@ DATA_DIR=/opt/stack/aitoearn/data
 带 `--ref <分支>` 部署时必须显式给标签，脚本会拒绝自动取版本：`:latest` 指的是 main，
 把分支的部署文件配上 main 的镜像是最难查的那种错。
 
+### 部署完会顺手清理
+
+健康检查过了之后（**只有过了才清**，中间失败什么都不删，旧镜像还在本地，回滚只要
+`deploy.sh <旧标签>`）脚本会收掉这次换下来的东西：
+
+- `ghcr.io/cherrylover/aitoearn-{server,ai,web}` 里当前没有容器在用的标签——每次部署换一版，
+  不收的话一版几百 MB 地堆
+- 这次 `docker compose pull` 期间新变悬空的层（`rustfs` 和 `mc` 钉的是 `:latest`，重拉就会留一层）
+- 本项目没人挂的匿名卷
+- `repo/` 的 git 对象（`git gc --auto`）
+
+想留着几版在本地随时回滚，加 `--no-prune`。
+
+**范围是圈死的**：只按 compose 项目名（`aitoearn`）和上面那三个仓库名挑，
+脚本里没有一条 `docker system prune` / `docker image prune`——那些按「全机有没有人用」判断，
+会把这台机器上 Traefik 和别的项目的东西一起删掉。
+
+容器日志也封了顶（每个容器 3×10MB 滚动，见 `docker-compose.yml` 的 `x-logging`）：
+Docker 默认的 json 日志是不封顶的，也没有任何东西会去收它。
+
+## 清空
+
+```bash
+deploy.sh clean                # 容器 + compose 网络 + 本项目的所有镜像
+deploy.sh clean --data         # 再加上数据盘和渲染出来的 config/
+deploy.sh clean --data --yes   # 跳过交互确认（非交互环境下用 --data 必须带 --yes）
+```
+
+| | `clean` | `clean --data` |
+|---|---|---|
+| 容器、compose 网络（外部 `proxy` 网络不动） | 删 | 删 |
+| 本项目镜像（含 mongo / redis / rustfs / nginx，别人还在用的会被 docker 拒绝删、自动跳过） | 删 | 删 |
+| `$DATA_DIR`：数据库、对象存储、项目物料、运行时配置覆盖层 | **留** | 删，回不来 |
+| 渲染出来的 `config/` | **留** | 删 |
+| `.env`、`repo/` | 留 | 留 |
+
+不带 `--data` 时再跑一次 `deploy.sh` 就原样回来。`.env` 里有密码和域名，两种模式都不删，
+真要连它一起清就 `sudo rm -rf /opt/stack/aitoearn`。
+
 配置合并规则（`render_config.py`）：官方 `config.yaml` 为底，`overrides/*.yaml` 覆盖；override 值为空的项保留官方默认；server 配置里 `https://localhost/` 开头的地址统一换成 `https://$DOMAIN/`；没填 `OIDC_CLIENT_ID` 时不写登录配置（服务能起，但登录不了）。
 
 ## 常用
@@ -194,7 +233,7 @@ SDK 起 `claude` 进程 → 打本机的 claude-code-router（127.0.0.1:3456）�
 **全留空 = 这个功能是坏的**，不是降级。占位上游会拒掉请求，`claude` 进程往 stderr 打
 `There's an issue with the selected model (claude-opus-4-6). It may not exist or you may not have access to it.`，
 网页弹窗里照原样显示，最后收一个 `Internal server error`。
-进站横幅和 `/setup` 会把这件事摆出来，所以不填 `.env` 也可以直接在网页 `/config` 里配，
+没配好时进站会直接跳到 `/setup`，所以不填 `.env` 也可以直接在网页上配，
 保存即生效、不用重启；`.env` 这条路的好处是重装机器时它跟着配置一起走。
 
 角色模型填了但不在 `AGENT_MODELS` 里，`render_config.py` 会在渲染阶段就报错停下。
