@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { CLAUDE_CODE_ROUTER_PROVIDER_NAME } from '../agent.constants'
 import { ClaudeCodeRouterService } from './claude-code-router.service'
 
 interface TestableClaudeCodeRouterService {
+  generateConfigFile: (routerConfig: unknown) => void
+  restartChildProcess: () => void
   buildConfigFile: (routerConfig: unknown) => {
     Providers?: Array<{
       name: string
@@ -45,5 +47,28 @@ describe('claudeCodeRouterService', () => {
       background: `${CLAUDE_CODE_ROUTER_PROVIDER_NAME},deepseek-anthropic-lite`,
       think: `${CLAUDE_CODE_ROUTER_PROVIDER_NAME},deepseek-anthropic-chat`,
     })
+  })
+})
+
+describe('claudeCodeRouterService 热生效', () => {
+  it('重新生成 router 配置并重启子进程，主进程不动', () => {
+    const service = new ClaudeCodeRouterService()
+    const testable = service as unknown as TestableClaudeCodeRouterService
+    const generateConfigFile = vi.spyOn(testable, 'generateConfigFile').mockImplementation(() => {})
+    const restartChildProcess = vi.spyOn(testable, 'restartChildProcess').mockImplementation(() => {})
+
+    const agentConfig = {
+      baseUrl: 'https://override.example.com/v1/messages',
+      apiKey: 'runtime-key',
+      models: ['upstream-a'],
+      defaultModel: 'upstream-a',
+      backgroundModel: 'upstream-a',
+      thinkModel: 'upstream-a',
+      taskTimeoutMs: 1000,
+    }
+    service.reloadAgentConfig(agentConfig as unknown as Parameters<typeof service.reloadAgentConfig>[0])
+
+    expect(generateConfigFile).toHaveBeenCalledWith(agentConfig)
+    expect(restartChildProcess).toHaveBeenCalledTimes(1)
   })
 })

@@ -28,12 +28,12 @@ export class ConfigEditorController {
     body: ConfigEditorConfigDto.schema,
   })
   @Post('validate')
-  validateConfig(@Body() body: ConfigEditorConfigDto): void {
-    this.configEditorService.validateConfig(body.config)
+  async validateConfig(@Body() body: ConfigEditorConfigDto): Promise<void> {
+    await this.configEditorService.validateConfig(body.config)
   }
 
   @ApiDoc({
-    summary: '保存配置文件内容',
+    summary: '保存配置文件内容：只写运行时覆盖层，不碰基础配置文件',
     body: ConfigEditorConfigDto.schema,
   })
   @Put()

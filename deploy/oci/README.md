@@ -24,7 +24,71 @@
   .env         密码、域名、镜像标签（600，照 .env.example 填）
   config/      deploy.sh 渲染出的 server.yaml / ai.yaml（600）
 /data/aitoearn/  = $DATA_DIR，mongodb / redis / rustfs 数据 + projects 项目物料
+  config/      运行时配置覆盖层 server.override.yaml / ai.override.yaml（600），见下一节
 ```
+
+## 运行时配置覆盖层
+
+### 它是什么
+
+后端的配置分两层读：
+
+```
+config.yaml（.env 渲染出来的基石，只读挂载） → config.override.yaml（运行时可改） → zod 校验
+```
+
+深合并：对象递归合并，**数组整体替换**（模型清单这种，半个半个合没有意义）。合并完才跑 zod，
+所以覆盖层写错一样起不来，和只有 `config.yaml` 时的失败方式一致。**覆盖文件不存在 = 完全没有这一层**，
+行为和以前一模一样。
+
+网页 `/config` 页的保存写的就是这一份，而且**只写和 `config.yaml` 不同的那几个键**：
+你在页面上没动过的字段不会被冻结成一份同值副本——否则以后改 `.env` 会发现改不动了，
+因为覆盖层里压着一份陈旧的旧值。
+
+### 存在哪
+
+| 服务 | 宿主机 | 容器内 | 权限 |
+|---|---|---|---|
+| `aitoearn-server` | `$DATA_DIR/config/server.override.yaml` | `/app/config.override.yaml` | 读写，600 |
+| `aitoearn-ai` | `$DATA_DIR/config/ai.override.yaml` | `/app/config.override.yaml` | 读写，600 |
+
+放在数据盘上，**`deploy.sh` 只在第一次把空文件 `touch` 出来，之后再也不碰**，所以重新部署不会冲掉线上改过的值。
+这正是「改了 `.env` 之外的东西下次部署就没了」这个老问题的解法。
+
+`touch` 必须发生在 `docker compose` 之前：Docker 对不存在的宿主机挂载源会直接建成**目录**，
+那样这份配置就永远读不到了。
+
+### 和 `.env` 的分工
+
+| | 走 `.env` + `deploy.sh` | 走覆盖层（网页 `/config`） |
+|---|---|---|
+| 典型内容 | 端口、域名、日志、登录、Mongo / Redis / Redlock、对象存储、物料根目录、服务间地址 | `agent.*` 上游、`ai.*` 模型和 Key、`notify.*`、各平台参数 |
+| 改了要干嘛 | 重新部署（重建容器、重连中间件） | 保存即可；`agent` 一段还能不重启就生效 |
+| 谁说了算 | 基石，覆盖层动不了 | 覆盖层压在基石之上 |
+
+**受保护的顶层键**（出现在覆盖层里会被当场拒绝，并指名道姓列出是哪几个键路径）：
+`port`、`appDomain`、`logger`、`enableConfigLogging`、`enableBadRequestDetails`、`auth`、`mongodb`、
+`redis`、`redlock`、`assets`、`serverClient`、`projects`。
+
+这些东西改了要重建容器或重连中间件才有意义，只能从 `.env` 走。
+
+`agent` 这一段保存后**不用重启整个 ai 服务**：`ClaudeCodeRouterService` 重写
+`.claude-session/.claude-code-router/config.json` 并重启那个子进程，主进程不动。
+注意范围——改上游地址和 Key 立刻生效，改 `agent.models` 清单仍然要重启，
+因为可用模型在服务启动时就被吃成 zod 枚举了。
+
+### 备份 / 回滚
+
+就是两个文件，`cat` 出来就能看（**里面有上游 Key，别往外贴**）：
+
+```bash
+sudo cp "$DATA_DIR"/config/server.override.yaml{,.bak}
+sudo cp "$DATA_DIR"/config/ai.override.yaml{,.bak}
+```
+
+回到「只有 `config.yaml`」的状态：把文件清空（`sudo truncate -s 0 ...`）再 `deploy.sh`，
+或者在网页上把值改回和基石一样——保存时 diff 为空，覆盖层自己就空了。
+文件删掉也行，服务照常起，只是下次 `deploy.sh` 会再 `touch` 一个空的回来。
 
 ## 项目物料目录
 

@@ -122,6 +122,10 @@ services:
         condition: service_healthy
     volumes:
       - ./project/aitoearn-backend/apps/aitoearn-ai/config/config.yaml:/app/config.yaml:rw
+      # 运行时配置覆盖层：网页 /config 保存时只写这一份，config.yaml 一个字节都不碰，必须可写。
+      # 宿主机上这个文件不存在时 Docker 会建成一个空目录，后端会当作「没有覆盖层」，不影响启动；
+      # 想真正留住改动，先在宿主机把它 touch 出来。
+      - ./project/aitoearn-backend/apps/aitoearn-ai/config/config.override.yaml:/app/config.override.yaml:rw
     networks:
       - aitoearn-network
     healthcheck:
@@ -145,6 +149,8 @@ services:
         condition: service_healthy
     volumes:
       - ./project/aitoearn-backend/apps/aitoearn-server/config/config.yaml:/app/config.yaml:rw
+      # 运行时配置覆盖层，同 aitoearn-ai，两个服务各一份
+      - ./project/aitoearn-backend/apps/aitoearn-server/config/config.override.yaml:/app/config.override.yaml:rw
     networks:
       - aitoearn-network
     healthcheck:
