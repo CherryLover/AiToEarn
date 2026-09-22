@@ -334,4 +334,19 @@ export enum ResponseCode {
   SettingsNotifyNotConfigured = 20604, // 还没配通知，先保存再测试
   SettingsNotifyRuleInvalid = 20605, // 通知规则不合法：类型不认识或同一类型给了多条
   SettingsNotifyGroupInvalid = 20606, // 通知分组不合法
+
+  // ========================================
+  // 20700-20749: config override（运行时配置覆盖层）
+  // ========================================
+  ConfigOverrideProtectedKey = 20700, // 这一项只能从部署环境改，不接受运行时覆盖
+  ConfigOverrideWriteFailed = 20701, // 覆盖文件写入失败
+  ConfigOverrideReadFailed = 20702, // 覆盖文件读取失败：不存在不算失败，格式坏了才算
+  ConfigOverrideInvalid = 20703, // 合并覆盖层之后的配置过不了 schema 校验
+  ConfigOverrideUnsupportedFormat = 20704, // 覆盖文件后缀不是 yaml/yml/json
+
+  // ========================================
+  // 20750-20799: system readiness（就绪检查）
+  // ========================================
+  SystemReadinessProbeFailed = 20750, // 探测某一项时自己出错了（不是被探的那方的问题）
+  SystemReadinessUpstreamUnreachable = 20751, // 上游连不上或拒绝
 }
