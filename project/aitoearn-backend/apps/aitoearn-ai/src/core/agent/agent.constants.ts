@@ -1,6 +1,16 @@
 export const AGENT_TASK_ABORT_CHANNEL = 'agent:task:abort'
 export const CLAUDE_CODE_ROUTER_PROVIDER_NAME = 'new'
 
+/**
+ * 本机 claude-code-router 的落点。三处要对上：router 子进程按这个端口起、
+ * `claude` 进程的 ANTHROPIC_BASE_URL 指这里、就绪检查也探这里。
+ * 之前三处各写各的字面量，改一处忘一处就是一次线上排查。
+ */
+export const CLAUDE_CODE_ROUTER_PORT = 3456
+export const CLAUDE_CODE_ROUTER_BASE_URL = `http://127.0.0.1:${CLAUDE_CODE_ROUTER_PORT}`
+/** router 自己的鉴权口令，只在本机回环上用，不是上游的 Key */
+export const CLAUDE_CODE_ROUTER_API_KEY = 'ccr'
+
 export enum McpServerName {
   MediaGeneration = 'mediaGeneration',
   Database = 'database',

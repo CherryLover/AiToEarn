@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { onConfigOverrideSaved } from '@yikart/config-editor'
 import { agentConfigSchema, config } from '../../../config'
-import { CLAUDE_CODE_ROUTER_PROVIDER_NAME } from '../agent.constants'
+import { CLAUDE_CODE_ROUTER_API_KEY, CLAUDE_CODE_ROUTER_PORT, CLAUDE_CODE_ROUTER_PROVIDER_NAME } from '../agent.constants'
 
 interface TransformerConfig {
   use: Array<string | [string, Record<string, unknown>] | Record<string, TransformerConfig>>
@@ -152,8 +152,8 @@ export class ClaudeCodeRouterService implements OnModuleInit, OnModuleDestroy {
 
   private buildConfigFile(routerConfig: typeof config.agent): ClaudeCodeRouterConfig {
     return {
-      PORT: 3456,
-      APIKEY: 'ccr',
+      PORT: CLAUDE_CODE_ROUTER_PORT,
+      APIKEY: CLAUDE_CODE_ROUTER_API_KEY,
       NON_INTERACTIVE_MODE: true,
       Providers: [
         {
@@ -161,11 +161,11 @@ export class ClaudeCodeRouterService implements OnModuleInit, OnModuleDestroy {
           api_base_url: routerConfig.baseUrl,
           api_key: routerConfig.apiKey,
           models: routerConfig.models,
-          transformer: {
-            use: [
-              'Anthropic',
-            ],
-          },
+          // 空数组时整个 transformer 字段都不给：router 的缺省行为就是 Anthropic ↔ OpenAI 互转，
+          // 给一个 `use: []` 和不给是两回事，别画蛇添足
+          ...(routerConfig.transformers.length > 0 && {
+            transformer: { use: [...routerConfig.transformers] },
+          }),
         },
       ],
       Router: {

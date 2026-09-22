@@ -6,6 +6,7 @@
 - server 配置里所有 https://localhost/ 开头的地址换成 https://$DOMAIN/（各平台授权回调等）
 - oidcLogin 没填 clientId 时整段去掉（否则后台配置校验不过、起不来；此时只是暂时不能登录）；allowedEmails 写成逗号分隔字符串，这里拆成列表
 - agent.models 也是逗号分隔字符串，拆成列表；三个角色模型没单独指定就取清单第一个，指定了但不在清单里直接报错（后台 zod 也会拦，但那时是容器起不来）
+- agent.transformers 同样是逗号分隔字符串；`none` 拆成空列表（明确不要 transformer），留空则整项跳过、沿用默认
 - 输出文件权限 600，里面有密码
 
 用法：render_config.py <官方配置> <override 模板> <输出文件>
@@ -91,6 +92,14 @@ def main():
             ("backgroundModel", "AGENT_BACKGROUND_MODEL"),
             ("thinkModel", "AGENT_THINK_MODEL"),
         )
+        # transformers：`none` 表示明确不要 transformer（上游是 OpenAI 协议，让 router 自己转），
+        # 留空表示不覆盖、沿用默认的 Anthropic 透传。这两种意思不一样，不能都渲染成空。
+        if isinstance(agent.get("transformers"), str):
+            raw = agent["transformers"].strip()
+            agent["transformers"] = [] if raw.lower() == "none" else [
+                t.strip() for t in raw.split(",") if t.strip()
+            ]
+
         if isinstance(agent.get("models"), str):
             # .env 里是逗号分隔的一行，配置要的是列表
             agent["models"] = [m.strip() for m in agent["models"].split(",") if m.strip()]

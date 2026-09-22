@@ -56,9 +56,10 @@ notify:
   barkKey: ${NOTIFY_BARK_KEY}
   group: ${NOTIFY_GROUP}
 
-# Agent（提炼方向、生成草稿走的 Claude Code）。和上面 ai.openai 不是一条线：
-# 这里的上游必须说 Anthropic 的 /v1/messages 协议，地址要写到 /v1/messages 这一层。
-# 六个变量必须在 .env 里存在（可以留空），否则 render_config.py 渲染时直接 KeyError。
+# Agent（提炼方向、生成草稿走的 Claude Code）。和上面 ai.openai 不是一条线，
+# 但上游可以是同一个：OpenAI 协议的中转站把 AGENT_TRANSFORMERS 填 none 即可，
+# 地址写到 /v1/chat/completions 这一层；Anthropic 协议的上游留空，地址写到 /v1/messages。
+# 七个变量必须在 .env 里存在（可以留空），否则 render_config.py 渲染时直接 KeyError。
 # 全留空 = 保留仓库里的占位上游，提炼方向必然失败，详见 deploy/oci/README.md 的「Agent」一节。
 agent:
   baseUrl: ${AGENT_BASE_URL}
@@ -67,6 +68,7 @@ agent:
   defaultModel: ${AGENT_DEFAULT_MODEL}
   backgroundModel: ${AGENT_BACKGROUND_MODEL}
   thinkModel: ${AGENT_THINK_MODEL}
+  transformers: ${AGENT_TRANSFORMERS}
 
 # 项目物料根目录（容器内路径），对应 docker-compose.yml 里 $${DATA_DIR}/projects 的挂载点
 projects:

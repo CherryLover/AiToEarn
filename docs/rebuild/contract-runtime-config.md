@@ -146,8 +146,13 @@ interface ReadinessVo {
 
 `agentUpstream` 落在 ai 侧：`GET /internal/readiness`，挂 `@Internal()`，
 server 用现成的 `Bearer internalToken` + axios 那套调。**探测就是探测**：
-拿 `agent.baseUrl` + `agent.apiKey` + `agent.defaultModel` 发一个最小的 messages 请求，
-看回的是不是 2xx；占位值 `sk-placeholder` 会被上游拒掉，正好就是我们要抓的那个状态。
+发一个最小的 messages 请求，看回的是不是 2xx；占位值 `sk-placeholder` 会被上游拒掉，
+正好就是我们要抓的那个状态。
+
+请求打的是**本机的 claude-code-router**（`127.0.0.1:3456/v1/messages`），不是直连
+`agent.baseUrl`。真正跑提炼方向的 `claude` 进程就是这么走的，中间那层 transformer 配错了
+（上游说 OpenAI 协议却留着 Anthropic 透传）同样是「用不了」——直连上游探不出这一类问题，
+等于报了个假的绿灯。
 
 `notify` 是唯一一项**不真探**的：就绪检查是进站自动跑的，顺手推一条等于每开一次网页
 震一下手机，比没配推送还烦。真探活在设置页那个「发送测试通知」按钮上，那是人主动点的。
@@ -168,6 +173,20 @@ server 用现成的 `Bearer internalToken` + axios 那套调。**探测就是探
 - 已经 `ok` 的步骤默认折叠，允许跳过非必需项。
 - 全部通过 → 一句话收尾 + 回首页。
 - 六种语言文案补齐；手机宽度不横向滚动；复用设置页那套外壳和交互约定，不要另起一套。
+
+### 4.3 上游协议不限 Anthropic
+
+`agent.transformers` 决定怎么跟上游说话，claude-code-router 负责两边转换：
+
+| 上游 | `agent.baseUrl` 写到哪一层 | `agent.transformers` |
+|---|---|---|
+| OpenAI 协议（和 `ai.openai` 同一个中转站就属于这种） | `/v1/chat/completions` | `[]`（`.env` 里填 `none`） |
+| Anthropic 协议（官方，或上游自己暴露的 anthropic 端点） | `/v1/messages` | `['Anthropic']`（默认，`.env` 里留空） |
+| openrouter、deepseek 等 router 自带的其它 transformer | 按各家文档 | 对应名字 |
+
+默认值保持 `['Anthropic']` 不变，是为了不动既有部署的行为。空数组和「整个字段不给」
+在 router 那边是两回事：只有不给 `transformer` 字段，它才会走缺省的 Anthropic ↔ OpenAI 互转，
+所以生成 router 配置时空数组要整个字段省掉，不能写成 `use: []`。
 
 ## 五、错误码
 

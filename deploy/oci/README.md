@@ -156,21 +156,30 @@ $C logs -f aitoearn-server
 SDK 起 `claude` 进程 → 打本机的 claude-code-router（127.0.0.1:3456）→ router 按 `agent.*` 转给真正的上游。
 `OPENAI_BASE_URL` 那组只喂对话和草稿文案，**喂不到这条链路**。
 
-`.env` 里六个变量（见 `.env.example`）：
+`.env` 里七个变量（见 `.env.example`）：
 
 | 变量 | 作用 | 留空会怎样 |
 |---|---|---|
-| `AGENT_BASE_URL` | 上游地址，写到 `/v1/messages` 这一层 | 保留仓库占位 `https://api.openai.com/v1/messages` |
+| `AGENT_BASE_URL` | 上游地址，写到哪一层看下面那张表 | 保留仓库占位 `https://api.openai.com/v1/messages` |
 | `AGENT_API_KEY` | 上游 Key | 保留仓库占位 `sk-placeholder` |
 | `AGENT_MODELS` | 可用模型清单，逗号分隔 | 保留仓库默认那串 `claude-*` |
 | `AGENT_DEFAULT_MODEL` | 主模型 | 取清单第一个 |
 | `AGENT_BACKGROUND_MODEL` | 子任务模型 | 取清单第一个 |
 | `AGENT_THINK_MODEL` | 思考任务模型 | 取清单第一个 |
+| `AGENT_TRANSFORMERS` | 跟上游说话的方式，见下表 | 默认 `Anthropic` 透传 |
 
-**六行必须留在 `.env` 里（可以是空值）**：`render_config.py` 是严格替换，缺变量直接 KeyError。
+**七行必须留在 `.env` 里（可以是空值）**：`render_config.py` 是严格替换，缺变量直接 KeyError。
 
-**上游必须说 Anthropic 的 `/v1/messages` 协议。** `claude-code-router.service.ts` 里 transformer 写死成 `Anthropic`（有单测锁着），
-只提供 OpenAI 协议的中转站接不上——能用的是 Anthropic 官方、或上游自己暴露的 anthropic 兼容端点。
+**两种协议都能接**，靠 `AGENT_TRANSFORMERS` 区分，claude-code-router 负责转换：
+
+| 上游 | `AGENT_BASE_URL` 写到哪一层 | `AGENT_TRANSFORMERS` |
+|---|---|---|
+| OpenAI 协议（和 `OPENAI_BASE_URL` 同一个中转站就属于这种） | `/v1/chat/completions` | `none` |
+| Anthropic 协议（官方，或上游自己暴露的 anthropic 端点） | `/v1/messages` | 留空 |
+| openrouter、deepseek 等 router 自带的 transformer | 按各家文档 | 对应名字，逗号分隔 |
+
+`none` 和留空是两个意思：`none` = 明确不要 transformer，由 router 做 Anthropic ↔ OpenAI 互转；
+留空 = 不覆盖，沿用默认的 Anthropic 透传。填反了表现是模型报不存在。
 
 **全留空 = 这个功能是坏的**，不是降级。占位上游会拒掉请求，`claude` 进程往 stderr 打
 `There's an issue with the selected model (claude-opus-4-6). It may not exist or you may not have access to it.`，
