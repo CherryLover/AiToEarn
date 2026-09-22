@@ -10,7 +10,7 @@
  * 存进去的配置要让后台那条校验当场就能过。
  */
 import { describe, expect, it } from 'vitest'
-import { applyModelSelection } from './setup.utils'
+import { applyModelSelection, setupPathFor, shouldRedirectToSetup } from './setup.utils'
 
 const SPEC = {
   listPath: 'agent.models',
@@ -123,5 +123,49 @@ describe('applyModelSelection', () => {
     applyModelSelection(before, 'agent.defaultModel', SPEC, 'gpt-5.6-luna', ['gpt-5.6-luna'])
 
     expect(before).toEqual(snapshot)
+  })
+})
+
+/**
+ * 没配好就直接跳配置页这件事的判定。
+ *
+ * 之前这里是一条横幅，上面解释「哪个功能坏了」。用户要的是别解释、直接跳。
+ * 跳转最容易出的事故是**死循环**：进了配置页还是「没配好」，于是又跳配置页，
+ * 页面永远在转。所以这几条用例盯的就是「什么时候绝对不跳」。
+ */
+describe('shouldRedirectToSetup', () => {
+  it('没有阻塞项时不跳', () => {
+    expect(shouldRedirectToSetup('/zh-CN', false)).toBe(false)
+  })
+
+  it('有阻塞项时把主站上的人送走', () => {
+    expect(shouldRedirectToSetup('/zh-CN', true)).toBe(true)
+    expect(shouldRedirectToSetup('/zh-CN/accounts', true)).toBe(true)
+  })
+
+  it.each([
+    ['/zh-CN/setup', '目的地本身，跳了就是死循环'],
+    ['/zh-CN/config', '配置管理页，人已经在改了'],
+    ['/zh-CN/auth/login', '正在登录，把人弹走毫无道理'],
+  ])('%s 不跳（%s）', (pathname) => {
+    expect(shouldRedirectToSetup(pathname, true)).toBe(false)
+  })
+
+  it('路径读不出来时照跳，目的地交给 setupPathFor 兜底', () => {
+    expect(shouldRedirectToSetup(null, true)).toBe(true)
+  })
+})
+
+describe('setupPathFor', () => {
+  it.each([
+    ['/zh-CN', '/zh-CN/setup'],
+    ['/en/accounts/detail', '/en/setup'],
+  ])('%s → %s：带上当前语种，省掉中间件那一跳', (input, expected) => {
+    expect(setupPathFor(input)).toBe(expected)
+  })
+
+  it('读不出语种时退回无前缀路径，交给中间件补', () => {
+    expect(setupPathFor(null)).toBe('/setup')
+    expect(setupPathFor('/')).toBe('/setup')
   })
 })

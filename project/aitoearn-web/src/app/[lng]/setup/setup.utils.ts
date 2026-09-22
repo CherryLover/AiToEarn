@@ -126,7 +126,7 @@ export function coerceFieldValue(input: string, previous: unknown): unknown {
  *
  * 认识的 key 用 `SETUP_STEP_SPECS` 里写死的那份；不认识的（服务端以后加的项）
  * 按 `configPath` 兜底渲染成一个通用输入框，猜一下它属于哪个服务、是不是密钥。
- * **宁可兜底渲染，也不要漏掉一项**：漏掉的那项会让用户填完所有步骤，横幅还挂着。
+ * **宁可兜底渲染，也不要漏掉一项**：漏掉的那项会让用户填完所有步骤，进站还是被弹回配置页。
  */
 export function resolveStepSpec(item: ReadinessItemVo): SetupStepSpec {
   const known = SETUP_STEP_SPECS.find(spec => spec.key === item.key)
@@ -204,21 +204,38 @@ export function getConfigOverrideErrorKey(code?: string | number): string | null
   }
 }
 
-/**
- * 横幅上那句话说哪个检查项。
- * 挑第一个没通过的必需项——**说清楚坏的是哪个功能**，
- * 「AI 提炼方向现在用不了」比「配置缺失」有用得多（契约 4.2）。
- */
-export function pickPrimaryBlockingItem(items: ReadinessItemVo[]): ReadinessItemVo | null {
-  const blocking = sortReadinessItems(items).filter(
-    item => item.required && item.status !== ReadinessStatus.Ok,
-  )
-  return blocking[0] ?? null
-}
-
 /** 认识这个检查项的 key 吗。不认识就用兜底文案，不要显示成一串英文 key */
 export function isKnownItemKey(key: string): boolean {
   return SETUP_STEP_SPECS.some(spec => spec.key === key)
+}
+
+/**
+ * 这些路径下不把人往引导页送：
+ * - `/setup` 是目的地本身，跳了就是死循环
+ * - `/config` 是配置管理页，人已经在改了
+ * - `/auth` 是登录相关页面，把正在登录的人弹走毫无道理
+ */
+export const SETUP_REDIRECT_SILENT_SEGMENTS = ['/setup', '/config', '/auth']
+
+/**
+ * 现在这个页面该不该把人送去引导页。
+ *
+ * `hasIssue` 由 `hasBlockingReadinessIssue` 算，就绪结果没拉到时它是 false——
+ * **不知道就别把人弹走**，一次网络抖动不该把所有人锁在配置页上。
+ */
+export function shouldRedirectToSetup(pathname: string | null, hasIssue: boolean): boolean {
+  if (!hasIssue)
+    return false
+  return !SETUP_REDIRECT_SILENT_SEGMENTS.some(segment => pathname?.includes(segment))
+}
+
+/**
+ * 引导页的路由。中间件会按语种前缀重定向，这里直接带上当前语种省掉那一跳；
+ * 路径上读不出语种（理论上进不了 `[lng]` 布局）时退回无前缀的 `/setup`，交给中间件。
+ */
+export function setupPathFor(pathname: string | null): string {
+  const lng = pathname?.split('/').filter(Boolean)[0]
+  return lng ? `/${lng}/setup` : '/setup'
 }
 
 /** 按键路径读出一个字符串数组；不是数组、或者里面混了别的类型，就只取字符串那几项 */

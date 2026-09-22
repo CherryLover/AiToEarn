@@ -24,6 +24,8 @@ export function MobileNavItem({
   return (
     <Link
       href={fullPath}
+      // 同侧边栏：force-dynamic 下预取就是一次真的服务端渲染，不值得
+      prefetch={false}
       onClick={onClose}
       data-testid={`mobile-nav-item-${translationKey}`}
       className={cn(

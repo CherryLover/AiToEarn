@@ -10,6 +10,12 @@ import { GITHUB_REPO } from '../constants'
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
 
 /**
+ * 一个装饰用的 star 数，不值得让浏览器无限期等 `api.github.com`。
+ * 那个域名在部分网络下是连上了不回包，没有超时的话这个请求会一直挂着。
+ */
+const FETCH_TIMEOUT_MS = 5000
+
+/**
  * 获取 GitHub 仓库的 star 数量
  * @returns star 数量字符串（如 "9.5k"）
  */
@@ -25,7 +31,9 @@ export function useGitHubStars() {
     if (Date.now() - githubStarsUpdatedAt < ONE_DAY_MS)
       return
 
-    fetch(`https://api.github.com/repos/${GITHUB_REPO}`)
+    fetch(`https://api.github.com/repos/${GITHUB_REPO}`, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
       .then(res => res.json())
       .then((data) => {
         if (data.stargazers_count) {
@@ -35,7 +43,7 @@ export function useGitHubStars() {
         }
       })
       .catch(() => {
-        // 失败时保持缓存值
+        // 连不上、超时都保持缓存值，不打日志也不提示——它只是个 star 数
       })
   }, [githubStarsUpdatedAt])
 

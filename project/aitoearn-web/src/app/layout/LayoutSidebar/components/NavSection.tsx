@@ -99,7 +99,10 @@ function NavItem({ item, currentRoute, collapsed, level = 0 }: NavItemProps) {
   )
 
   const content = fullPath ? (
-    <Link href={fullPath} className="block w-full" data-testid={`sidebar-nav-item-${item.translationKey}`}>
+    // prefetch={false}：整个 [lng] 布局是 force-dynamic，预取等于让服务器把这一页真渲染一遍。
+    // 十来个入口一进视口就是十来次额外的服务端渲染，自部署那台小机器直接被占满，
+    // 用户正在看的这一页反而变慢。点了再取。
+    <Link href={fullPath} prefetch={false} className="block w-full" data-testid={`sidebar-nav-item-${item.translationKey}`}>
       {contentNode}
     </Link>
   ) : (

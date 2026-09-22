@@ -30,11 +30,6 @@
     "optional": "Facultatif",
     "skipped": "Ignoré"
   },
-  "banner": {
-    "action": "Configurer",
-    "dismiss": "Plus tard",
-    "more": "{{count}} autre(s) point(s) ne sont pas configurés non plus."
-  },
   "step": {
     "label": "Étape {{index}}",
     "what": "De quoi il s'agit",
@@ -45,42 +40,36 @@
   "item": {
     "agentUpstream": {
       "title": "IA en amont",
-      "broken": "L'extraction d'angles par l'IA ne marche pas : l'IA en amont n'est pas configurée",
       "what": "Les fonctions du type « faire extraire les angles par l'IA » transmettent la demande à un service d'IA en amont. Il s'agit ici de l'adresse et de la clé de ce service.",
       "impact": "Sans ça, « faire extraire les angles par l'IA » ne renvoie qu'un Internal server error. La clé livrée dans le dépôt est un espace réservé, systématiquement refusé en amont.",
       "where": "Créez une clé d'API dans la console de votre fournisseur de modèles, puis collez ici son point d'accès messages et cette clé. Si vous avez votre propre passerelle, indiquez son adresse."
     },
     "aiChatModels": {
       "title": "Canal des modèles de discussion",
-      "broken": "La discussion IA et la génération d'éléments ne marchent pas : le canal de modèles n'est pas configuré",
       "what": "La discussion IA, les réponses aux commentaires et les éléments générés par l'IA passent par ce canal. La liste de modèles est livrée avec le dépôt et change rarement : c'est la clé qui compte.",
       "impact": "Sans ça, toutes les pages qui utilisent l'IA échouent ou tournent indéfiniment.",
       "where": "Récupérez une clé d'API dans la même console. Pour le point d'accès officiel, laissez l'adresse telle quelle ; sinon, indiquez votre propre passerelle."
     },
     "assets": {
       "title": "Stockage objet",
-      "broken": "Impossible de stocker les images et vidéos : le stockage objet n'est pas configuré",
       "what": "Les avatars, les éléments et tout ce que l'IA génère sont conservés dans le stockage objet.",
       "impact": "Sans ça, les envois échouent et les éléments déjà générés ne s'ouvrent plus.",
       "where": "Ce point fait partie des fondations : il ne se change que dans le .env du serveur (les variables ASSETS_), suivi d'un nouveau passage du script de déploiement."
     },
     "projectsRoot": {
       "title": "Répertoire racine des fichiers",
-      "broken": "Impossible de lire les fichiers de projet : le répertoire racine n'est pas configuré",
       "what": "Tous les fichiers d'un projet se trouvent sous ce répertoire sur le serveur.",
       "impact": "Si le répertoire n'existe pas ou que le conteneur ne peut pas y écrire, les fichiers de projet ne s'ouvriront ni ne s'enregistreront.",
       "where": "Là aussi, uniquement via le .env. Vérifiez que le répertoire est bien monté dans le conteneur et accessible en écriture."
     },
     "notify": {
       "title": "Canal de notification",
-      "broken": "Aucune notification n'arrivera : le canal de notification n'est pas configuré",
       "what": "Envoie une notification sur votre téléphone lorsqu'une tâche ou une génération d'éléments se termine.",
       "impact": "Rien d'autre ne casse : vous ne serez simplement pas prévenu quand quelque chose se termine.",
       "where": "Votre adresse de notification personnelle se renseigne dans « Paramètres – Notifications ». Le canal de secours commun est dans le .env du serveur."
     },
     "unknown": {
       "title": "{{key}}",
-      "broken": "Une vérification échoue : {{key}}",
       "what": "Cette vérification a été ajoutée côté serveur et l'interface web n'a pas encore de description dédiée.",
       "impact": "Tant qu'elle échoue, la fonctionnalité correspondante risque de mal marcher.",
       "where": "Elle correspond à {{path}} dans la configuration, que vous retrouverez sur la page de configuration."

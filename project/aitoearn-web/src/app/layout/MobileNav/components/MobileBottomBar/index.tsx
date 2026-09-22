@@ -87,6 +87,8 @@ function MobileBottomItem({
   return (
     <Link
       href={item.path}
+      // 同侧边栏：force-dynamic 下预取就是一次真的服务端渲染，不值得
+      prefetch={false}
       className={cn(
         'flex h-full min-w-0 cursor-pointer items-center justify-center px-0.5',
         isActive ? 'scale-[1.02]' : 'active:scale-[0.98]',

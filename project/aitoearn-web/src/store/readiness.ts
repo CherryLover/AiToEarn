@@ -3,15 +3,16 @@
  *
  * 进站在已登录布局里拉**一次** `GET /system/readiness`，结果放这里，
  * **同一次会话不重复拉**（contract-runtime-config 4.2）。引导页保存完调 `refresh()` 手动复检。
+ * 有必需项没通过时，`ReadinessGate` 据此把人直接送去 `/setup`。
  *
  * 三条边界，改之前先读：
  *
  * 1. **不持久化。** 就绪状态是「服务器此刻行不行」，不是用户偏好。存进 localStorage 的后果是：
- *    运维把上游配好了，用户这边横幅还挂着；或者反过来，配置被改坏了网页还显示一切正常。
+ *    运维把上游配好了，用户这边还一直被弹去配置页；或者反过来，配置被改坏了网页还当作一切正常。
  * 2. **未登录不拉。** 接口要登录，未登录调用只会拿到 401，白跑一趟还会在控制台留错。
  *    退出登录时调 `reset()`，换个账号进来重新拉。
- * 3. **失败不重试、不报错。** 拉不到就当作「不知道」，`data` 保持 null，横幅不显示。
- *    宁可少说一句，也不要在服务端还没上线这个接口的时候把每个人都拦在横幅后面。
+ * 3. **失败不重试、不报错。** 拉不到就当作「不知道」，`data` 保持 null，不跳转。
+ *    宁可漏跳一次，也不要在服务端还没上线这个接口的时候把每个人都锁在配置页上。
  */
 
 import type { ReadinessVo } from '@/api/system/readiness.types'
@@ -27,18 +28,15 @@ interface ReadinessStoreState {
   data: ReadinessVo | null
   /** 本次会话已经自动拉过一次（不管成败），`ensureLoaded` 不再重复触发 */
   fetchedOnce: boolean
-  /** 横幅被手动关掉。只在本次会话有效，刷新页面又会出现——配置没修好，就该一直提醒 */
-  bannerDismissed: boolean
   /** 进站调这个：拉过就什么都不做 */
   ensureLoaded: () => Promise<void>
   /** 引导页保存完调这个：强制重新拉一次 */
   refresh: () => Promise<ReadinessVo | null>
-  dismissBanner: () => void
   /** 退出登录时调，免得把上一个账号的结果带给下一个 */
   reset: () => void
 }
 
-/** 同时发起多次时共用同一个请求，别让引导页和横幅各打一次 */
+/** 同时发起多次时共用同一个请求，别让引导页和闸门各打一次 */
 let inflight: Promise<ReadinessVo | null> | null = null
 
 async function loadReadiness(
@@ -77,7 +75,6 @@ export const useReadinessStore = create<ReadinessStoreState>((set, get) => ({
   loadState: 'idle',
   data: null,
   fetchedOnce: false,
-  bannerDismissed: false,
 
   async ensureLoaded() {
     if (get().fetchedOnce || get().loadState === 'loading')
@@ -89,19 +86,15 @@ export const useReadinessStore = create<ReadinessStoreState>((set, get) => ({
     return loadReadiness(set)
   },
 
-  dismissBanner() {
-    set({ bannerDismissed: true })
-  },
-
   reset() {
     inflight = null
-    set({ loadState: 'idle', data: null, fetchedOnce: false, bannerDismissed: false })
+    set({ loadState: 'idle', data: null, fetchedOnce: false })
   },
 }))
 
 /**
  * 有没有 required 项没通过。
- * `data` 为 null（没拉到）时返回 false：**不知道就别吓人**。
+ * `data` 为 null（没拉到）时返回 false：**不知道就别把人弹走**。
  */
 export function hasBlockingReadinessIssue(data: ReadinessVo | null): boolean {
   if (!data)

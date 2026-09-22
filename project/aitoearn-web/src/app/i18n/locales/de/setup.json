@@ -30,11 +30,6 @@
     "optional": "Optional",
     "skipped": "Übersprungen"
   },
-  "banner": {
-    "action": "Einrichten",
-    "dismiss": "Später",
-    "more": "{{count}} weitere Punkte sind ebenfalls nicht eingerichtet."
-  },
   "step": {
     "label": "Schritt {{index}}",
     "what": "Worum es geht",
@@ -45,42 +40,36 @@
   "item": {
     "agentUpstream": {
       "title": "Vorgelagerte KI",
-      "broken": "Die KI-Richtungsanalyse funktioniert nicht: Die vorgelagerte KI ist nicht eingerichtet",
       "what": "Funktionen wie „KI Richtungen herausarbeiten lassen“ leiten die Anfrage an einen vorgelagerten KI-Dienst weiter. Hier stehen dessen Adresse und Schlüssel.",
       "impact": "Ohne diesen Punkt liefert „KI Richtungen herausarbeiten lassen“ nur Internal server error. Der im Repository mitgelieferte Schlüssel ist ein Platzhalter, den die Gegenstelle immer ablehnt.",
       "where": "Legen Sie in der Konsole Ihres Modellanbieters einen API-Schlüssel an und tragen Sie dessen messages-Endpunkt und den Schlüssel hier ein. Bei eigenem Gateway nehmen Sie stattdessen dessen Adresse."
     },
     "aiChatModels": {
       "title": "Kanal für Chat-Modelle",
-      "broken": "KI-Chat und Asset-Erzeugung funktionieren nicht: Der Modellkanal ist nicht eingerichtet",
       "what": "KI-Chat, Kommentarantworten und KI-erzeugte Assets laufen über diesen Kanal. Die Modellliste liegt dem Repository bei und muss selten geändert werden – der Schlüssel schon.",
       "impact": "Ohne diesen Punkt bricht jede Seite mit KI ab oder lädt endlos.",
       "where": "Holen Sie sich einen API-Schlüssel aus derselben Anbieterkonsole. Für den offiziellen Endpunkt lassen Sie die Adresse stehen, sonst tragen Sie Ihr eigenes Gateway ein."
     },
     "assets": {
       "title": "Objektspeicher",
-      "broken": "Bilder und Videos lassen sich nicht speichern: Der Objektspeicher ist nicht eingerichtet",
       "what": "Profilbilder, Assets und alles von der KI Erzeugte liegen im Objektspeicher.",
       "impact": "Ohne diesen Punkt schlagen Uploads fehl, und bereits erzeugte Assets lassen sich nicht öffnen.",
       "where": "Dieser Punkt gehört zum Fundament und lässt sich nur in der .env des Servers ändern (die ASSETS_-Variablen), danach muss das Deploy-Skript erneut laufen."
     },
     "projectsRoot": {
       "title": "Wurzelverzeichnis der Projektdateien",
-      "broken": "Projektdateien lassen sich nicht lesen: Das Wurzelverzeichnis ist nicht eingerichtet",
       "what": "Alle Dateien eines Projekts liegen unter diesem Verzeichnis auf dem Server.",
       "impact": "Fehlt das Verzeichnis oder kann der Container nicht hineinschreiben, lassen sich Projektdateien weder öffnen noch speichern.",
       "where": "Ebenfalls nur über die .env. Stellen Sie sicher, dass das Verzeichnis wirklich in den Container eingehängt und beschreibbar ist."
     },
     "notify": {
       "title": "Benachrichtigungskanal",
-      "broken": "Es kommen keine Benachrichtigungen an: Der Benachrichtigungskanal ist nicht eingerichtet",
       "what": "Schickt eine Push-Nachricht auf Ihr Telefon, wenn eine Aufgabe oder eine Asset-Erzeugung fertig ist.",
       "impact": "Sonst geht nichts kaputt – Sie erfahren nur nicht, wann etwas fertig ist.",
       "where": "Ihre eigene Push-Adresse tragen Sie unter „Einstellungen – Benachrichtigungen“ ein. Der serverweite Ersatzkanal steht in der .env des Servers."
     },
     "unknown": {
       "title": "{{key}}",
-      "broken": "Eine Prüfung schlägt fehl: {{key}}",
       "what": "Diese Prüfung wurde serverseitig ergänzt; die Weboberfläche hat dafür noch keine eigene Beschreibung.",
       "impact": "Solange sie fehlschlägt, funktioniert die zugehörige Funktion möglicherweise nicht richtig.",
       "where": "Sie entspricht {{path}} in der Konfiguration und ist auf der Konfigurationsseite zu finden."

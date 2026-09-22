@@ -30,11 +30,6 @@
     "optional": "Optional",
     "skipped": "Skipped"
   },
-  "banner": {
-    "action": "Set it up",
-    "dismiss": "Not now",
-    "more": "{{count}} other items are not set up either."
-  },
   "step": {
     "label": "Step {{index}}",
     "what": "What this is",
@@ -45,42 +40,36 @@
   "item": {
     "agentUpstream": {
       "title": "Upstream AI",
-      "broken": "AI angle extraction is down: the upstream AI is not set up",
       "what": "Features like \"let AI extract angles\" forward the request to an upstream AI service. This is that service's address and key.",
       "impact": "Without it, \"let AI extract angles\" only ever returns Internal server error. The key shipped in the repo is a placeholder, so the upstream always rejects it.",
       "where": "Create an API key in your model provider's console, then paste its messages endpoint and that key here. If you run your own gateway, use its address instead."
     },
     "aiChatModels": {
       "title": "Chat model channel",
-      "broken": "AI chat and asset generation are down: the model channel is not set up",
       "what": "AI chat, comment replies and AI-generated assets all go through this channel. The model list ships with the repo and rarely needs changing — the key does.",
       "impact": "Without it, every page that uses AI either errors out or spins forever.",
       "where": "Get an API key from the same provider console. Leave the address as it is for the official endpoint, or point it at your own gateway."
     },
     "assets": {
       "title": "Object storage",
-      "broken": "Images and videos cannot be stored: object storage is not set up",
       "what": "Avatars, assets and everything the AI generates are stored in object storage.",
       "impact": "Without it, uploads fail and assets that were already generated will not open.",
       "where": "This one is foundational, so it can only be changed in the server's .env (the ASSETS_ variables), followed by another deploy run."
     },
     "projectsRoot": {
       "title": "Project file root",
-      "broken": "Project files cannot be read: the project file root is not set up",
       "what": "Every file in a project lives under this directory on the server.",
       "impact": "If the directory is missing or the container cannot write to it, project files will neither open nor save.",
       "where": "Also .env only. Make sure the directory really is mounted into the container and is writable."
     },
     "notify": {
       "title": "Notification channel",
-      "broken": "No notifications will arrive: the notification channel is not set up",
       "what": "Sends a push to your phone when a task finishes or an asset is generated.",
       "impact": "Nothing else breaks — you just will not be told when something finishes.",
       "where": "Your own push address goes in Settings → Notifications. The server-wide fallback channel lives in the server's .env."
     },
     "unknown": {
       "title": "{{key}}",
-      "broken": "One check is failing: {{key}}",
       "what": "This check was added on the server and the web app has no description for it yet.",
       "impact": "While it fails, the matching feature may not work correctly.",
       "where": "It maps to {{path}} in the configuration, which you can find on the configuration page."

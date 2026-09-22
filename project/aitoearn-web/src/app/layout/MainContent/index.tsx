@@ -9,10 +9,9 @@ import { cn } from '@/utils/className'
 
 interface MainContentProps {
   children: React.ReactNode
-  banner?: React.ReactNode
 }
 
-export function MainContent({ children, banner }: MainContentProps) {
+export function MainContent({ children }: MainContentProps) {
   const { isAuthPage, isBottomNavHidden } = useNavigationLogic()
 
   return (
@@ -24,7 +23,6 @@ export function MainContent({ children, banner }: MainContentProps) {
         !isBottomNavHidden && 'pb-20 md:pb-0',
       )}
     >
-      {banner}
       <div
         id="main-content"
         className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"

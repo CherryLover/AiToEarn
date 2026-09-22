@@ -23,6 +23,7 @@ import { useGetClientLng } from '@/hooks/useSystem'
 import { useUserStore } from '@/store/user'
 import { toast } from '@/utils/ui/toast'
 
+import { GoogleAuthScope } from './GoogleAuthScope'
 import { useCountdown } from './useCountdown'
 
 interface EmailLoginFormProps {
@@ -184,21 +185,27 @@ export function EmailLoginForm({
     <>
       {showGoogleLogin && (
         <>
-          {/* Google 登录 */}
+          {/*
+            Google 登录。Provider 就包在这里，不在全局——
+            `accounts.google.com/gsi/client` 在国内连不上，挂全局会让每个页面
+            都等它一次，标签页一直转圈。见 `GoogleAuthScope` 的注释。
+          */}
           <div ref={googleContainerRef} className="space-y-3">
             {googleBtnWidth > 0 && (
-              <GoogleLogin
-                key={`${lng}-${googleBtnWidth}`}
-                onSuccess={handleGoogleSuccess}
-                onError={() => toast.error(t('googleLoginFailed'))}
-                useOneTap={false}
-                theme="outline"
-                shape="rectangular"
-                text="continue_with"
-                locale={lng.replace('-', '_')}
-                size="large"
-                width={String(googleBtnWidth)}
-              />
+              <GoogleAuthScope lng={lng}>
+                <GoogleLogin
+                  key={`${lng}-${googleBtnWidth}`}
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => toast.error(t('googleLoginFailed'))}
+                  useOneTap={false}
+                  theme="outline"
+                  shape="rectangular"
+                  text="continue_with"
+                  locale={lng.replace('-', '_')}
+                  size="large"
+                  width={String(googleBtnWidth)}
+                />
+              </GoogleAuthScope>
             )}
           </div>
 

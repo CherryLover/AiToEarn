@@ -9,7 +9,7 @@ import { MainContent } from '@/app/layout/MainContent'
 import MobileNav from '@/app/layout/MobileNav'
 import { ChannelManager } from '@/components/ChannelManager'
 import { Providers } from '../layout/Providers'
-import { ReadinessBanner } from './setup/components/ReadinessBanner'
+import { ReadinessGate } from './setup/components/ReadinessGate'
 import '../globals.css'
 
 export const dynamic = 'force-dynamic'
@@ -56,6 +56,9 @@ export default async function RootLayout({
 }>) {
   const { lng } = await params
   const autoLoginToken = process.env.AUTO_LOGIN_TOKEN?.trim() || undefined
+  // 推广返佣脚本的站点 ID。自部署一般不用返佣，没填就一行脚本都不插——
+  // `r.wdfl.co` 在国内连不上，插了浏览器会一直等它，标签页转圈停不下来
+  const rewardfulId = process.env.REWARDFUL_ID?.trim() || undefined
 
   return (
     <html lang={lng} dir={dir(lng)} suppressHydrationWarning>
@@ -71,30 +74,36 @@ export default async function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        {/* Rewardful 脚本 */}
-        <Script
-          id="rewardful-init"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`,
-          }}
-        />
-        <Script src="https://r.wdfl.co/rw.js" data-rewardful="ded70f" strategy="afterInteractive" />
+        {/* Rewardful 推广返佣脚本：只有配了 REWARDFUL_ID 才插 */}
+        {rewardfulId && (
+          <>
+            <Script
+              id="rewardful-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`,
+              }}
+            />
+            <Script src="https://r.wdfl.co/rw.js" data-rewardful={rewardfulId} strategy="afterInteractive" />
+          </>
+        )}
         <Providers lng={lng} autoLoginToken={autoLoginToken}>
           {/* 全局频道管理弹框 */}
           <ChannelManager />
+          {/*
+            就绪检查闸门：进站拉一次 /system/readiness，有必需项没配好就直接跳去 /setup。
+            它不渲染任何东西，也不在页面上解释是哪一项没配——该配的去配置页配。
+            未登录时它什么都不做。
+          */}
+          <ReadinessGate />
           <p className="hidden">Impact-Site-Verification: f9836212-462a-482f-9232-8a877970eacf</p>
           {/* 移动端顶部导航 - fixed 定位，独立于 flex 布局 */}
           <MobileNav />
           <div className="flex h-screen w-full">
             {/* 桌面端侧边栏 */}
             <LayoutSidebar />
-            {/*
-              主内容区域 - 根据页面类型动态控制 pt-14
-              banner 位挂就绪检查横幅：进站在这里拉一次 /system/readiness，
-              有必需项没通过就在内容上方说清楚是哪个功能坏了。未登录时它自己什么都不渲染。
-            */}
-            <MainContent banner={<ReadinessBanner />}>{children}</MainContent>
+            {/* 主内容区域 - 根据页面类型动态控制 pt-14 */}
+            <MainContent>{children}</MainContent>
           </div>
         </Providers>
       </body>

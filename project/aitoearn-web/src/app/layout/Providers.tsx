@@ -1,14 +1,18 @@
 /**
  * Providers - 全局 Provider 组件
- * 包含 Google OAuth、Ant Design 配置、Toast、主题等全局配置
+ * 包含 Ant Design 配置、Toast、主题等全局配置
+ *
+ * **别往这里加会发外部请求的 Provider。** 这里原本挂着 `GoogleOAuthProvider`，
+ * 它一挂载就去加载 `accounts.google.com/gsi/client`；那个域名在国内连不上，
+ * 浏览器一直等它，标签页的转圈就停不下来——这正是「主站一直 loading 却没内容」的来源。
+ * 现在它跟着 Google 按钮走（`LoginContent/GoogleAuthScope.tsx`），谁用谁包。
  */
 
 'use client'
 
-import { GoogleOAuthProvider } from '@react-oauth/google'
 import { ThemeProvider } from 'next-themes'
 import { usePathname } from 'next/navigation'
-import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/shallow'
 import ConfigManagerDialog from '@/app/layout/ConfigManagerDialog'
 import LoginDialog from '@/app/layout/LoginDialog'
@@ -104,45 +108,25 @@ export function Providers({
     useLoginDialogStore.getState().openLoginDialog({ fromGuard: true })
   }, [_hasHydrated, authInitialized, token, pathname, publicRoute])
 
-  // 拦截 @react-oauth/google 的脚本加载，添加 ?hl= 参数以设置按钮语言
-  useLayoutEffect(() => {
-    const hl = lng.replace('-', '_')
-    const GIS_URL = 'https://accounts.google.com/gsi/client'
-    const originalAppendChild = document.body.appendChild.bind(document.body)
-
-    document.body.appendChild = function <T extends Node>(node: T): T {
-      if (node instanceof HTMLScriptElement && node.src === GIS_URL) {
-        node.src = `${GIS_URL}?hl=${hl}`
-      }
-      return originalAppendChild(node)
-    }
-
-    return () => {
-      document.body.appendChild = originalAppendChild
-    }
-  }, [lng])
-
   return (
     <PublicRouteContext.Provider value={publicRoute}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-        <GoogleOAuthProvider clientId="1094109734611-flskoscgp609mecqk9ablvc6i3205vqk.apps.googleusercontent.com">
-          <Toaster position="top-center" richColors />
-          {/* 专用右上角通知中心（不影响现有 toast） */}
-          <NotificationCenter />
-          <PluginPublishingFloatButton />
-          <WechatBrowserOverlay />
-          {/* 全局登录弹框 */}
-          <LoginDialog />
-          {/* 全局配置管理弹框 */}
-          <ConfigManagerDialog open={configManagerOpen} onClose={closeConfigManagerDialog} />
-          {/* 全局设置弹框 - 统一在此渲染，避免多处重复 */}
-          <SettingsModal
-            open={settingsVisible}
-            onClose={closeSettings}
-            defaultTab={settingsDefaultTab}
-          />
-          {children}
-        </GoogleOAuthProvider>
+        <Toaster position="top-center" richColors />
+        {/* 专用右上角通知中心（不影响现有 toast） */}
+        <NotificationCenter />
+        <PluginPublishingFloatButton />
+        <WechatBrowserOverlay />
+        {/* 全局登录弹框 */}
+        <LoginDialog />
+        {/* 全局配置管理弹框 */}
+        <ConfigManagerDialog open={configManagerOpen} onClose={closeConfigManagerDialog} />
+        {/* 全局设置弹框 - 统一在此渲染，避免多处重复 */}
+        <SettingsModal
+          open={settingsVisible}
+          onClose={closeSettings}
+          defaultTab={settingsDefaultTab}
+        />
+        {children}
       </ThemeProvider>
     </PublicRouteContext.Provider>
   )
