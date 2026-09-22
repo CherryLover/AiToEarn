@@ -2,7 +2,7 @@ import { constants } from 'node:fs'
 import { access, stat } from 'node:fs/promises'
 import * as path from 'node:path'
 import { Injectable, Logger } from '@nestjs/common'
-import { AitoearnAiClientService, ReadinessItemResponse } from '@yikart/aitoearn-ai-client'
+import { AgentModelsResponse, AitoearnAiClientService, ReadinessItemResponse } from '@yikart/aitoearn-ai-client'
 import { StorageProvider } from '@yikart/assets'
 import { ResponseCode } from '@yikart/common'
 import { config } from '../../config'
@@ -55,6 +55,24 @@ export class SystemService {
     private readonly aiClientService: AitoearnAiClientService,
     private readonly storageProvider: StorageProvider,
   ) {}
+
+  /**
+   * 上游有哪些模型，原样透传 ai 那边的结果。
+   *
+   * 这一项的配置（`agent.baseUrl` / `agent.apiKey`）只存在于 ai 的配置里，
+   * server 进程读不到，所以只能让 ai 去问。**ai 连不上也不抛错**：
+   * 引导页拉不到清单要退回手填，不是把那一格变成死路。
+   */
+  async getAgentModels(): Promise<AgentModelsResponse> {
+    try {
+      return await this.aiClientService.ai.getAgentModels()
+    }
+    catch (error) {
+      const detail = sanitizeDetail(error instanceof Error ? error.message : String(error))
+      this.logger.warn(`拉上游模型清单失败（ai 服务没应答）：${detail}`)
+      return { models: [], detail: `ai 服务没应答：${detail}` }
+    }
+  }
 
   async getReadiness(): Promise<ReadinessResult> {
     const [aiSideItems, assets, projectsRoot, notify] = await Promise.all([

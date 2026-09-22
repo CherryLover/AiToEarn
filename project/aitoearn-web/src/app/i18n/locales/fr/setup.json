@@ -99,7 +99,7 @@
       },
       "defaultModel": {
         "label": "Modèle par défaut",
-        "desc": "Utilisé quand aucun modèle n'est précisé. Reprenez le nom de modèle exactement comme dans la documentation de votre fournisseur.",
+        "desc": "Utilisé lorsqu'aucun modèle n'est précisé. La liste provient de l'adresse et de la clé amont enregistrées ; à défaut, saisissez le nom à la main.",
         "placeholder": "Nom de modèle de la documentation du fournisseur"
       }
     },
@@ -178,5 +178,14 @@
   "done": {
     "title": "Tout est configuré",
     "desc": "Tout ce qui est nécessaire fonctionne. Revenez à l'accueil et lancez-vous."
+  },
+  "model": {
+    "placeholder": "Choisir un modèle",
+    "search": "Rechercher un nom de modèle",
+    "noMatch": "Aucun modèle correspondant",
+    "reload": "Recharger la liste",
+    "loaded": "Le service amont renvoie {{count}} modèles.",
+    "manual": "Liste indisponible — vous pouvez toujours saisir le nom du modèle à la main.",
+    "aligned": "Les trois modèles de rôle doivent figurer dans la liste : {{paths}} ont donc été alignés sur ce modèle. Pour les régler séparément, passez par la page de configuration."
   }
 }

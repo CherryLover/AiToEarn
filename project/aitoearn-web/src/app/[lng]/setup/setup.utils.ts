@@ -8,7 +8,7 @@
  * 顺手 `console.log(config)` 就等于把它打进浏览器控制台和任何接管了 console 的埋点。
  */
 
-import type { SetupFieldSpec, SetupStepSpec } from './setup.constants'
+import type { SetupFieldSpec, SetupModelSelectSpec, SetupStepSpec } from './setup.constants'
 import type { ReadinessItemVo } from '@/api/system/readiness.types'
 import { ConfigEditorServiceTarget } from '@/api/config-editor/config-editor.types'
 import {
@@ -219,4 +219,67 @@ export function pickPrimaryBlockingItem(items: ReadinessItemVo[]): ReadinessItem
 /** 认识这个检查项的 key 吗。不认识就用兜底文案，不要显示成一串英文 key */
 export function isKnownItemKey(key: string): boolean {
   return SETUP_STEP_SPECS.some(spec => spec.key === key)
+}
+
+/** 按键路径读出一个字符串数组；不是数组、或者里面混了别的类型，就只取字符串那几项 */
+function readStringList(config: Record<string, unknown>, path: string): string[] {
+  const value = getConfigValue(config, path)
+  if (!Array.isArray(value))
+    return []
+  return value.filter((item): item is string => typeof item === 'string' && item.length > 0)
+}
+
+function unique(names: string[]): string[] {
+  return [...new Set(names)]
+}
+
+export interface ModelSelectionResult {
+  config: Record<string, unknown>
+  /** 这次顺带对齐了哪些角色模型。界面要说一声——偷偷改用户的配置是不行的 */
+  aligned: string[]
+}
+
+/**
+ * 选中一个模型，连着把清单和另外两个角色模型一起摆平。
+ *
+ * 为什么不能只写 `defaultModel`：后台的校验是「三个角色模型都必须在 `agent.models` 里」。
+ * 只改 `defaultModel` 的话，保存会被整份拒掉，配置里留的还是旧模型名，
+ * 于是就绪检查报的错里写的是旧模型——人看着自己填的新模型，读到的是旧模型的报错，
+ * 根本对不上号。这正是线上那次「我明明配好了还是报错」。
+ *
+ * 两种情况下的取舍不一样：
+ * - **上游清单拉到了**：以它为准。换上游就意味着旧清单整个作废，所以清单重写成
+ *   「这次真正要用的那几个」——选中的，加上那些上游确实也有、因此不必动的角色模型。
+ * - **拉不到（手填）**：手上没有判据，一个都不敢删。只把填的这个**追加**进原清单，
+ *   原来的项全留着；只有本来就不在清单里的角色模型才对齐过去。
+ */
+export function applyModelSelection(
+  config: Record<string, unknown>,
+  path: string,
+  spec: SetupModelSelectSpec,
+  model: string,
+  upstreamModels: string[],
+): ModelSelectionResult {
+  const currentList = readStringList(config, spec.listPath)
+  const known = upstreamModels.length > 0 ? new Set(upstreamModels) : null
+  const isUsable = (name: string) => (known ? known.has(name) : currentList.includes(name))
+
+  const aligned: string[] = []
+  const kept: string[] = []
+  let next = setConfigValue(config, path, model)
+
+  for (const alignPath of spec.alignPaths) {
+    const current = getConfigValue(config, alignPath)
+    if (typeof current === 'string' && current && isUsable(current)) {
+      kept.push(current)
+      continue
+    }
+    next = setConfigValue(next, alignPath, model)
+    aligned.push(alignPath)
+  }
+
+  const list = known ? unique([model, ...kept]) : unique([model, ...currentList])
+  next = setConfigValue(next, spec.listPath, list)
+
+  return { config: next, aligned }
 }

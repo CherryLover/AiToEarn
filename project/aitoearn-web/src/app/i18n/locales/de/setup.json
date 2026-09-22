@@ -99,7 +99,7 @@
       },
       "defaultModel": {
         "label": "Standardmodell",
-        "desc": "Wird verwendet, wenn kein Modell angegeben ist. Nehmen Sie den Modellnamen genau so, wie ihn Ihr Anbieter dokumentiert.",
+        "desc": "Wird verwendet, wenn kein Modell angegeben ist. Die Liste stammt von der gespeicherten Upstream-Adresse samt Schlüssel; klappt das nicht, trägst du den Namen von Hand ein.",
         "placeholder": "Modellname aus der Anbieterdokumentation"
       }
     },
@@ -178,5 +178,14 @@
   "done": {
     "title": "Alles eingerichtet",
     "desc": "Alles Erforderliche funktioniert. Gehen Sie zurück zur Startseite und legen Sie los."
+  },
+  "model": {
+    "placeholder": "Modell wählen",
+    "search": "Modellnamen suchen",
+    "noMatch": "Kein passendes Modell",
+    "reload": "Liste neu laden",
+    "loaded": "Upstream meldet {{count}} Modelle.",
+    "manual": "Liste nicht abrufbar — der Modellname lässt sich weiterhin von Hand eintragen.",
+    "aligned": "Alle drei Rollenmodelle müssen in der Liste stehen, deshalb wurden {{paths}} ebenfalls auf dieses Modell gesetzt. Getrennt einstellen lässt sich das auf der Konfigurationsseite."
   }
 }

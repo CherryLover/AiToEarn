@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { AxiosRequestConfig } from 'axios'
 import {
+  AgentModelsResponse,
   CreateDraftGenerationResponse,
   CreateDraftV2Request,
   CreateImageTextDraftRequest,
@@ -15,6 +16,9 @@ import { BaseService } from './base.service'
  * 再留一点网络余量就够了，不能让它占满 BaseService 默认的 30 秒。
  */
 const READINESS_TIMEOUT_MS = 8000
+
+/** 拉模型清单：ai 那边给上游留了 8 秒，这里再留点网络余量 */
+const AGENT_MODELS_TIMEOUT_MS = 12000
 
 @Injectable()
 export class AiService extends BaseService {
@@ -59,5 +63,20 @@ export class AiService extends BaseService {
       timeout: READINESS_TIMEOUT_MS,
     }
     return this.request<ReadinessResponse>(url, config)
+  }
+
+  /**
+   * 上游有哪些模型，给引导页的「默认模型」下拉用。
+   *
+   * 和就绪检查一样：ai 那边拉不到也回 200，原因写在 `detail` 里；
+   * 只有 ai 服务本身连不上才会抛错，**调用方必须自己接住**。
+   */
+  async getAgentModels(): Promise<AgentModelsResponse> {
+    const url = `/internal/agent-models`
+    const config: AxiosRequestConfig = {
+      method: 'GET',
+      timeout: AGENT_MODELS_TIMEOUT_MS,
+    }
+    return this.request<AgentModelsResponse>(url, config)
   }
 }

@@ -99,7 +99,7 @@
       },
       "defaultModel": {
         "label": "Default model",
-        "desc": "Used when no model is specified. Use the model name exactly as your provider documents it.",
+        "desc": "Used when no model is specified. The list is fetched from the saved upstream address and key; type it by hand if that fails.",
         "placeholder": "Model name from your provider's docs"
       }
     },
@@ -178,5 +178,14 @@
   "done": {
     "title": "All set",
     "desc": "Everything required passes. Head back home and start using it."
+  },
+  "model": {
+    "placeholder": "Pick a model",
+    "search": "Search model names",
+    "noMatch": "No matching model",
+    "reload": "Reload list",
+    "loaded": "Upstream reported {{count}} models.",
+    "manual": "Couldn't load the list — typing the model name by hand still works.",
+    "aligned": "All three role models must be in the list, so {{paths}} were set to this model as well. Set them separately on the config page."
   }
 }

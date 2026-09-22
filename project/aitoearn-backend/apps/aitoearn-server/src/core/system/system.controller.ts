@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { ApiDoc } from '@yikart/common'
 import { SystemService } from './system.service'
-import { ReadinessVo } from './system.vo'
+import { AgentModelsVo, ReadinessVo } from './system.vo'
 
 /**
  * 就绪检查（contract-runtime-config 4.1）。
@@ -24,5 +24,16 @@ export class SystemController {
   async getReadiness(): Promise<ReadinessVo> {
     const result = await this.systemService.getReadiness()
     return ReadinessVo.create(result)
+  }
+
+  @ApiDoc({
+    summary: '上游有哪些模型',
+    description: '给引导页的「默认模型」下拉用。按 agent.baseUrl 推出列模型接口去真问一次；拉不到也回 200，原因写在 detail 里',
+    response: AgentModelsVo,
+  })
+  @Get('/agent-models')
+  async getAgentModels(): Promise<AgentModelsVo> {
+    const result = await this.systemService.getAgentModels()
+    return AgentModelsVo.create(result)
   }
 }

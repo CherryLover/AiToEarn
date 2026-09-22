@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { getAgentModelsApi } from '@/api/system/agent-models.api'
 import { ReadinessItemKey, ReadinessStatus } from '@/api/system/readiness.types'
 import {
   getRuntimeConfigApi,
@@ -48,11 +49,13 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password-input'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/utils/className'
 import { toast } from '@/utils/ui/toast'
 import { SettingsCard } from '../../../settings/components/SettingsSection'
 import {
+  applyModelSelection,
   coerceFieldValue,
   getConfigOverrideErrorKey,
   getConfigValue,
@@ -108,6 +111,12 @@ export function SetupStep({
   const [feedback, setFeedback] = useState<StepFeedback | null>(null)
   /** 保存过但还没重启：只有非热生效的步骤会用到 */
   const [needsRestart, setNeedsRestart] = useState(false)
+  /** 上游报上来的模型清单。空数组 = 还没拉到，「默认模型」那一格退回手填 */
+  const [upstreamModels, setUpstreamModels] = useState<string[]>([])
+  const [modelsDetail, setModelsDetail] = useState<string | null>(null)
+  const [isLoadingModels, setIsLoadingModels] = useState(false)
+  /** 保存时顺带对齐掉的角色模型键路径。偷偷改用户配置是不行的，改了就得说 */
+  const [alignedNote, setAlignedNote] = useState<string | null>(null)
 
   const isOk = item.status === ReadinessStatus.Ok
   const known = isKnownItemKey(item.key)
@@ -141,6 +150,40 @@ export function SetupStep({
     if (open && hasEditableSpec && !config && !isLoadingConfig && !configLoadFailed)
       void loadConfig()
   }, [open, hasEditableSpec, config, isLoadingConfig, configLoadFailed, loadConfig])
+
+  /** 这一步里有没有要做成下拉的模型字段 */
+  const hasModelSelect = useMemo(
+    () => spec.fields.some(field => !!field.modelSelect),
+    [spec.fields],
+  )
+
+  const loadModels = useCallback(async () => {
+    setIsLoadingModels(true)
+    try {
+      const res = await getAgentModelsApi()
+      if (res && res.code === 0 && res.data) {
+        setUpstreamModels(res.data.models)
+        setModelsDetail(res.data.detail)
+        return
+      }
+      setUpstreamModels([])
+      setModelsDetail(res?.message || null)
+    }
+    catch {
+      // 不打日志：这条链路上的失败信息可能带着上游的返回体
+      setUpstreamModels([])
+      setModelsDetail(null)
+    }
+    finally {
+      setIsLoadingModels(false)
+    }
+  }, [])
+
+  // 展开时拉一次清单。拉不到不影响这一步能不能用：那一格会退回手填输入框
+  useEffect(() => {
+    if (open && hasModelSelect)
+      void loadModels()
+  }, [open, hasModelSelect, loadModels])
 
   /** 每个字段现在的样子：值、是不是受保护、能不能用一个输入框填 */
   const fieldStates = useMemo(() => {
@@ -211,6 +254,8 @@ export function SetupStep({
     try {
       // 整份提交，差异由服务端算（契约 3.4）。自己算 diff 会把没动过的字段冻成覆盖值
       let nextConfig = config.config
+      /** 选模型时顺带对齐掉的角色模型，保存完要如实说一声 */
+      const alignedPaths: string[] = []
       for (const state of editableStates) {
         const raw = values[state.field.path]
         if (raw == null)
@@ -220,6 +265,20 @@ export function SetupStep({
         // 密钥留空 = 不改，绝不能把空串写回去，那等于把 Key 删了
         if (state.field.secret && !typed)
           continue
+
+        // 选模型要连着改清单和另外两个角色模型，只写这一格保存会被整份拒掉
+        if (state.field.modelSelect && typed) {
+          const result = applyModelSelection(
+            nextConfig,
+            state.field.path,
+            state.field.modelSelect,
+            typed,
+            upstreamModels,
+          )
+          nextConfig = result.config
+          alignedPaths.push(...result.aligned)
+          continue
+        }
 
         nextConfig = setConfigValue(
           nextConfig,
@@ -244,6 +303,8 @@ export function SetupStep({
       setNeedsRestart(!spec.hotReload)
       // 重新读一遍：保存后覆盖层里的值才是下次编辑的基准
       await loadConfig()
+      // 对齐那句单独渲染，不占 feedback：复检结果（过了没有）比它重要得多，不能被顶掉
+      setAlignedNote(alignedPaths.length > 0 ? alignedPaths.join('、') : null)
       await runRecheck(spec.hotReload ? null : t('save.restartHint'))
     }
     catch {
@@ -455,38 +516,102 @@ export function SetupStep({
                         </p>
                       </div>
 
-                      {field.secret
+                      {field.modelSelect
                         ? (
-                            <PasswordInput
-                              id={inputId}
-                              value={values[field.path] ?? ''}
-                              onChange={event => handleChange(field.path, event.target.value)}
-                              autoComplete="new-password"
-                              spellCheck={false}
-                              placeholder={
-                                secretConfigured
-                                  ? t('secret.placeholderSet')
-                                  : t('secret.placeholderEmpty')
-                              }
-                              className="sm:max-w-xl"
-                              aria-invalid={!!error}
-                            />
+                            <div className="flex flex-col gap-2 sm:max-w-xl">
+                              {/* 拉到清单才给下拉。拉不到就退回手填——上游不支持列模型接口的情况是存在的，
+                                  这一格不能因此变成死路 */}
+                              {upstreamModels.length > 0
+                                ? (
+                                    <SearchableSelect
+                                      options={upstreamModels.map(name => ({ value: name, label: name }))}
+                                      value={readFieldValue(field.path, current)}
+                                      onValueChange={next => handleChange(field.path, next)}
+                                      placeholder={t('model.placeholder')}
+                                      searchPlaceholder={t('model.search')}
+                                      emptyText={t('model.noMatch')}
+                                      loading={isLoadingModels}
+                                      triggerClassName="h-9"
+                                    />
+                                  )
+                                : (
+                                    <Input
+                                      id={inputId}
+                                      value={readFieldValue(field.path, current)}
+                                      onChange={event => handleChange(field.path, event.target.value)}
+                                      autoComplete="off"
+                                      spellCheck={false}
+                                      placeholder={placeholder === placeholderKey ? undefined : placeholder}
+                                      aria-invalid={!!error}
+                                    />
+                                  )}
+
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => void loadModels()}
+                                  disabled={isLoadingModels}
+                                  loading={isLoadingModels}
+                                >
+                                  <RefreshCw className="size-4" />
+                                  {t('model.reload')}
+                                </Button>
+                                <span className="text-sm text-muted-foreground">
+                                  {upstreamModels.length > 0
+                                    ? t('model.loaded', { count: upstreamModels.length })
+                                    : t('model.manual')}
+                                </span>
+                              </div>
+
+                              {/* 拉不到的原因要显示出来：地址少一层、Key 过期，都在这句里 */}
+                              {upstreamModels.length === 0 && modelsDetail && (
+                                <p className="text-sm leading-relaxed text-muted-foreground">
+                                  {modelsDetail}
+                                </p>
+                              )}
+                            </div>
                           )
-                        : (
-                            <Input
-                              id={inputId}
-                              value={readFieldValue(field.path, current)}
-                              onChange={event => handleChange(field.path, event.target.value)}
-                              autoComplete="off"
-                              spellCheck={false}
-                              placeholder={placeholder === placeholderKey ? undefined : placeholder}
-                              className="sm:max-w-xl"
-                              aria-invalid={!!error}
-                            />
-                          )}
+                        : field.secret
+                          ? (
+                              <PasswordInput
+                                id={inputId}
+                                value={values[field.path] ?? ''}
+                                onChange={event => handleChange(field.path, event.target.value)}
+                                autoComplete="new-password"
+                                spellCheck={false}
+                                placeholder={
+                                  secretConfigured
+                                    ? t('secret.placeholderSet')
+                                    : t('secret.placeholderEmpty')
+                                }
+                                className="sm:max-w-xl"
+                                aria-invalid={!!error}
+                              />
+                            )
+                          : (
+                              <Input
+                                id={inputId}
+                                value={readFieldValue(field.path, current)}
+                                onChange={event => handleChange(field.path, event.target.value)}
+                                autoComplete="off"
+                                spellCheck={false}
+                                placeholder={placeholder === placeholderKey ? undefined : placeholder}
+                                className="sm:max-w-xl"
+                                aria-invalid={!!error}
+                              />
+                            )}
 
                       {/* 校验错误显示在字段下面，不弹窗 */}
                       {error && <p className="text-sm text-destructive">{error}</p>}
+
+                      {/* 顺带对齐了别的角色模型就说一声，不偷偷改 */}
+                      {field.modelSelect && alignedNote && (
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                          {t('model.aligned', { paths: alignedNote })}
+                        </p>
+                      )}
                     </div>
                   )
                 })}

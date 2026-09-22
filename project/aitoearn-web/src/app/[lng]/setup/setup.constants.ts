@@ -12,6 +12,23 @@
 import { ConfigEditorServiceTarget } from '@/api/config-editor/config-editor.types'
 import { ReadinessItemKey } from '@/api/system/readiness.types'
 
+/**
+ * 模型下拉：选项去上游真拉（`GET /system/agent-models`），不让人照着文档手抄。
+ *
+ * 光把输入框换成下拉是不够的，**还得管住清单**。后台的校验是
+ * 「三个角色模型都必须在 `agent.models` 里」，而 `agent.models` 默认躺着仓库自带的
+ * 那串 `claude-*`。人挑一个上游真有的模型填进去，保存会被当场拒掉
+ * （`defaultModel must be included in agent.models`），而且拒掉之后配置里存的还是旧值——
+ * 于是就绪检查报的错里写的是**旧模型名**，人会以为自己填的没生效。
+ * 所以选中一个模型时要连着改三处，见 `applyModelSelection`。
+ */
+export interface SetupModelSelectSpec {
+  /** 选中的模型要落进这个清单，否则后台判「不在清单里」，保存直接被拒 */
+  listPath: string
+  /** 清单换掉之后，这些角色模型可能整个落空，跟着一起对齐到选中的那个 */
+  alignPaths: string[]
+}
+
 /** 一个可就地填写的字段 */
 export interface SetupFieldSpec {
   /** 配置里的键路径，形如 `agent.baseUrl` */
@@ -23,6 +40,11 @@ export interface SetupFieldSpec {
   secret?: boolean
   /** 必填。非必填的字段留空就是不动它 */
   required?: boolean
+  /**
+   * 填了就渲染成下拉。清单拉不到时**自动退回普通输入框**——
+   * 上游不支持列模型接口的情况是存在的，不能因此把这一格变成死路。
+   */
+  modelSelect?: SetupModelSelectSpec
 }
 
 /** 一步 */
@@ -54,7 +76,14 @@ export const SETUP_STEP_SPECS: SetupStepSpec[] = [
     fields: [
       { path: 'agent.baseUrl', required: true },
       { path: 'agent.apiKey', secret: true, required: true },
-      { path: 'agent.defaultModel', required: true },
+      {
+        path: 'agent.defaultModel',
+        required: true,
+        modelSelect: {
+          listPath: 'agent.models',
+          alignPaths: ['agent.backgroundModel', 'agent.thinkModel'],
+        },
+      },
     ],
   },
   {
