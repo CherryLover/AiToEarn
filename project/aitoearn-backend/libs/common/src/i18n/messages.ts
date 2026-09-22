@@ -1114,5 +1114,36 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
   [ResponseCode.CreatorNoteRowAdoptFailed]: {
     'en-US': 'Could not turn this collected row into a post record',
     'zh-CN': '把这一行建成发布记录失败了',
+
+  // 20700 (config override)
+  [ResponseCode.ConfigOverrideProtectedKey]: {
+    'en-US': 'This setting can only be changed through the deployment environment, not at runtime',
+    'zh-CN': '这一项只能在部署环境里改（.env 加重新部署），不接受运行时覆盖',
+  },
+  [ResponseCode.ConfigOverrideWriteFailed]: {
+    'en-US': 'Failed to write the runtime override file',
+    'zh-CN': '运行时覆盖文件写不进去',
+  },
+  [ResponseCode.ConfigOverrideReadFailed]: {
+    'en-US': 'Failed to read the runtime override file',
+    'zh-CN': '运行时覆盖文件读不出来，多半是格式坏了',
+  },
+  [ResponseCode.ConfigOverrideInvalid]: {
+    'en-US': 'The configuration is invalid after merging the runtime override',
+    'zh-CN': '合上运行时覆盖之后，这份配置过不了校验',
+  },
+  [ResponseCode.ConfigOverrideUnsupportedFormat]: {
+    'en-US': 'Unsupported override file format',
+    'zh-CN': '覆盖文件的格式不支持',
+  },
+
+  // 20750 (system readiness)
+  [ResponseCode.SystemReadinessProbeFailed]: {
+    'en-US': 'Readiness probe could not be completed',
+    'zh-CN': '就绪检查没跑完',
+  },
+  [ResponseCode.SystemReadinessUpstreamUnreachable]: {
+    'en-US': 'Upstream is unreachable or rejected the request',
+    'zh-CN': '上游连不上，或者请求被拒了',
   },
 }

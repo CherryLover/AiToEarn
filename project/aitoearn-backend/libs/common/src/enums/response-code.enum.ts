@@ -352,4 +352,17 @@ export enum ResponseCode {
   CreatorNoteRowAlreadyMatched = 20711, // 这一行已经归属了，要改先取消归属
   CreatorNoteSyncNoCollectSpec = 20712, // 这个平台还没有采集规格，只有小红书有
   CreatorNoteRowAdoptFailed = 20713, // 把未归属的行建成发布记录失败
+  // 20700-20749: config override（运行时配置覆盖层）
+  // ========================================
+  ConfigOverrideProtectedKey = 20700, // 这一项只能从部署环境改，不接受运行时覆盖
+  ConfigOverrideWriteFailed = 20701, // 覆盖文件写入失败
+  ConfigOverrideReadFailed = 20702, // 覆盖文件读取失败：不存在不算失败，格式坏了才算
+  ConfigOverrideInvalid = 20703, // 合并覆盖层之后的配置过不了 schema 校验
+  ConfigOverrideUnsupportedFormat = 20704, // 覆盖文件后缀不是 yaml/yml/json
+
+  // ========================================
+  // 20750-20799: system readiness（就绪检查）
+  // ========================================
+  SystemReadinessProbeFailed = 20750, // 探测某一项时自己出错了（不是被探的那方的问题）
+  SystemReadinessUpstreamUnreachable = 20751, // 上游连不上或拒绝
 }
