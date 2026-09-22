@@ -49,3 +49,8 @@ project/web/.cursor/
 # Python 编译缓存
 __pycache__/
 *.pyc
+
+# 运行时配置覆盖层：网页 /config 保存出来的那份，只该存在于服务器数据盘上
+config.override.yaml
+config.override.yml
+config.override.json
