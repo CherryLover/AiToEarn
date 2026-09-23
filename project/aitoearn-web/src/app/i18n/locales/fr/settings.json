@@ -11,7 +11,8 @@
   "nav": {
     "profile": "Profil",
     "appearance": "Apparence",
-    "notify": "Notifications"
+    "notify": "Notifications",
+    "skills": "Compétences IA"
   },
   "title": "Paramètres",
   "tabs": {
@@ -465,5 +466,58 @@
   },
   "form": {
     "unsaved": "Modifications non enregistrées"
+  },
+  "skills": {
+    "title": "Compétences IA",
+    "desc": "Les compétences déterminent ce que l'IA sait faire. Celles fournies suivent la version ; vous pouvez ajouter les vôtres.",
+    "globalWarning": "Une compétence est une consigne écrite pour l'IA. Ce que vous déposez ici sert à toutes les conversations IA de cette installation — pas seulement aux vôtres.",
+    "builtinTag": "Fournie",
+    "noDescription": "(Pas de description — l'IA risque de ne jamais trouver cette compétence)",
+    "loadFailed": "Impossible de charger la liste",
+    "retry": "Réessayer",
+    "uploadSuccess": "Déposée. Active dès la prochaine conversation.",
+    "deleteSuccess": "Supprimée",
+    "upload": {
+      "title": "Déposer une compétence",
+      "desc": "Un seul fichier Markdown, avec name et description dans l'en-tête.",
+      "pick": "Choisir un fichier",
+      "uploading": "Envoi…",
+      "hint": "Le nom vient de l'en-tête du fichier, pas du nom de fichier. 64 Ko maximum."
+    },
+    "custom": {
+      "title": "Vos dépôts",
+      "desc": "Stockés dans un répertoire monté sur le serveur : ils survivent aux redéploiements.",
+      "empty": "Rien pour l'instant."
+    },
+    "builtin": {
+      "title": "Compétences fournies",
+      "desc": "Livrées avec l'image. En lecture seule."
+    },
+    "overwrite": {
+      "title": "Une compétence porte déjà ce nom",
+      "desc": "Continuer remplacera l'existante. L'ancienne version sera perdue.",
+      "cancel": "Laisser tomber",
+      "confirm": "Remplacer"
+    },
+    "delete": {
+      "action": "Supprimer",
+      "title": "Supprimer cette compétence ?",
+      "desc": "Après la suppression de {{name}}, l'IA ne s'en servira plus. Le fichier part aussi, sans retour possible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer",
+      "deleting": "Suppression…"
+    },
+    "error": {
+      "nameInvalid": "Le nom n'accepte que minuscules, chiffres et traits d'union, 3 à 40 caractères",
+      "nameReserved": "Ce nom est celui d'une compétence fournie ; choisissez-en un autre",
+      "frontmatterMissing": "Le fichier doit avoir un en-tête avec name et description",
+      "fileTooLarge": "Trop volumineux — 64 Ko maximum par compétence",
+      "fileInvalid": "Un seul fichier Markdown est accepté",
+      "alreadyExists": "Une compétence porte déjà ce nom",
+      "notFound": "Compétence introuvable",
+      "builtinReadonly": "Les compétences fournies ne peuvent pas être supprimées",
+      "storageUnavailable": "Impossible d'écrire dans le répertoire des compétences — il n'est sans doute pas monté",
+      "unknown": "Ça n'a pas marché. Réessayez."
+    }
   }
 }

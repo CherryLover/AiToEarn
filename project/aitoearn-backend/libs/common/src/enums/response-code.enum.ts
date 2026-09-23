@@ -367,4 +367,17 @@ export enum ResponseCode {
   // ========================================
   SystemReadinessProbeFailed = 20850, // 探测某一项时自己出错了（不是被探的那方的问题）
   SystemReadinessUpstreamUnreachable = 20851, // 上游连不上或拒绝
+
+  // ========================================
+  // 20900-20949: custom skills（用户自己传上来的 AI 技能）
+  // ========================================
+  SkillNameInvalid = 20900, // frontmatter 里的 name 不合规（目录名规则）
+  SkillNameReserved = 20901, // 和内置技能重名，内置的不许被顶掉
+  SkillFrontmatterMissing = 20902, // 没有 frontmatter，或者缺 name / description
+  SkillFileTooLarge = 20903, // 超过单文件上限
+  SkillFileInvalid = 20904, // 不是 Markdown，或者读不出内容
+  SkillAlreadyExists = 20905, // 同名已存在且没勾覆盖
+  SkillNotFound = 20906, // 要删的技能不存在
+  SkillBuiltinReadonly = 20907, // 内置技能只能看，不能删
+  SkillStorageUnavailable = 20908, // 技能目录读写失败（多半是没挂上）
 }

@@ -328,7 +328,7 @@ python3 repo/deploy/oci/render_config.py "$BACKEND/aitoearn-server/config/config
 python3 repo/deploy/oci/render_config.py "$BACKEND/aitoearn-ai/config/config.yaml" repo/deploy/oci/overrides/ai.yaml config/ai.yaml
 
 echo "==> 数据目录 $DATA_DIR"
-sudo mkdir -p "$DATA_DIR"/{mongodb/db,mongodb/configdb,redis,rustfs,projects,config}
+sudo mkdir -p "$DATA_DIR"/{mongodb/db,mongodb/configdb,redis,rustfs,projects,skills,config}
 # 运行时配置覆盖层：网页 /config 保存的那份，deploy.sh 只负责把空文件建出来，之后再也不碰它，
 # 所以重新部署不会冲掉线上改过的值。必须在 docker compose 之前建好：
 # Docker 对不存在的宿主机挂载源会直接建成目录，那样后端就永远读不到这份配置了。
@@ -339,7 +339,7 @@ for f in server.override.yaml ai.override.yaml; do
 done
 # rustfs 镜像以 uid 10001 运行，数据目录要归它，否则启动报 Permission denied
 sudo chown 10001:10001 "$DATA_DIR/rustfs"
-# projects 不改属主：aitoearn-server / aitoearn-ai 两个 Dockerfile 都没写 USER，容器内进程就是 root(uid 0)，
+# projects 和 skills 不改属主：aitoearn-server / aitoearn-ai 两个 Dockerfile 都没写 USER，容器内进程就是 root(uid 0)，
 # sudo mkdir 建出来的 root:root 目录它们本来就能读写。哪天镜像加了 USER，这里要跟着 chown 成对应 uid
 
 echo "==> 拉镜像并启动（server=$SERVER_TAG ai=$AI_TAG web=$WEB_TAG）"

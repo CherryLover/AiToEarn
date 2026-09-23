@@ -11,7 +11,8 @@
   "nav": {
     "profile": "Profile",
     "appearance": "Appearance",
-    "notify": "Notifications"
+    "notify": "Notifications",
+    "skills": "AI skills"
   },
   "title": "Settings",
   "tabs": {
@@ -477,5 +478,58 @@
   },
   "form": {
     "unsaved": "Unsaved changes"
+  },
+  "skills": {
+    "title": "AI skills",
+    "desc": "Skills decide what the AI can do. Built-in ones ship with the release; you can upload your own.",
+    "globalWarning": "A skill is an instruction written for the AI. Anything uploaded here is used by every AI conversation in this deployment — not just yours.",
+    "builtinTag": "Built-in",
+    "noDescription": "(No description — the AI may never match this skill)",
+    "loadFailed": "Could not load the skill list",
+    "retry": "Retry",
+    "uploadSuccess": "Uploaded. It is live from the next conversation.",
+    "deleteSuccess": "Deleted",
+    "upload": {
+      "title": "Upload a skill",
+      "desc": "A single Markdown file, with front matter containing both name and description.",
+      "pick": "Choose file",
+      "uploading": "Uploading…",
+      "hint": "The name comes from the file's front matter, not the filename. 64 KB max."
+    },
+    "custom": {
+      "title": "Your uploads",
+      "desc": "Stored on a mounted directory on the server — they survive redeploys.",
+      "empty": "Nothing uploaded yet."
+    },
+    "builtin": {
+      "title": "Built-in skills",
+      "desc": "Ship with the image. Read-only."
+    },
+    "overwrite": {
+      "title": "A skill with this name exists",
+      "desc": "Continuing replaces the existing one. The old version cannot be recovered.",
+      "cancel": "Never mind",
+      "confirm": "Replace it"
+    },
+    "delete": {
+      "action": "Delete",
+      "title": "Delete this skill?",
+      "desc": "After deleting {{name}}, the AI will stop using it. The file goes too, and cannot be recovered.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "deleting": "Deleting…"
+    },
+    "error": {
+      "nameInvalid": "Skill name must be lowercase letters, digits and hyphens, 3-40 characters",
+      "nameReserved": "That name belongs to a built-in skill; pick another",
+      "frontmatterMissing": "The file needs front matter with both name and description",
+      "fileTooLarge": "Too large — 64 KB max per skill",
+      "fileInvalid": "Only a single Markdown file is accepted",
+      "alreadyExists": "A skill with this name already exists",
+      "notFound": "Skill not found",
+      "builtinReadonly": "Built-in skills cannot be deleted",
+      "storageUnavailable": "The skills directory is not writable — it is probably not mounted",
+      "unknown": "That did not work. Try again."
+    }
   }
 }

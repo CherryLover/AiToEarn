@@ -11,7 +11,8 @@
   "nav": {
     "profile": "Profil",
     "appearance": "Erscheinungsbild",
-    "notify": "Benachrichtigungen"
+    "notify": "Benachrichtigungen",
+    "skills": "KI-Skills"
   },
   "title": "Einstellungen",
   "tabs": {
@@ -465,5 +466,58 @@
   },
   "form": {
     "unsaved": "Nicht gespeicherte Änderungen"
+  },
+  "skills": {
+    "title": "KI-Skills",
+    "desc": "Skills legen fest, was die KI kann. Die mitgelieferten kommen mit dem Release; eigene kannst du hochladen.",
+    "globalWarning": "Ein Skill ist eine Anweisung an die KI. Was hier hochgeladen wird, nutzt jede KI-Unterhaltung dieser Installation — nicht nur deine.",
+    "builtinTag": "Mitgeliefert",
+    "noDescription": "(Keine Beschreibung — die KI findet diesen Skill womöglich nie)",
+    "loadFailed": "Skill-Liste konnte nicht geladen werden",
+    "retry": "Erneut versuchen",
+    "uploadSuccess": "Hochgeladen. Ab der nächsten Unterhaltung aktiv.",
+    "deleteSuccess": "Gelöscht",
+    "upload": {
+      "title": "Skill hochladen",
+      "desc": "Eine einzelne Markdown-Datei, mit name und description im Front Matter.",
+      "pick": "Datei wählen",
+      "uploading": "Wird hochgeladen …",
+      "hint": "Der Name kommt aus dem Front Matter, nicht aus dem Dateinamen. Max. 64 KB."
+    },
+    "custom": {
+      "title": "Eigene Uploads",
+      "desc": "Liegen in einem gemounteten Verzeichnis auf dem Server und überstehen ein Redeployment.",
+      "empty": "Noch nichts hochgeladen."
+    },
+    "builtin": {
+      "title": "Mitgelieferte Skills",
+      "desc": "Kommen mit dem Image. Nur lesbar."
+    },
+    "overwrite": {
+      "title": "Es gibt bereits einen Skill mit diesem Namen",
+      "desc": "Weiter ersetzt den vorhandenen. Die alte Fassung ist danach weg.",
+      "cancel": "Doch nicht",
+      "confirm": "Ersetzen"
+    },
+    "delete": {
+      "action": "Löschen",
+      "title": "Diesen Skill löschen?",
+      "desc": "Nach dem Löschen von {{name}} nutzt die KI ihn nicht mehr. Die Datei geht mit und ist nicht wiederherstellbar.",
+      "cancel": "Abbrechen",
+      "confirm": "Löschen",
+      "deleting": "Wird gelöscht …"
+    },
+    "error": {
+      "nameInvalid": "Der Name darf nur Kleinbuchstaben, Ziffern und Bindestriche enthalten, 3–40 Zeichen",
+      "nameReserved": "Der Name gehört einem mitgelieferten Skill; nimm einen anderen",
+      "frontmatterMissing": "Die Datei braucht Front Matter mit name und description",
+      "fileTooLarge": "Zu groß — höchstens 64 KB pro Skill",
+      "fileInvalid": "Es wird nur eine einzelne Markdown-Datei angenommen",
+      "alreadyExists": "Ein Skill mit diesem Namen existiert bereits",
+      "notFound": "Skill nicht gefunden",
+      "builtinReadonly": "Mitgelieferte Skills lassen sich nicht löschen",
+      "storageUnavailable": "Ins Skill-Verzeichnis lässt sich nicht schreiben — vermutlich nicht gemountet",
+      "unknown": "Hat nicht geklappt. Bitte erneut versuchen."
+    }
   }
 }

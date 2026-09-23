@@ -23,7 +23,7 @@
   repo/        fork 的仓库副本（deploy.sh 切到指定引用）
   .env         密码、域名、镜像标签（600，照 .env.example 填）
   config/      deploy.sh 渲染出的 server.yaml / ai.yaml（600）
-/data/aitoearn/  = $DATA_DIR，mongodb / redis / rustfs 数据 + projects 项目物料
+/data/aitoearn/  = $DATA_DIR，mongodb / redis / rustfs 数据 + projects 项目物料 + skills 用户传的 AI 技能
   config/      运行时配置覆盖层 server.override.yaml / ai.override.yaml（600），见下一节
 ```
 
@@ -101,6 +101,15 @@ sudo cp "$DATA_DIR"/config/ai.override.yaml{,.bak}
 |---|---|---|---|
 | `aitoearn-server` | `$DATA_DIR/projects` | `/data/projects` | 读写 |
 | `aitoearn-ai` | `$DATA_DIR/projects` | `/data/projects` | 读写 |
+
+## 自定义 AI 技能
+
+用户从设置页传上来的技能落在 `$DATA_DIR/skills`，挂进 `aitoearn-ai` 的 `/data/skills`（读写）。
+内置的 15 个技能仍旧打在镜像里，服务启动时两边一起摊进 Agent 读的目录；
+上传或删除之后会立刻重新摊一次，不用重启。
+
+**必须挂出来**，理由和物料一样：应用容器每次部署都被 `rm --stop --force` 删掉重建。
+契约见 `docs/rebuild/contract-custom-skills.md`。
 
 容器内路径同时写进两份渲染配置的 `projects.root`（来自 `overrides/server.yaml`、`overrides/ai.yaml`），代码读配置拿这个根目录，不要写死。
 

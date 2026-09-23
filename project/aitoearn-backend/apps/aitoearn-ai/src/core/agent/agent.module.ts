@@ -21,6 +21,8 @@ import { VideoEditMcp } from './mcp/volcengine/video-edit.mcp'
 import { AgentRuntimeService } from './services/agent-runtime.service'
 import { ProjectWorkspaceService } from './services/project-workspace.service'
 import { SkillInitService } from './skill-init.service'
+import { SkillsController } from './skills.controller'
+import { SkillsService } from './skills.service'
 
 @Module({
   imports: [
@@ -31,7 +33,7 @@ import { SkillInitService } from './skill-init.service'
     RelayMediaModule.forRoot(config.ai.relay),
     ClaudeCodeRouterModule,
   ],
-  controllers: [AgentController],
+  controllers: [AgentController, SkillsController],
   providers: [
     AgentService,
     MediaMcp,
@@ -45,6 +47,7 @@ import { SkillInitService } from './skill-init.service'
     ImageEditMcp,
     SubtitleMcp,
     SkillInitService,
+    SkillsService,
     AgentRuntimeService,
     ProjectWorkspaceService,
   ],

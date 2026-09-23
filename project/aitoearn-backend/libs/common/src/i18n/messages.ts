@@ -1147,4 +1147,40 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'en-US': 'Upstream is unreachable or rejected the request',
     'zh-CN': '上游连不上，或者请求被拒了',
   },
+  [ResponseCode.SkillNameInvalid]: {
+    'en-US': 'Skill name must be lowercase letters, digits and hyphens, 3-40 characters',
+    'zh-CN': '技能名只能用小写字母、数字和连字符，3 到 40 个字符',
+  },
+  [ResponseCode.SkillNameReserved]: {
+    'en-US': 'That name belongs to a built-in skill; pick another one',
+    'zh-CN': '这个名字是内置技能占着的，换一个',
+  },
+  [ResponseCode.SkillFrontmatterMissing]: {
+    'en-US': 'The file needs front matter with both name and description',
+    'zh-CN': '文件开头要有 frontmatter，并且 name 和 description 都得有',
+  },
+  [ResponseCode.SkillFileTooLarge]: {
+    'en-US': 'The skill file is too large',
+    'zh-CN': '技能文件太大了',
+  },
+  [ResponseCode.SkillFileInvalid]: {
+    'en-US': 'Only a single Markdown file is accepted',
+    'zh-CN': '只收单个 Markdown 文件',
+  },
+  [ResponseCode.SkillAlreadyExists]: {
+    'en-US': 'A skill with this name already exists',
+    'zh-CN': '已经有同名的技能了',
+  },
+  [ResponseCode.SkillNotFound]: {
+    'en-US': 'Skill not found',
+    'zh-CN': '找不到这个技能',
+  },
+  [ResponseCode.SkillBuiltinReadonly]: {
+    'en-US': 'Built-in skills cannot be deleted',
+    'zh-CN': '内置技能删不掉',
+  },
+  [ResponseCode.SkillStorageUnavailable]: {
+    'en-US': 'The skills directory is not writable',
+    'zh-CN': '技能目录读写不了，多半是没挂上',
+  },
 }

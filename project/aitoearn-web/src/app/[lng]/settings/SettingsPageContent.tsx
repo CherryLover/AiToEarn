@@ -7,7 +7,7 @@
  */
 'use client'
 
-import { Bell, Palette, Settings as SettingsIcon, User } from 'lucide-react'
+import { Bell, Palette, Settings as SettingsIcon, Sparkles, User } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTransClient } from '@/app/i18n/client'
 import { Button } from '@/components/ui/button'
@@ -19,12 +19,14 @@ import { AppearanceSection } from './components/AppearanceSection'
 import { NotifySection } from './components/NotifySection'
 import { ProfileSection } from './components/ProfileSection'
 import { SettingsCard, SettingsSection } from './components/SettingsSection'
+import { SkillsSection } from './components/SkillsSection'
 
 /** 分区顺序即导航顺序 */
 const SECTIONS = [
   { key: 'profile', requireAuth: true },
   { key: 'appearance', requireAuth: false },
   { key: 'notify', requireAuth: true },
+  { key: 'skills', requireAuth: true },
 ] as const
 
 type SectionKey = (typeof SECTIONS)[number]['key']
@@ -33,6 +35,7 @@ const SECTION_ICON: Record<SectionKey, typeof User> = {
   profile: User,
   appearance: Palette,
   notify: Bell,
+  skills: Sparkles,
 }
 
 const SECTION_KEYS = SECTIONS.map(section => section.key) as SectionKey[]
@@ -94,6 +97,8 @@ export function SettingsPageContent() {
         return <ProfileSection />
       case 'notify':
         return <NotifySection />
+      case 'skills':
+        return <SkillsSection />
       case 'appearance':
       default:
         return <AppearanceSection />

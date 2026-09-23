@@ -11,7 +11,8 @@
   "nav": {
     "profile": "プロフィール",
     "appearance": "外観",
-    "notify": "通知"
+    "notify": "通知",
+    "skills": "AI スキル"
   },
   "title": "設定",
   "tabs": {
@@ -465,5 +466,58 @@
   },
   "form": {
     "unsaved": "未保存の変更があります"
+  },
+  "skills": {
+    "title": "AI スキル",
+    "desc": "スキルが AI にできることを決めます。内蔵のものはリリースに付属し、自分のものをアップロードできます。",
+    "globalWarning": "スキルは AI 向けに書かれた指示です。ここにアップロードしたものは、この環境のすべての AI 対話で使われます——あなただけではありません。",
+    "builtinTag": "内蔵",
+    "noDescription": "（説明がありません。AI がこのスキルを見つけられない可能性があります）",
+    "loadFailed": "スキル一覧を取得できませんでした",
+    "retry": "再試行",
+    "uploadSuccess": "アップロードしました。次の対話から使えます。",
+    "deleteSuccess": "削除しました",
+    "upload": {
+      "title": "スキルをアップロード",
+      "desc": "Markdown ファイル 1 つ。先頭の front matter に name と description が必要です。",
+      "pick": "ファイルを選ぶ",
+      "uploading": "アップロード中…",
+      "hint": "名前はファイル名ではなく front matter の name を使います。1 ファイル 64 KB まで。"
+    },
+    "custom": {
+      "title": "アップロードしたもの",
+      "desc": "サーバーのマウント先に保存されるので、再デプロイしても消えません。",
+      "empty": "まだ何もありません。"
+    },
+    "builtin": {
+      "title": "内蔵スキル",
+      "desc": "イメージに同梱。閲覧のみです。"
+    },
+    "overwrite": {
+      "title": "同じ名前のスキルがあります",
+      "desc": "続けると既存のものを置き換えます。元には戻せません。",
+      "cancel": "やめる",
+      "confirm": "置き換える"
+    },
+    "delete": {
+      "action": "削除",
+      "title": "このスキルを削除しますか？",
+      "desc": "{{name}} を削除すると AI は使わなくなります。ファイルも消え、元には戻せません。",
+      "cancel": "キャンセル",
+      "confirm": "削除",
+      "deleting": "削除中…"
+    },
+    "error": {
+      "nameInvalid": "スキル名は小文字・数字・ハイフンのみ、3〜40 文字です",
+      "nameReserved": "その名前は内蔵スキルが使っています。別の名前にしてください",
+      "frontmatterMissing": "先頭の front matter に name と description の両方が必要です",
+      "fileTooLarge": "大きすぎます。1 スキル 64 KB までです",
+      "fileInvalid": "Markdown ファイル 1 つだけ受け付けます",
+      "alreadyExists": "同じ名前のスキルがすでにあります",
+      "notFound": "スキルが見つかりません",
+      "builtinReadonly": "内蔵スキルは削除できません",
+      "storageUnavailable": "スキル用ディレクトリに書き込めません。マウントされていない可能性があります",
+      "unknown": "うまくいきませんでした。もう一度お試しください。"
+    }
   }
 }
