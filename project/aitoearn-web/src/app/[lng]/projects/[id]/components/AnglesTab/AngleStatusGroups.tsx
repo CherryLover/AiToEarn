@@ -16,6 +16,7 @@ interface AngleStatusGroupsProps {
   readOnly: boolean
   updatingId: string | null
   onStatusChange: (angle: Angle, status: AngleStatus) => void
+  onGenerate: (angle: Angle) => void
   onDerive: (angle: Angle) => void
   onEdit: (angle: Angle) => void
   onDelete: (angle: Angle) => void
@@ -54,6 +55,7 @@ export function AngleStatusGroups(props: AngleStatusGroupsProps) {
                     readOnly={readOnly}
                     isUpdating={updatingId === angle.id}
                     onStatusChange={props.onStatusChange}
+                    onGenerate={props.onGenerate}
                     onDerive={props.onDerive}
                     onEdit={props.onEdit}
                     onDelete={props.onDelete}

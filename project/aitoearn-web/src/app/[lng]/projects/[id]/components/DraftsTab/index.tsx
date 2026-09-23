@@ -27,9 +27,11 @@ interface DraftsTabProps {
   onAskAi: (prompt: string) => void
   /** 页面每跑完一轮 AI 任务就加一，收到就刷新草稿列表 */
   refreshSignal: number
+  /** 拿一条草稿去发布：切到「发布」页，草稿已经选好 */
+  onGoPublish: (draftPath: string) => void
 }
 
-export function DraftsTab({ projectId, projectName, readOnly, onAskAi, refreshSignal }: DraftsTabProps) {
+export function DraftsTab({ projectId, projectName, readOnly, onAskAi, refreshSignal, onGoPublish }: DraftsTabProps) {
   const { t } = useTransClient('projects')
 
   const { drafts, isLoading, loadFailed, refresh } = useDrafts(projectId)
@@ -139,6 +141,7 @@ export function DraftsTab({ projectId, projectName, readOnly, onAskAi, refreshSi
                   draft={selectedDraft}
                   readOnly={readOnly}
                   onSaved={refresh}
+                  onGoPublish={draft => onGoPublish(draft.path)}
                 />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">

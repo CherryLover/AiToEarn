@@ -249,7 +249,9 @@
       "create": "Neuer Blickwinkel",
       "derive": "Hier vertiefen",
       "edit": "Bearbeiten",
-      "delete": "Löschen"
+      "delete": "Löschen",
+      "generate": "Erstellen",
+      "createManually": "Selbst schreiben"
     },
     "empty": {
       "title": "Noch keine Blickwinkel",
@@ -408,7 +410,10 @@
       "waiting": "Abgeschickt. Warten, bis sie anfängt, das Material zu lesen…",
       "noLog": "Zu diesem Lauf gibt es keine Aufzeichnung.",
       "noAngles": "Es gibt noch keinen brauchbaren Blickwinkel. Erst im Tab „Blickwinkel“ einen herausarbeiten oder anlegen, dann hierher zurück.",
-      "runsInChat": "Läuft im Dialog rechts – dort nachfragen oder Änderungen verlangen."
+      "runsInChat": "Läuft im Dialog rechts – dort nachfragen oder Änderungen verlangen.",
+      "dialogTitle": "Einen Beitrag zu dieser Richtung",
+      "dialogDesc": "Die Richtung steht. Fehlen nur Plattform und Zusatzwünsche — den Rest übernimmt der Dialog rechts.",
+      "dialogCancel": "Abbrechen"
     },
     "platform": {
       "xhs": "Xiaohongshu",
@@ -443,7 +448,8 @@
       "mediaFailed": "Dieses Bild ließ sich nicht laden",
       "meta": "Geändert {{time}}",
       "unsaved": "nicht gespeicherte Änderungen",
-      "saveSuccess": "Gespeichert"
+      "saveSuccess": "Gespeichert",
+      "goPublish": "Diesen veröffentlichen"
     },
     "lineage": {
       "angle": "Blickwinkel",

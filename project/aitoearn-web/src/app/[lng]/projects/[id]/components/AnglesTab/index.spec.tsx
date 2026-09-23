@@ -31,6 +31,8 @@ vi.mock('@/app/i18n/client', () => ({
 }))
 /** 「让 AI 提炼方向」现在只是把一句话丢给右侧对话，用例靠它断言丢了什么 */
 const onAskAi = vi.fn()
+/** 交代完生成之后要求切到「生成」页 */
+const onGoToDrafts = vi.fn()
 /** 最近一次提炼任务的「跑完」回调，用例靠它模拟 Agent 跑完 */
 let onAgentDone: (() => void) | null = null
 vi.mock('@/api/ai/ai.api', () => ({
@@ -75,6 +77,7 @@ async function renderTab(readOnly = false) {
       projectName="forty-weeks"
       readOnly={readOnly}
       onAskAi={onAskAi}
+      onGoToDrafts={onGoToDrafts}
       refreshSignal={0}
     />,
   )
@@ -88,6 +91,7 @@ async function renderTab(readOnly = false) {
         projectName="forty-weeks"
         readOnly={readOnly}
         onAskAi={onAskAi}
+        onGoToDrafts={onGoToDrafts}
         refreshSignal={signal}
       />,
     )
@@ -185,6 +189,33 @@ describe('anglesTab 建方向', () => {
   })
 })
 
+describe('anglesTab 加一个方向', () => {
+  /**
+   * 心里有个影子的时候最缺的是有人追问两句。直接甩一张空表单，
+   * 人只会把那个还没想清楚的影子原样填进去。
+   */
+  it('主入口走对话，不弹表单', async () => {
+    await renderTab()
+
+    await userEvent.click(await screen.findByRole('button', { name: /angles.action.create$/ }))
+
+    expect(onAskAi).toHaveBeenCalledTimes(1)
+    const prompt = onAskAi.mock.calls[0][0] as string
+    expect(prompt).toContain('先别写文件')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  /** 想清楚了不想聊的，还是得能直接写 */
+  it('旁边留着自己写的入口', async () => {
+    await renderTab()
+
+    await userEvent.click(await screen.findByRole('button', { name: /angles.empty.create/ }))
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(onAskAi).not.toHaveBeenCalled()
+  })
+})
+
 describe('anglesTab 删方向', () => {
   beforeEach(() => {
     getAngleListApi.mockResolvedValue({ code: 0, data: [angle({ id: 'a1', slug: 'pain-point', name: '孕晚期焦虑' })] })
@@ -276,6 +307,64 @@ describe('anglesTab 对话跑完之后的登记', () => {
     await renderTab()
 
     expect(syncAnglesApi).not.toHaveBeenCalled()
+  })
+})
+
+describe('anglesTab 照这个方向写一条', () => {
+  async function renderWithAngle() {
+    getAngleListApi.mockResolvedValue({
+      code: 0,
+      data: [angle({ id: 'a1', slug: 'pain-point', name: '孕晚期焦虑' })],
+    })
+    return renderTab()
+  }
+
+  /** 方向定了，下一步就是照它写一条——不给这个入口，人得切到「生成」页把方向再选一遍 */
+  it('点生成弹出小框，方向是带过来的', async () => {
+    await renderWithAngle()
+
+    await userEvent.click(await screen.findByRole('button', { name: /angles.action.generate/ }))
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('drafts.generate.dialogTitle')).toBeInTheDocument()
+    // 方向名摆出来给人确认一眼
+    expect(screen.getAllByText(/孕晚期焦虑/).length).toBeGreaterThan(0)
+  })
+
+  it('确认之后把话丢给对话，并要求切到生成页', async () => {
+    await renderWithAngle()
+
+    await userEvent.click(await screen.findByRole('button', { name: /angles.action.generate/ }))
+    await userEvent.click(await screen.findByRole('button', { name: /drafts.generate.submit/ }))
+
+    expect(onAskAi).toHaveBeenCalledTimes(1)
+    const prompt = onAskAi.mock.calls[0][0] as string
+    expect(prompt).toContain('pain-point')
+    expect(prompt).toContain('drafting-post')
+    expect(onGoToDrafts).toHaveBeenCalledTimes(1)
+  })
+
+  /** 淘汰的方向不该再拿去生成，口径和「生成」页的方向下拉一致 */
+  it('淘汰的方向不给生成入口', async () => {
+    getAngleListApi.mockResolvedValue({
+      code: 0,
+      data: [angle({ id: 'a1', slug: 'dead-end', name: '试过不行', status: AngleStatus.Retired })],
+    })
+    await renderTab()
+
+    expect(await screen.findByText(/试过不行/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /angles.action.generate/ })).not.toBeInTheDocument()
+  })
+
+  it('归档项目里不给生成', async () => {
+    getAngleListApi.mockResolvedValue({
+      code: 0,
+      data: [angle({ id: 'a1', slug: 'pain-point', name: '孕晚期焦虑' })],
+    })
+    await renderTab(true)
+
+    expect(await screen.findByText(/孕晚期焦虑/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /angles.action.generate/ })).not.toBeInTheDocument()
   })
 })
 

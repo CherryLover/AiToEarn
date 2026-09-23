@@ -96,6 +96,8 @@ beforeEach(() => {
 
 /** 生成现在只是把一句话丢给右侧对话，用例靠它断言丢了什么 */
 const onAskAi = vi.fn()
+/** 拿草稿去发布时要求切到「发布」页 */
+const onGoPublish = vi.fn()
 
 async function renderTab(readOnly = false) {
   const view = render(
@@ -104,6 +106,7 @@ async function renderTab(readOnly = false) {
       projectName="forty-weeks"
       readOnly={readOnly}
       onAskAi={onAskAi}
+      onGoPublish={onGoPublish}
       refreshSignal={0}
     />,
   )
@@ -219,6 +222,7 @@ describe('draftsTab 生成一条内容', () => {
           projectName="forty-weeks"
           readOnly={false}
           onAskAi={onAskAi}
+          onGoPublish={onGoPublish}
           refreshSignal={1}
         />,
       )

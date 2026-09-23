@@ -7,7 +7,7 @@
 'use client'
 
 import type { DraftContent, DraftItem, DraftMeta } from './drafts.utils'
-import { FileWarning, ImageOff, Loader2, RefreshCw, Save } from 'lucide-react'
+import { FileWarning, ImageOff, Loader2, RefreshCw, Save, Send } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   downloadProjectFileApi,
@@ -38,6 +38,8 @@ interface DraftDetailProps {
   readOnly: boolean
   /** 保存成功后让父级刷新列表（修改时间会变） */
   onSaved: () => void
+  /** 拿这条去发布：切到「发布」页，草稿已经选好 */
+  onGoPublish: (draft: DraftItem) => void
 }
 
 interface DraftImage {
@@ -47,7 +49,7 @@ interface DraftImage {
   ossUrl: string
 }
 
-export function DraftDetail({ projectId, draft, readOnly, onSaved }: DraftDetailProps) {
+export function DraftDetail({ projectId, draft, readOnly, onSaved, onGoPublish }: DraftDetailProps) {
   const { t } = useTransClient('projects')
 
   const [isLoading, setIsLoading] = useState(true)
@@ -223,6 +225,14 @@ export function DraftDetail({ projectId, draft, readOnly, onSaved }: DraftDetail
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {/* 草稿写完，下一步就是拿去发。不给这个入口的话，人得切到「发布」页
+              在下拉里把刚写完的这条再找一遍——上一秒刚看着它，下一秒还要重选 */}
+          {!readOnly && (
+            <Button size="sm" onClick={() => onGoPublish(draft)}>
+              <Send className="size-3.5" />
+              {t('drafts.detail.goPublish')}
+            </Button>
+          )}
           <Button variant="ghost" size="sm" onClick={loadDraft}>
             <RefreshCw className="size-4" />
             {t('action.refresh')}

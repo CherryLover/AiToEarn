@@ -249,7 +249,9 @@
       "create": "Nouvel angle",
       "derive": "Creuser à partir d'ici",
       "edit": "Modifier",
-      "delete": "Supprimer"
+      "delete": "Supprimer",
+      "generate": "Générer",
+      "createManually": "Le rédiger moi-même"
     },
     "empty": {
       "title": "Aucun angle pour l'instant",
@@ -408,7 +410,10 @@
       "waiting": "Envoyé. En attente qu'elle commence à lire les matériaux…",
       "noLog": "Aucune trace pour cette exécution.",
       "noAngles": "Aucun angle utilisable. Dégagez-en ou créez-en un dans l'onglet Angles, puis revenez ici.",
-      "runsInChat": "Cela se déroule dans le dialogue à droite : posez-y vos questions ou demandez des retouches."
+      "runsInChat": "Cela se déroule dans le dialogue à droite : posez-y vos questions ou demandez des retouches.",
+      "dialogTitle": "Rédiger selon cet angle",
+      "dialogDesc": "L'angle est fixé : il ne reste que la plateforme et vos précisions. Le dialogue à droite s'en charge ensuite.",
+      "dialogCancel": "Annuler"
     },
     "platform": {
       "xhs": "Xiaohongshu",
@@ -443,7 +448,8 @@
       "mediaFailed": "Image introuvable",
       "meta": "Modifié {{time}}",
       "unsaved": "modifications non enregistrées",
-      "saveSuccess": "Enregistré"
+      "saveSuccess": "Enregistré",
+      "goPublish": "Publier celui-ci"
     },
     "lineage": {
       "angle": "Angle",

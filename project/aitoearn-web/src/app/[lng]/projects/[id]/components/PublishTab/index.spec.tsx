@@ -94,7 +94,7 @@ beforeEach(() => {
 })
 
 async function renderTab(readOnly = false) {
-  const view = render(<PublishTab projectId="p1" readOnly={readOnly} />)
+  const view = render(<PublishTab projectId="p1" readOnly={readOnly} presetDraft={null} />)
   await waitFor(() => expect(getPublishedPostListApi).toHaveBeenCalled())
   return view
 }
@@ -145,6 +145,45 @@ describe('publishTab 记录列表', () => {
     await userEvent.click(await screen.findByText('孕晚期焦虑'))
 
     await waitFor(() => expect(toastError).toHaveBeenCalledWith('publishError.notFound'))
+  })
+})
+
+describe('publishTab 从「生成」页带过来的草稿', () => {
+  async function renderWithPreset(presetPath: string) {
+    const view = render(
+      <PublishTab
+        projectId="p1"
+        readOnly={false}
+        presetDraft={{ path: presetPath, at: 1 }}
+      />,
+    )
+    await waitFor(() => expect(getPublishedPostListApi).toHaveBeenCalled())
+    return view
+  }
+
+  /**
+   * 带过来的草稿要直接选上——不然人刚在「生成」页看着这条，切过来还得在下拉里再找一遍。
+   *
+   * 这里专门盯一个先后顺序：切过来那一瞬间面板刚挂载、草稿列表还在路上，
+   * 选上之后会被「选中的草稿没了就清空」那条检查当场冲掉。修过一次，别再改回去。
+   */
+  it('草稿列表到齐之后把带过来的那条选上', async () => {
+    await renderWithPreset('drafts/20260902-douyin-bag')
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/publish.prepare.draftLabel/)).toHaveTextContent('20260902-douyin-bag')
+    })
+    expect(screen.getByRole('button', { name: /publish.prepare.submit/ })).toBeEnabled()
+  })
+
+  /** 带过来一条根本不存在的，不能把下拉卡在一个选不中的值上 */
+  it('带过来的草稿不存在就当没带', async () => {
+    await renderWithPreset('drafts/not-here')
+
+    // 下拉还停在占位文案上，说明那条没被选中
+    expect(screen.getByLabelText(/publish.prepare.draftLabel/))
+      .toHaveTextContent(/publish.prepare.draftPlaceholder/)
+    expect(screen.getByRole('button', { name: /publish.prepare.submit/ })).toBeDisabled()
   })
 })
 

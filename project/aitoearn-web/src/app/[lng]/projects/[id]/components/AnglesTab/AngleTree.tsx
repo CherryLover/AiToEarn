@@ -14,6 +14,7 @@ interface AngleTreeProps {
   readOnly: boolean
   updatingId: string | null
   onStatusChange: (angle: Angle, status: AngleStatus) => void
+  onGenerate: (angle: Angle) => void
   onDerive: (angle: Angle) => void
   onEdit: (angle: Angle) => void
   onDelete: (angle: Angle) => void
@@ -47,6 +48,7 @@ function AngleTreeLevel(props: AngleTreeLevelProps) {
             readOnly={rest.readOnly}
             isUpdating={rest.updatingId === node.id}
             onStatusChange={rest.onStatusChange}
+            onGenerate={rest.onGenerate}
             onDerive={rest.onDerive}
             onEdit={rest.onEdit}
             onDelete={rest.onDelete}

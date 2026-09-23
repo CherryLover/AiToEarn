@@ -26,9 +26,11 @@ interface PublishTabProps {
   projectId: string
   /** 归档项目只读 */
   readOnly: boolean
+  /** 从「生成」页带过来的草稿，带了就在上面的面板里直接选上 */
+  presetDraft: { path: string, at: number } | null
 }
 
-export function PublishTab({ projectId, readOnly }: PublishTabProps) {
+export function PublishTab({ projectId, readOnly, presetDraft }: PublishTabProps) {
   const { t } = useTransClient('projects')
 
   const { drafts, isLoading: isDraftsLoading } = useDrafts(projectId)
@@ -126,6 +128,7 @@ export function PublishTab({ projectId, readOnly }: PublishTabProps) {
         isDraftsLoading={isDraftsLoading}
         readOnly={readOnly}
         onCreated={handleCreated}
+        presetDraft={presetDraft}
       />
 
       {/* 选中的那条，完整卡片 */}

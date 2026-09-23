@@ -5,7 +5,7 @@
 'use client'
 
 import type { Angle } from '@/api/angles/angle.types'
-import { GitBranch, Loader2, Pencil, Trash2 } from 'lucide-react'
+import { GitBranch, Loader2, Pencil, Sparkles, Trash2 } from 'lucide-react'
 import { ANGLE_STATUS_ORDER } from '@/api/angles/angle.constants'
 import { AngleSource, AngleStatus } from '@/api/angles/angle.types'
 import { useTransClient } from '@/app/i18n/client'
@@ -26,6 +26,8 @@ interface AngleCardProps {
   readOnly: boolean
   isUpdating: boolean
   onStatusChange: (angle: Angle, status: AngleStatus) => void
+  /** 照这个方向写一条内容 */
+  onGenerate: (angle: Angle) => void
   onDerive: (angle: Angle) => void
   onEdit: (angle: Angle) => void
   onDelete: (angle: Angle) => void
@@ -43,7 +45,7 @@ const STATUS_BADGE_CLASS: Record<AngleStatus, string> = {
 }
 
 export function AngleCard(props: AngleCardProps) {
-  const { angle, childCount = 0, readOnly, isUpdating, onStatusChange, onDerive, onEdit, onDelete } = props
+  const { angle, childCount = 0, readOnly, isUpdating, onStatusChange, onGenerate, onDerive, onEdit, onDelete } = props
   const { t } = useTransClient('projects')
 
   const isRetired = angle.status === AngleStatus.Retired
@@ -122,6 +124,14 @@ export function AngleCard(props: AngleCardProps) {
 
         {!readOnly && (
           <>
+            {/* 方向定了，下一步就是照它写一条——这是这张卡片上最主要的去处，所以放第一个、给实心样式。
+                淘汰的方向不给：口径和「生成」页的方向下拉一致，那边也把淘汰的滤掉了 */}
+            {!isRetired && (
+              <Button size="sm" className="h-8" onClick={() => onGenerate(angle)}>
+                <Sparkles className="size-3.5" />
+                {t('angles.action.generate')}
+              </Button>
+            )}
             <Button variant="outline" size="sm" className="h-8" onClick={() => onDerive(angle)}>
               <GitBranch className="size-3.5" />
               {t('angles.action.derive')}

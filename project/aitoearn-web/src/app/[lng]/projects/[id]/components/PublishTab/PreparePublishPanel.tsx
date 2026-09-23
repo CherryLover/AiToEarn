@@ -40,21 +40,43 @@ interface PreparePublishPanelProps {
    * 它不落库，错过这一次就没有了，所以要一路带到卡片上。
    */
   onCreated: (post: PublishedPostDetail, notes: PublishDraftNotes) => void
+  /**
+   * 从「生成」页带过来的草稿路径，带了就直接选上。
+   * 每次带过来都换一个 at，同一条草稿连点两次也要能重新选上
+   */
+  presetDraft: { path: string, at: number } | null
 }
 
 export function PreparePublishPanel(props: PreparePublishPanelProps) {
-  const { projectId, drafts, isDraftsLoading, readOnly, onCreated } = props
+  const { projectId, drafts, isDraftsLoading, readOnly, onCreated, presetDraft } = props
   const { t } = useTransClient('projects')
 
   const [draftPath, setDraftPath] = useState('')
   const [platform, setPlatform] = useState<string>(DEFAULT_DRAFT_PLATFORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 选中的草稿没了（被删或改名）就退回没选中
+  /**
+   * 从「生成」页带过来的草稿：直接选上，人不用在下拉里再找一遍。
+   *
+   * 要等草稿列表真到齐了才选：切过来的那一瞬间这个面板刚挂载、列表还在路上，
+   * 这时候选上会被下面那个「草稿没了就清空」的检查当场冲掉。
+   * 所以依赖里带着 drafts，列表到了再补一次。
+   */
   useEffect(() => {
+    const path = presetDraft?.path
+    if (path && drafts.some(draft => draft.path === path))
+      setDraftPath(path)
+  }, [presetDraft, drafts])
+
+  // 选中的草稿没了（被删或改名）就退回没选中。
+  // 列表还在加载时不判：那会儿 drafts 是空的，判了会把刚带过来的选择误清掉
+  useEffect(() => {
+    if (isDraftsLoading)
+      return
+
     if (draftPath && !drafts.some(draft => draft.path === draftPath))
       setDraftPath('')
-  }, [draftPath, drafts])
+  }, [draftPath, drafts, isDraftsLoading])
 
   const handleDraftChange = (value: string) => {
     setDraftPath(value)

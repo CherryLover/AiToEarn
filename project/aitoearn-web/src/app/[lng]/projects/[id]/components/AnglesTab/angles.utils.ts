@@ -246,6 +246,28 @@ export function suggestChildSlug(parentSlug: string, takenSlugs: string[]): stri
 }
 
 /**
+ * 「加一个方向」的提示词。
+ *
+ * 和「提炼方向」不是一回事：提炼是从物料里批量捞，这个是**你心里已经有个影子**，
+ * 要跟 AI 把它聊清楚。所以第一句就得拦住它别急着写文件——
+ * 不拦的话它会当场编一个 slug 写进 angles/，人还没说要什么呢。
+ */
+export function buildNewAnglePrompt(projectName: string, existingSlugs: string[]): string {
+  const lines = [
+    `我想给项目 ${projectName} 加一个新的发布方向，先别写文件。`,
+    '先问我想切什么痛点、用什么噱头、面向谁——一次问一两个，别一口气甩一串问题。',
+    '我说得含糊就追问；你也可以先读 background/ 里的物料，拿材料里的说法帮我把想法收紧。',
+    '三件事都清楚了，复述一遍让我确认，我说可以你再用 extracting-angles 技能写成 angles/<slug>.md。',
+    '事实只能来自 background/ 里的材料或我在这条对话里告诉你的，缺材料就直说缺，不要编。',
+  ]
+
+  if (existingSlugs.length > 0)
+    lines.push(`已经有这些方向，别跟它们重复：${existingSlugs.join('、')}。`)
+
+  return lines.join('\n')
+}
+
+/**
  * 「让 AI 提炼方向」的提示词。
  *
  * 这句话是发进项目那条长对话里的，**不是从零起一轮**。第一句必须先把前面聊过的东西圈进来：

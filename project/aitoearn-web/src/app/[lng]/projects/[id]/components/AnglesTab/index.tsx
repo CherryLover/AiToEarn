@@ -27,10 +27,12 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/utils/className'
 import { toast } from '@/utils/ui/toast'
+import { GenerateDraftDialog } from '../DraftsTab/GenerateDraftDialog'
 import { AngleFormDialog } from './AngleFormDialog'
 import {
   buildAngleTree,
   buildExtractAnglesPrompt,
+  buildNewAnglePrompt,
   getAngleErrorKey,
   groupAnglesByStatus,
   suggestChildSlug,
@@ -48,13 +50,15 @@ interface AnglesTabProps {
   readOnly: boolean
   /** 把一句话丢进右侧的项目对话里 */
   onAskAi: (prompt: string) => void
+  /** 交代完「照这个方向写一条」之后，切到「生成」页去看结果落在哪 */
+  onGoToDrafts: () => void
   /** 页面每跑完一轮 AI 任务就加一，收到就去登记并刷新 */
   refreshSignal: number
 }
 
 type AngleView = 'tree' | 'status'
 
-export function AnglesTab({ projectId, projectName, readOnly, onAskAi, refreshSignal }: AnglesTabProps) {
+export function AnglesTab({ projectId, projectName, readOnly, onAskAi, onGoToDrafts, refreshSignal }: AnglesTabProps) {
   const { t } = useTransClient('projects')
 
   const { angles, isLoading, loadFailed, refresh, sync, create, derive, update, remove } = useAngles(projectId)
@@ -64,6 +68,8 @@ export function AnglesTab({ projectId, projectName, readOnly, onAskAi, refreshSi
   const [deleteTarget, setDeleteTarget] = useState<Angle | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  // 正在交代「照这个方向写一条」的那个方向，null 表示小框没开
+  const [generateTarget, setGenerateTarget] = useState<Angle | null>(null)
 
   const tree = useMemo(() => buildAngleTree(angles), [angles])
   const groups = useMemo(() => groupAnglesByStatus(angles), [angles])
@@ -182,9 +188,27 @@ export function AnglesTab({ projectId, projectName, readOnly, onAskAi, refreshSi
       void syncFromFiles()
   }, [refreshSignal, syncFromFiles])
 
+  /**
+   * 方向定了，下一步就是照它写一条：就地问清平台和补充要求，
+   * 交给对话去干，然后切到「生成」页——结果会落在那儿的草稿列表里。
+   */
+  const handleGenerateSubmit = useCallback((prompt: string) => {
+    onAskAi(prompt)
+    onGoToDrafts()
+  }, [onAskAi, onGoToDrafts])
+
   /** 「让 AI 提炼方向」= 往右侧那条对话里发一句话，接着之前聊的往下走 */
   const handleExtract = useCallback(() => {
     onAskAi(buildExtractAnglesPrompt(projectName, takenSlugs))
+  }, [onAskAi, projectName, takenSlugs])
+
+  /**
+   * 「加一个方向」也走对话：心里有个影子的时候，最缺的恰恰是有人追问两句，
+   * 直接甩一张空表单，人只会把那个还没想清楚的影子原样填进去。
+   * 想清楚了不想聊的，旁边留了「自己写」。
+   */
+  const handleAskNewAngle = useCallback(() => {
+    onAskAi(buildNewAnglePrompt(projectName, takenSlugs))
   }, [onAskAi, projectName, takenSlugs])
 
   const openCreate = () => setFormState({ mode: 'create' })
@@ -269,9 +293,12 @@ export function AnglesTab({ projectId, projectName, readOnly, onAskAi, refreshSi
                 <Sparkles className="size-4" />
                 {t('angles.action.extract')}
               </Button>
-              <Button size="sm" onClick={openCreate}>
+              <Button size="sm" onClick={handleAskNewAngle}>
                 <Plus className="size-4" />
                 {t('angles.action.create')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={openCreate}>
+                {t('angles.action.createManually')}
               </Button>
             </>
           )}
@@ -303,6 +330,8 @@ export function AnglesTab({ projectId, projectName, readOnly, onAskAi, refreshSi
                 <Sparkles className="size-4" />
                 {t('angles.empty.extract')}
               </Button>
+              {/* 空状态这一格保持原样：一个都还没有的时候，主路径是从物料里提炼，
+                  「自己写一个」是那条兜底的手填路。工具条上才分「聊一个」和「自己写」 */}
               <Button variant="outline" onClick={openCreate}>
                 <Plus className="size-4" />
                 {t('angles.empty.create')}
@@ -318,6 +347,7 @@ export function AnglesTab({ projectId, projectName, readOnly, onAskAi, refreshSi
               readOnly={readOnly}
               updatingId={updatingId}
               onStatusChange={handleStatusChange}
+              onGenerate={setGenerateTarget}
               onDerive={openDerive}
               onEdit={openEdit}
               onDelete={setDeleteTarget}
@@ -329,6 +359,7 @@ export function AnglesTab({ projectId, projectName, readOnly, onAskAi, refreshSi
               readOnly={readOnly}
               updatingId={updatingId}
               onStatusChange={handleStatusChange}
+              onGenerate={setGenerateTarget}
               onDerive={openDerive}
               onEdit={openEdit}
               onDelete={setDeleteTarget}
@@ -336,6 +367,13 @@ export function AnglesTab({ projectId, projectName, readOnly, onAskAi, refreshSi
           )}
         </div>
       )}
+
+      <GenerateDraftDialog
+        angle={generateTarget}
+        projectName={projectName}
+        onOpenChange={open => !open && setGenerateTarget(null)}
+        onSubmit={handleGenerateSubmit}
+      />
 
       <AngleFormDialog
         state={formState}

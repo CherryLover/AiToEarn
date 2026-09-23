@@ -249,7 +249,9 @@
       "create": "新建方向",
       "derive": "从这里深入",
       "edit": "编辑",
-      "delete": "删除"
+      "delete": "删除",
+      "generate": "生成",
+      "createManually": "自己写"
     },
     "empty": {
       "title": "还没有方向",
@@ -408,7 +410,10 @@
       "waiting": "已经派下去了，等它开始读物料…",
       "noLog": "这次没有过程记录。",
       "noAngles": "还没有可用的方向。先去「方向」标签页提炼或新建一个，再回来生成。",
-      "runsInChat": "过程在右侧对话里，可以随时追问或让它改"
+      "runsInChat": "过程在右侧对话里，可以随时追问或让它改",
+      "dialogTitle": "照这个方向写一条",
+      "dialogDesc": "方向已经定了，只差发哪儿和有没有额外要求。确认后交给右侧对话去写。",
+      "dialogCancel": "取消"
     },
     "platform": {
       "xhs": "小红书",
@@ -443,7 +448,8 @@
       "mediaFailed": "这张图没取到",
       "meta": "更新于 {{time}}",
       "unsaved": "有改动没保存",
-      "saveSuccess": "已保存"
+      "saveSuccess": "已保存",
+      "goPublish": "拿这条去发布"
     },
     "lineage": {
       "angle": "方向",

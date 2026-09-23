@@ -57,6 +57,23 @@ const SECTION_STORAGE_KEY = {
 /** 右侧 AI 对话面板开着还是关着，也记在本地 */
 const CHAT_OPEN_STORAGE_KEY = 'projects.detail.chatOpen'
 
+type ProjectTab = (typeof TABS)[number]
+
+/**
+ * 当前标签页写进 URL hash（`#generate`）。
+ *
+ * 一是刷新不会被打回第一个标签页，二是「照这个方向写一条」要能把人送到「生成」页，
+ * 而这得让标签页受控——顺手把地址栏也对上，链接才指得准。
+ * hash 不认识就回到第一个，不能让页面空着。
+ */
+function readTabFromHash(): ProjectTab {
+  if (typeof window === 'undefined')
+    return TABS[0]
+
+  const hash = window.location.hash.replace('#', '')
+  return (TABS as readonly string[]).includes(hash) ? (hash as ProjectTab) : TABS[0]
+}
+
 type SectionKey = keyof typeof SECTION_STORAGE_KEY
 
 /** 读不到（隐私模式、被禁用）就按默认折叠处理，不能让页面崩 */
@@ -108,6 +125,10 @@ export default function ProjectDetailPage() {
   const [chatPrompt, setChatPrompt] = useState<ProjectChatPrompt | null>(null)
   // 对话每跑完一轮加一，方向页和生成页收到就各自去登记 / 刷新
   const [aiRunSignal, setAiRunSignal] = useState(0)
+  // 当前标签页。首屏用第一个和服务端保持一致，挂载后再认领 hash
+  const [activeTab, setActiveTab] = useState<ProjectTab>(TABS[0])
+  // 从「生成」页带到「发布」页的那条草稿
+  const [publishDraft, setPublishDraft] = useState<{ path: string, at: number } | null>(null)
   // 同一毫秒内点两次也要能各发一次，用自增序号兜底
   const promptSeqRef = useRef(0)
 
@@ -149,7 +170,27 @@ export default function ProjectDetailPage() {
       settings: readSectionOpen(SECTION_STORAGE_KEY.settings),
     })
     setChatOpen(readSectionOpen(CHAT_OPEN_STORAGE_KEY))
+    setActiveTab(readTabFromHash())
   }, [])
+
+  const handleTabChange = useCallback((next: string) => {
+    setActiveTab(next as ProjectTab)
+    // 用 replace 不留历史：标签页之间来回切不该把浏览器的后退键堆满
+    if (typeof window !== 'undefined')
+      window.history.replaceState(null, '', `#${next}`)
+  }, [])
+
+  /** 方向页交代完「照这个方向写一条」：切过去看结果会落在哪 */
+  const handleGoToDrafts = useCallback(() => {
+    handleTabChange('generate')
+  }, [handleTabChange])
+
+  /** 草稿写完了拿去发：切到发布页，并且把这条草稿带过去选上 */
+  const handleGoPublish = useCallback((draftPath: string) => {
+    promptSeqRef.current += 1
+    setPublishDraft({ path: draftPath, at: promptSeqRef.current })
+    handleTabChange('publish')
+  }, [handleTabChange])
 
   const handleChatOpenChange = useCallback((open: boolean) => {
     setChatOpen(open)
@@ -303,7 +344,7 @@ export default function ProjectDetailPage() {
 
           {/* 物料 / 方向 / 生成 / 发布 / 数据 */}
           <div className="mt-6">
-            <Tabs defaultValue={TABS[0]}>
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
               <TabsList>
                 {TABS.map(tab => (
                   <TabsTrigger key={tab} value={tab}>
@@ -338,6 +379,7 @@ export default function ProjectDetailPage() {
                         projectName={project.name}
                         readOnly={false}
                         onAskAi={handleAskAi}
+                        onGoToDrafts={handleGoToDrafts}
                         refreshSignal={aiRunSignal}
                       />
                     )}
@@ -357,6 +399,7 @@ export default function ProjectDetailPage() {
                         readOnly={false}
                         onAskAi={handleAskAi}
                         refreshSignal={aiRunSignal}
+                        onGoPublish={handleGoPublish}
                       />
                     )}
               </TabsContent>
@@ -369,7 +412,13 @@ export default function ProjectDetailPage() {
                         {t('publish.archived')}
                       </div>
                     )
-                  : <PublishTab projectId={project.id} readOnly={false} />}
+                  : (
+                      <PublishTab
+                        projectId={project.id}
+                        readOnly={false}
+                        presetDraft={publishDraft}
+                      />
+                    )}
               </TabsContent>
 
               <TabsContent value="data">

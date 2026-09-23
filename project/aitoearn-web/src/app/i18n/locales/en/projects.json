@@ -249,7 +249,9 @@
       "create": "New angle",
       "derive": "Go deeper",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "generate": "Generate",
+      "createManually": "Write it myself"
     },
     "empty": {
       "title": "No angles yet",
@@ -408,7 +410,10 @@
       "waiting": "Sent. Waiting for it to start reading the material…",
       "noLog": "No trace from this run.",
       "noAngles": "No usable angle yet. Distill or create one in the Angles tab first, then come back.",
-      "runsInChat": "It runs in the chat on the right — follow up or ask for changes there."
+      "runsInChat": "It runs in the chat on the right — follow up or ask for changes there.",
+      "dialogTitle": "Write one along this angle",
+      "dialogDesc": "The angle is set — just pick a platform and add anything extra. The chat on the right takes it from there.",
+      "dialogCancel": "Cancel"
     },
     "platform": {
       "xhs": "Xiaohongshu",
@@ -443,7 +448,8 @@
       "mediaFailed": "Could not load this image",
       "meta": "Updated {{time}}",
       "unsaved": "unsaved changes",
-      "saveSuccess": "Saved"
+      "saveSuccess": "Saved",
+      "goPublish": "Publish this one"
     },
     "lineage": {
       "angle": "Angle",

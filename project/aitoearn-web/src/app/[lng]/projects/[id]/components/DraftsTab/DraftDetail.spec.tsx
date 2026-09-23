@@ -73,9 +73,38 @@ beforeEach(() => {
 
 function renderDetail(item = draft(), readOnly = false) {
   const onSaved = vi.fn()
-  const view = render(<DraftDetail projectId="p1" draft={item} readOnly={readOnly} onSaved={onSaved} />)
-  return { onSaved, ...view }
+  const onGoPublish = vi.fn()
+  const view = render(
+    <DraftDetail
+      projectId="p1"
+      draft={item}
+      readOnly={readOnly}
+      onSaved={onSaved}
+      onGoPublish={onGoPublish}
+    />,
+  )
+  return { onSaved, onGoPublish, ...view }
 }
+
+describe('draftDetail 拿这条去发布', () => {
+  /** 草稿写完下一步就是发。不给这个入口，人得切到「发布」页把刚看的这条再选一遍 */
+  it('点一下把这条草稿交出去', async () => {
+    const { onGoPublish } = renderDetail()
+
+    await userEvent.click(await screen.findByRole('button', { name: /drafts.detail.goPublish/ }))
+
+    expect(onGoPublish).toHaveBeenCalledTimes(1)
+    expect(onGoPublish.mock.calls[0][0]).toMatchObject({ path: draft().path })
+  })
+
+  it('归档项目里不给这个入口', async () => {
+    renderDetail(draft(), true)
+
+    // 刷新按钮只读时也在，拿它确认这张卡已经渲染出来了
+    expect(await screen.findByRole('button', { name: /action.refresh/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /drafts.detail.goPublish/ })).not.toBeInTheDocument()
+  })
+})
 
 describe('draftDetail 正文', () => {
   it('把标题、话题和正文读出来', async () => {
