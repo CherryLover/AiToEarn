@@ -16,6 +16,11 @@ export interface Skill {
   builtin: boolean
   /** 自定义技能的最后修改时间；内置的没有 */
   updatedAt?: string
+  /**
+   * 技能根目录下所有文件的相对路径：posix 分隔、服务端已排序、包含 `SKILL.md`，最多 500 条。
+   * 内置和自定义都有。只用来展示结构，**不要拿它拼请求路径**。
+   */
+  files: string[]
 }
 
 /**

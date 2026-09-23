@@ -491,10 +491,24 @@
     "deleteSuccess": "已删掉",
     "upload": {
       "title": "传一个技能",
-      "desc": "只收单个 Markdown 文件，开头要有 frontmatter，里面得有 name 和 description。",
+      "desc": "推荐把整个技能目录打成 zip 上传；技能只有一个 SKILL.md 的话，直接传这个 .md 也行。",
+      "treeLabel": "zip 技能包的结构",
+      "tree": {
+        "folder": "可选：包一层顶层文件夹，只能有一个",
+        "entry": "必需：入口，frontmatter 里写 name 和 description",
+        "references": "可选：参考资料",
+        "scripts": "可选：脚本",
+        "more": "可选：其他文件和子目录"
+      },
+      "rules": {
+        "location": "SKILL.md 要放在压缩包根目录，或者唯一的那个顶层文件夹里；顶层有多个文件夹会被拒。",
+        "name": "技能名以 SKILL.md 里的 name 为准，不看压缩包名、文件夹名和文件名。",
+        "limits": "上限：zip 不超过 10 MB；解压后总共不超过 30 MB、最多 500 个文件，单个文件不超过 10 MB；SKILL.md 本身不超过 64 KB。"
+      },
+      "scriptsNote": "scripts/ 里的脚本会原样保存，AI 也能读到内容，但 AI 目前没有执行命令的能力，这些脚本跑不了。",
       "pick": "选文件",
       "uploading": "上传中…",
-      "hint": "名字以文件里的 name 为准，不看文件名。单个文件不超过 64 KB。"
+      "hint": "支持 .zip 和 .md"
     },
     "custom": {
       "title": "自己传的",
@@ -505,16 +519,24 @@
       "title": "内置技能",
       "desc": "跟着镜像走，只能看，不能改也不能删。"
     },
+    "structure": {
+      "dir_one": "{{name}}/ {{count}} 个",
+      "dir_other": "{{name}}/ {{count}} 个",
+      "other_one": "其他 {{count}} 个",
+      "other_other": "其他 {{count}} 个",
+      "show": "展开文件列表",
+      "hide": "收起文件列表"
+    },
     "overwrite": {
       "title": "已经有同名的技能",
-      "desc": "继续会用这次传的覆盖掉原来那个，覆盖之后找不回来。",
+      "desc": "继续会用这次传的把原来那个技能整个替换掉，原来的文件都找不回来。",
       "cancel": "算了",
       "confirm": "覆盖它"
     },
     "delete": {
       "action": "删除",
       "title": "删掉这个技能？",
-      "desc": "删掉 {{name}} 之后，AI 就不会再用它了。文件一并删除，找不回来。",
+      "desc": "删掉 {{name}} 之后，AI 就不会再用它了。它的所有文件一并删除，找不回来。",
       "cancel": "取消",
       "confirm": "删除",
       "deleting": "删除中…"
@@ -522,13 +544,16 @@
     "error": {
       "nameInvalid": "技能名只能用小写字母、数字和连字符，3 到 40 个字符",
       "nameReserved": "这个名字被内置技能占着了，换一个",
-      "frontmatterMissing": "文件开头要有 frontmatter，name 和 description 都得有",
-      "fileTooLarge": "文件太大了，单个技能不超过 64 KB",
-      "fileInvalid": "只收单个 Markdown 文件",
+      "frontmatterMissing": "SKILL.md 开头要有 frontmatter，name 和 description 都得有",
+      "fileTooLarge": "文件太大了：zip 不超过 10 MB，SKILL.md 不超过 64 KB",
+      "fileInvalid": "只收 .zip 技能包或单个 .md 文件",
       "alreadyExists": "已经有同名的技能了",
       "notFound": "找不到这个技能",
       "builtinReadonly": "内置技能删不掉",
       "storageUnavailable": "技能目录读写不了，多半是服务器上没挂上",
+      "archiveInvalid": "压缩包打不开，或者里面有越界路径、软链接这类不安全的内容",
+      "archiveTooLarge": "解压后超出上限：总共不超过 30 MB、最多 500 个文件、单个文件不超过 10 MB",
+      "entryMissing": "没找到 SKILL.md：它得放在压缩包根目录，或者唯一的那个顶层文件夹里",
       "unknown": "没成功，再试一次"
     }
   }

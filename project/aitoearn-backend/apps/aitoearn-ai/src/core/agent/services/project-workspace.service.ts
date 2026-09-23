@@ -4,6 +4,7 @@ import * as path from 'node:path'
 import { Injectable, Logger } from '@nestjs/common'
 import { AppException, ResponseCode } from '@yikart/common'
 import { config } from '../../../config'
+import { resolveSessionSkillsDir } from '../skill-init.service'
 
 /**
  * 项目英文名规则（见 docs/rebuild/contract-core.md 第三节）：
@@ -76,6 +77,25 @@ export const TOOL_GLOB_ARGS: Record<string, readonly string[]> = {
 export const BLOCKED_PATH_SEGMENTS: readonly string[] = ['.claude', '.mcp.json']
 
 /**
+ * 会话技能目录的只读口子：只有这几个工具、只看这一个参数。
+ *
+ * 技能是整包装进来的（SKILL.md + references / scripts / assets），Skill 工具只把 SKILL.md 注入上下文，
+ * 里面写着「细节去读 references/xxx.md」——Agent 就得自己去读。可这个目录在 `$HOME/.claude/skills`，
+ * 既在项目目录外、又带 `.claude` 段，上面两条规则都会拒掉，技能包里的参考资料等于白传。
+ *
+ * 为什么放开是安全的：
+ * - 只读。SKILL.md 本来就会被 Skill 工具整篇注入上下文，references 的用途就是给 Agent 读的，读它不多泄露什么
+ * - 只限这一个目录。按**真实路径**判断（跟随软链），会话目录下的 settings、项目自己的 `.claude/` 都不在里面，照旧拒
+ * - Write / Edit / NotebookEdit 不在表里，往技能目录写照旧拒：技能只能从上传接口进来
+ * - Glob / Grep 的通配符参数规则不变（绝对路径和 `..` 照旧拒），要列技能目录就把它当 `path` 传
+ */
+export const SKILL_READ_TOOL_ARGS: Record<string, readonly string[]> = {
+  Read: ['file_path'],
+  Glob: ['path'],
+  Grep: ['path'],
+}
+
+/**
  * 把 Agent 的工作范围焊死在单个项目的物料目录里。
  *
  * 这是三层隔离中的第三层，另外两层是：容器里只挂了 `projects`（配置和 `.env` 根本不在容器里）、
@@ -84,6 +104,9 @@ export const BLOCKED_PATH_SEGMENTS: readonly string[] = ['.claude', '.mcp.json']
 @Injectable()
 export class ProjectWorkspaceService {
   private readonly logger = new Logger(ProjectWorkspaceService.name)
+
+  /** 会话技能目录，和 SkillInitService 往里铺技能的是同一个 */
+  private readonly sessionSkillsDir = resolveSessionSkillsDir()
 
   /** 物料根目录（容器内路径） */
   get root(): string {
@@ -170,6 +193,46 @@ export class ProjectWorkspaceService {
     }
   }
 
+  /**
+   * 是不是对会话技能目录的只读访问（见 `SKILL_READ_TOOL_ARGS`）。
+   *
+   * 按**真实路径**判断，落在技能目录里（含技能目录本身）才算：
+   * `<技能目录>/../settings.json` 真实落点是会话配置；技能目录里一个指向外面的软链，真实落点在外面——都不算。
+   * 不存在的路径 `toRealPath` 拿最近一层真实存在的祖先去解析、剩下的部分按词法拼回去；解析不了的一律不算。
+   *
+   * 技能目录本身必须是真目录：它要是被换成了软链（比如指向 `/`），这个口子就等于全开，宁可整个关掉。
+   */
+  isReadOnlySkillAccess(projectDir: string, toolName: string, argName: string, candidate: string): boolean {
+    if (!(SKILL_READ_TOOL_ARGS[toolName] ?? []).includes(argName))
+      return false
+
+    const skillsDir = path.resolve(this.sessionSkillsDir)
+    if (!this.isRealDirectory(skillsDir))
+      return false
+
+    try {
+      const realSkillsDir = this.toRealPath(skillsDir)
+      const realResolved = this.toRealPath(path.resolve(projectDir, candidate))
+      return this.isInsideOrSame(realSkillsDir, realResolved)
+    }
+    catch {
+      return false
+    }
+  }
+
+  private isRealDirectory(target: string): boolean {
+    try {
+      return lstatSync(target).isDirectory()
+    }
+    catch {
+      return false
+    }
+  }
+
+  private isInsideOrSame(base: string, target: string): boolean {
+    return target === base || target.startsWith(base + path.sep)
+  }
+
   /** 通配符不能是绝对路径，也不能带 `..`：证明不了它只匹配项目目录里的东西就不放行 */
   isGlobPatternInsideProject(pattern: string): boolean {
     if (pattern.length === 0)
@@ -199,6 +262,9 @@ export class ProjectWorkspaceService {
       if (typeof value !== 'string') {
         return this.buildDenyMessage(projectDir, argName, String(value), 'it is not a path string')
       }
+
+      if (this.isReadOnlySkillAccess(projectDir, toolName, argName, value))
+        continue
 
       try {
         this.assertPathInsideProject(projectDir, value)
@@ -251,7 +317,7 @@ export class ProjectWorkspaceService {
   }
 
   private assertInsideBase(base: string, target: string): void {
-    if (target !== base && !target.startsWith(base + path.sep))
+    if (!this.isInsideOrSame(base, target))
       throw new AppException(ResponseCode.ProjectPathEscape)
   }
 
@@ -350,6 +416,8 @@ export class ProjectWorkspaceService {
     return `Permission denied: \`${argName}\` = "${value}" was rejected because ${reason}. `
       + `This task is locked to the project workspace \`${projectDir}\` and every path must stay inside it. `
       + `This is NOT a "file not found" error — the path may well exist, you are simply not allowed to touch anything outside the project. `
+      + `The only exception is read-only access (Read, or Glob / Grep with \`path\` set to it) to installed skill files under \`${this.sessionSkillsDir}\`; `
+      + `writing there is never allowed. `
       + `Retry with a path inside the project workspace.`
   }
 }

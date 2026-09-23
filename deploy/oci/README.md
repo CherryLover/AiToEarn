@@ -108,6 +108,11 @@ sudo cp "$DATA_DIR"/config/ai.override.yaml{,.bak}
 内置的 15 个技能仍旧打在镜像里，服务启动时两边一起摊进 Agent 读的目录；
 上传或删除之后会立刻重新摊一次，不用重启。
 
+格式：标准技能包 `.zip`（`SKILL.md` + `references/` / `scripts/` / `assets/` 等子目录，包 ≤ 10 MiB、解压后 ≤ 30 MiB）
+或单个 `.md`（≤ 64 KiB），每个技能在 `$DATA_DIR/skills/<name>/` 下是一整个目录。
+目录里偶尔能看到 `.tmp-*` / `.trash-*`，是上传、删除过程中的临时目录，服务会自己清掉，同步也不认它们；
+服务没在跑的时候看到残留，可以直接删。`scripts/` 只存不跑。
+
 **必须挂出来**，理由和物料一样：应用容器每次部署都被 `rm --stop --force` 删掉重建。
 契约见 `docs/rebuild/contract-custom-skills.md`。
 

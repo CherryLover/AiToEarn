@@ -479,10 +479,24 @@
     "deleteSuccess": "Supprimée",
     "upload": {
       "title": "Déposer une compétence",
-      "desc": "Un seul fichier Markdown, avec name et description dans l'en-tête.",
+      "desc": "Compressez tout le dossier de la compétence en ZIP et déposez-le. Si la compétence se résume à un SKILL.md, vous pouvez aussi déposer ce .md seul.",
+      "treeLabel": "Contenu de l'archive ZIP",
+      "tree": {
+        "folder": "Facultatif : un seul dossier de premier niveau",
+        "entry": "Obligatoire : le point d'entrée, avec name et description dans l'en-tête",
+        "references": "Facultatif : documents de référence",
+        "scripts": "Facultatif : scripts",
+        "more": "Facultatif : autres fichiers et dossiers"
+      },
+      "rules": {
+        "location": "SKILL.md doit se trouver à la racine de l'archive, ou dans son unique dossier de premier niveau. Plusieurs dossiers de premier niveau sont refusés.",
+        "name": "Le nom de la compétence vient du champ name de SKILL.md, pas du nom de l'archive, du dossier ou du fichier.",
+        "limits": "Limites : ZIP de 10 Mo maximum ; une fois décompressé, 30 Mo au total, 500 fichiers et 10 Mo par fichier ; SKILL.md lui-même, 64 Ko maximum."
+      },
+      "scriptsNote": "Les scripts de scripts/ sont conservés tels quels et l'IA peut les lire, mais elle ne sait pas encore exécuter de commandes : ces scripts ne seront pas lancés.",
       "pick": "Choisir un fichier",
       "uploading": "Envoi…",
-      "hint": "Le nom vient de l'en-tête du fichier, pas du nom de fichier. 64 Ko maximum."
+      "hint": ".zip ou .md"
     },
     "custom": {
       "title": "Vos dépôts",
@@ -493,16 +507,24 @@
       "title": "Compétences fournies",
       "desc": "Livrées avec l'image. En lecture seule."
     },
+    "structure": {
+      "dir_one": "{{name}}/ {{count}} fichier",
+      "dir_other": "{{name}}/ {{count}} fichiers",
+      "other_one": "{{count}} autre fichier",
+      "other_other": "{{count}} autres fichiers",
+      "show": "Afficher la liste des fichiers",
+      "hide": "Masquer la liste des fichiers"
+    },
     "overwrite": {
       "title": "Une compétence porte déjà ce nom",
-      "desc": "Continuer remplacera l'existante. L'ancienne version sera perdue.",
+      "desc": "Continuer remplacera entièrement la compétence existante par ce dépôt. Aucun des anciens fichiers ne pourra être récupéré.",
       "cancel": "Laisser tomber",
       "confirm": "Remplacer"
     },
     "delete": {
       "action": "Supprimer",
       "title": "Supprimer cette compétence ?",
-      "desc": "Après la suppression de {{name}}, l'IA ne s'en servira plus. Le fichier part aussi, sans retour possible.",
+      "desc": "Après la suppression de {{name}}, l'IA ne s'en servira plus. Tous ses fichiers partent aussi, sans retour possible.",
       "cancel": "Annuler",
       "confirm": "Supprimer",
       "deleting": "Suppression…"
@@ -510,13 +532,16 @@
     "error": {
       "nameInvalid": "Le nom n'accepte que minuscules, chiffres et traits d'union, 3 à 40 caractères",
       "nameReserved": "Ce nom est celui d'une compétence fournie ; choisissez-en un autre",
-      "frontmatterMissing": "Le fichier doit avoir un en-tête avec name et description",
-      "fileTooLarge": "Trop volumineux — 64 Ko maximum par compétence",
-      "fileInvalid": "Un seul fichier Markdown est accepté",
+      "frontmatterMissing": "SKILL.md doit avoir un en-tête avec name et description",
+      "fileTooLarge": "Trop volumineux — ZIP de 10 Mo maximum, SKILL.md de 64 Ko maximum",
+      "fileInvalid": "Seul un paquet de compétence .zip ou un fichier .md unique est accepté",
       "alreadyExists": "Une compétence porte déjà ce nom",
       "notFound": "Compétence introuvable",
       "builtinReadonly": "Les compétences fournies ne peuvent pas être supprimées",
       "storageUnavailable": "Impossible d'écrire dans le répertoire des compétences — il n'est sans doute pas monté",
+      "archiveInvalid": "L'archive ne s'ouvre pas, ou contient des éléments dangereux comme des chemins qui sortent du dossier ou des liens symboliques",
+      "archiveTooLarge": "Trop volumineux une fois décompressé — 30 Mo au total, 500 fichiers, 10 Mo par fichier au maximum",
+      "entryMissing": "SKILL.md introuvable — placez-le à la racine de l'archive, ou dans son unique dossier de premier niveau",
       "unknown": "Ça n'a pas marché. Réessayez."
     }
   }

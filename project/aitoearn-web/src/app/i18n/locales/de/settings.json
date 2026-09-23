@@ -479,10 +479,24 @@
     "deleteSuccess": "Gelöscht",
     "upload": {
       "title": "Skill hochladen",
-      "desc": "Eine einzelne Markdown-Datei, mit name und description im Front Matter.",
+      "desc": "Pack den ganzen Skill-Ordner als ZIP und lade ihn hoch. Besteht der Skill nur aus einer SKILL.md, kannst du auch diese .md allein hochladen.",
+      "treeLabel": "Aufbau des ZIP-Archivs",
+      "tree": {
+        "folder": "Optional: genau ein Ordner auf oberster Ebene",
+        "entry": "Pflicht: Einstiegspunkt, mit name und description im Front Matter",
+        "references": "Optional: Referenzmaterial",
+        "scripts": "Optional: Skripte",
+        "more": "Optional: weitere Dateien und Ordner"
+      },
+      "rules": {
+        "location": "Die SKILL.md muss im Wurzelverzeichnis des Archivs liegen oder im einzigen Ordner auf oberster Ebene. Mehrere Ordner auf oberster Ebene werden abgelehnt.",
+        "name": "Der Skill-Name kommt aus name in der SKILL.md – nicht aus dem Archiv-, Ordner- oder Dateinamen.",
+        "limits": "Grenzen: ZIP höchstens 10 MB; entpackt insgesamt 30 MB, 500 Dateien und 10 MB pro Datei; die SKILL.md selbst höchstens 64 KB."
+      },
+      "scriptsNote": "Skripte in scripts/ werden unverändert gespeichert und die KI kann sie lesen. Befehle ausführen kann die KI derzeit aber nicht – diese Skripte laufen also nicht.",
       "pick": "Datei wählen",
       "uploading": "Wird hochgeladen …",
-      "hint": "Der Name kommt aus dem Front Matter, nicht aus dem Dateinamen. Max. 64 KB."
+      "hint": ".zip oder .md"
     },
     "custom": {
       "title": "Eigene Uploads",
@@ -493,16 +507,24 @@
       "title": "Mitgelieferte Skills",
       "desc": "Kommen mit dem Image. Nur lesbar."
     },
+    "structure": {
+      "dir_one": "{{name}}/ {{count}} Datei",
+      "dir_other": "{{name}}/ {{count}} Dateien",
+      "other_one": "{{count}} weitere Datei",
+      "other_other": "{{count}} weitere Dateien",
+      "show": "Dateiliste anzeigen",
+      "hide": "Dateiliste ausblenden"
+    },
     "overwrite": {
       "title": "Es gibt bereits einen Skill mit diesem Namen",
-      "desc": "Weiter ersetzt den vorhandenen. Die alte Fassung ist danach weg.",
+      "desc": "Weiter ersetzt den vorhandenen Skill vollständig durch diesen Upload. Keine der alten Dateien lässt sich wiederherstellen.",
       "cancel": "Doch nicht",
       "confirm": "Ersetzen"
     },
     "delete": {
       "action": "Löschen",
       "title": "Diesen Skill löschen?",
-      "desc": "Nach dem Löschen von {{name}} nutzt die KI ihn nicht mehr. Die Datei geht mit und ist nicht wiederherstellbar.",
+      "desc": "Nach dem Löschen von {{name}} nutzt die KI ihn nicht mehr. Alle seine Dateien gehen mit und sind nicht wiederherstellbar.",
       "cancel": "Abbrechen",
       "confirm": "Löschen",
       "deleting": "Wird gelöscht …"
@@ -510,13 +532,16 @@
     "error": {
       "nameInvalid": "Der Name darf nur Kleinbuchstaben, Ziffern und Bindestriche enthalten, 3–40 Zeichen",
       "nameReserved": "Der Name gehört einem mitgelieferten Skill; nimm einen anderen",
-      "frontmatterMissing": "Die Datei braucht Front Matter mit name und description",
-      "fileTooLarge": "Zu groß — höchstens 64 KB pro Skill",
-      "fileInvalid": "Es wird nur eine einzelne Markdown-Datei angenommen",
+      "frontmatterMissing": "Die SKILL.md braucht Front Matter mit name und description",
+      "fileTooLarge": "Zu groß — ZIP höchstens 10 MB, SKILL.md höchstens 64 KB",
+      "fileInvalid": "Angenommen wird nur ein ZIP-Skill-Paket oder eine einzelne .md-Datei",
       "alreadyExists": "Ein Skill mit diesem Namen existiert bereits",
       "notFound": "Skill nicht gefunden",
       "builtinReadonly": "Mitgelieferte Skills lassen sich nicht löschen",
       "storageUnavailable": "Ins Skill-Verzeichnis lässt sich nicht schreiben — vermutlich nicht gemountet",
+      "archiveInvalid": "Das Archiv lässt sich nicht öffnen oder enthält Unsicheres, etwa Pfade außerhalb des Ordners oder symbolische Links",
+      "archiveTooLarge": "Entpackt zu groß — insgesamt höchstens 30 MB, 500 Dateien, 10 MB pro Datei",
+      "entryMissing": "Keine SKILL.md gefunden — sie gehört ins Wurzelverzeichnis des Archivs oder in den einzigen Ordner auf oberster Ebene",
       "unknown": "Hat nicht geklappt. Bitte erneut versuchen."
     }
   }

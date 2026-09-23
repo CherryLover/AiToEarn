@@ -274,4 +274,132 @@ describe('projectWorkspaceService', () => {
       expect(service.checkToolInput(projectDir, 'Grep', { pattern: '\\.\\./etc' })).toBeNull()
     })
   })
+
+  /**
+   * 技能包里的 references 要让 Agent 读得到，但只读、只限会话技能目录这一个地方。
+   * 会话技能目录 = `<cwd>/.claude-session/.claude/skills`，这里把 cwd 换到临时目录。
+   */
+  describe('会话技能目录的只读口子', () => {
+    let cwd: string
+    let projectDir: string
+    let sessionDir: string
+    let skillsDir: string
+    let skillFile: string
+    let skillService: ProjectWorkspaceService
+
+    beforeEach(() => {
+      cwd = process.cwd()
+      const appDir = join(tmpRoot, 'app')
+      sessionDir = join(appDir, '.claude-session')
+      skillsDir = join(sessionDir, '.claude', 'skills')
+      skillFile = join(skillsDir, 'my-skill', 'references', 'api.md')
+      mkdirSync(join(skillsDir, 'my-skill', 'references'), { recursive: true })
+      writeFileSync(join(skillsDir, 'my-skill', 'SKILL.md'), '---\nname: my-skill\n---\n')
+      writeFileSync(skillFile, '# api')
+      writeFileSync(join(sessionDir, '.claude', 'settings.json'), '{"hooks":{}}')
+
+      process.chdir(appDir)
+      skillService = new ProjectWorkspaceService()
+      projectDir = skillService.resolveProjectCwd('demo')
+    })
+
+    afterEach(() => {
+      process.chdir(cwd)
+    })
+
+    it('读技能目录里的文件（Read）放行', () => {
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: skillFile })).toBeNull()
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: join(skillsDir, 'my-skill', 'SKILL.md') })).toBeNull()
+    })
+
+    it('还不存在的路径按词法判断，落在技能目录里就放行（读不到是工具自己的事）', () => {
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: join(skillsDir, 'my-skill', 'nope.md') })).toBeNull()
+    })
+
+    it('从项目目录出发的相对路径，只要落点在技能目录里也放行', () => {
+      const relative = join('..', '..', 'app', '.claude-session', '.claude', 'skills', 'my-skill', 'SKILL.md')
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: relative })).toBeNull()
+    })
+
+    it('以技能目录（或其中某个技能）为 path 的 Glob / Grep 放行', () => {
+      expect(skillService.checkToolInput(projectDir, 'Glob', { pattern: '**/*.md', path: skillsDir })).toBeNull()
+      expect(skillService.checkToolInput(projectDir, 'Glob', { pattern: '**/*', path: join(skillsDir, 'my-skill') })).toBeNull()
+      expect(skillService.checkToolInput(projectDir, 'Grep', { pattern: 'api', path: skillsDir })).toBeNull()
+      expect(skillService.checkToolInput(projectDir, 'Grep', { pattern: 'api', path: skillFile, glob: '*.md' })).toBeNull()
+    })
+
+    it('通配符规则不变：path 是技能目录，Glob 的 pattern 也不许往外跑', () => {
+      const message = skillService.checkToolInput(projectDir, 'Glob', { pattern: '../**', path: skillsDir })
+      expect(message).toContain('glob')
+    })
+
+    it.each([
+      ['Write', 'file_path', { content: 'x' }],
+      ['Edit', 'file_path', { old_string: 'a', new_string: 'b' }],
+      ['NotebookEdit', 'notebook_path', { new_source: 'x' }],
+    ])('%s 技能目录里的文件照旧拒绝', (tool, argName, rest) => {
+      const existing = skillService.checkToolInput(projectDir, tool, { [argName]: join(skillsDir, 'my-skill', 'SKILL.md'), ...rest })
+      const fresh = skillService.checkToolInput(projectDir, tool, { [argName]: join(skillsDir, 'evil', 'SKILL.md'), ...rest })
+      expect(existing).toContain('outside the project workspace')
+      expect(fresh).toContain('outside the project workspace')
+    })
+
+    it.each([
+      ['<技能目录>/../settings.json', () => join(skillsDir, '..', 'settings.json')],
+      ['<技能目录>/my-skill/../../settings.json', () => join(skillsDir, 'my-skill', '..', '..', 'settings.json')],
+      ['会话目录下的 settings.json', () => join(sessionDir, '.claude', 'settings.json')],
+      ['会话目录本身', () => sessionDir],
+    ])('技能目录外的会话配置照旧拒绝: %s', (_label, candidate) => {
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: candidate() })).not.toBeNull()
+      expect(skillService.checkToolInput(projectDir, 'Glob', { pattern: '*', path: candidate() })).not.toBeNull()
+    })
+
+    it('技能目录里一个指向外面的软链，Read 拒绝', () => {
+      symlinkSync(join(outside, 'secret.txt'), join(skillsDir, 'my-skill', 'leak.txt'), 'file')
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: join(skillsDir, 'my-skill', 'leak.txt') })).not.toBeNull()
+    })
+
+    it('技能目录里一个指向会话 settings 的软链，Read 拒绝', () => {
+      symlinkSync(join(sessionDir, '.claude', 'settings.json'), join(skillsDir, 'my-skill', 'settings.json'), 'file')
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: join(skillsDir, 'my-skill', 'settings.json') })).not.toBeNull()
+    })
+
+    it('技能目录里一个指向外面的目录软链，经它读、以它为 path 列都拒绝', () => {
+      symlinkSync(outside, join(skillsDir, 'evil-dir'), 'dir')
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: join(skillsDir, 'evil-dir', 'secret.txt') })).not.toBeNull()
+      expect(skillService.checkToolInput(projectDir, 'Glob', { pattern: '*', path: join(skillsDir, 'evil-dir') })).not.toBeNull()
+    })
+
+    it('项目里一个指向技能目录的软链：读到的还是技能目录，放行；经它写照旧拒', () => {
+      symlinkSync(skillsDir, join(projectDir, 'skills-link'), 'dir')
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: 'skills-link/my-skill/SKILL.md' })).toBeNull()
+      expect(skillService.checkToolInput(projectDir, 'Write', {
+        file_path: 'skills-link/my-skill/SKILL.md',
+        content: 'x',
+      })).not.toBeNull()
+    })
+
+    it('技能目录本身被换成软链（比如指向 /）时，口子整个关掉', () => {
+      rmSync(skillsDir, { recursive: true })
+      symlinkSync(outside, skillsDir, 'dir')
+      const probe = new ProjectWorkspaceService()
+      expect(probe.checkToolInput(projectDir, 'Read', { file_path: join(skillsDir, 'secret.txt') })).not.toBeNull()
+      expect(probe.checkToolInput(projectDir, 'Glob', { pattern: '*', path: skillsDir })).not.toBeNull()
+    })
+
+    it.each([
+      ['.claude/settings.json'],
+      ['.claude/skills/my-skill/SKILL.md'],
+    ])('项目自己的 .claude/ 照旧拒绝: %s', (filePath) => {
+      mkdirSync(join(projectDir, '.claude', 'skills', 'my-skill'), { recursive: true })
+      writeFileSync(join(projectDir, filePath), 'x')
+      expect(skillService.checkToolInput(projectDir, 'Read', { file_path: filePath })).toContain('agent configuration')
+    })
+
+    it('拒绝信息里告诉模型：技能目录只能读', () => {
+      const message = skillService.checkToolInput(projectDir, 'Read', { file_path: '/etc/passwd' })
+      expect(message).toContain(join(process.cwd(), '.claude-session', '.claude', 'skills'))
+      expect(message).toContain('writing there is never allowed')
+    })
+  })
 })

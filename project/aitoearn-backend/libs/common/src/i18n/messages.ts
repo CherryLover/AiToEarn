@@ -1160,12 +1160,12 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
     'zh-CN': '文件开头要有 frontmatter，并且 name 和 description 都得有',
   },
   [ResponseCode.SkillFileTooLarge]: {
-    'en-US': 'The skill file is too large',
-    'zh-CN': '技能文件太大了',
+    'en-US': 'The skill is too large: a .zip must be at most 10 MiB, and SKILL.md (or a single .md) at most 64 KiB',
+    'zh-CN': '技能太大了：压缩包不超过 10 MiB，SKILL.md（或单独传的 .md）不超过 64 KiB',
   },
   [ResponseCode.SkillFileInvalid]: {
-    'en-US': 'Only a single Markdown file is accepted',
-    'zh-CN': '只收单个 Markdown 文件',
+    'en-US': 'Only a .zip skill package or a single .md file is accepted',
+    'zh-CN': '只收 .zip 技能包或单个 .md 文件',
   },
   [ResponseCode.SkillAlreadyExists]: {
     'en-US': 'A skill with this name already exists',
@@ -1182,5 +1182,17 @@ export const messages: Record<ResponseCode, Record<Locale, MessageValue>> = {
   [ResponseCode.SkillStorageUnavailable]: {
     'en-US': 'The skills directory is not writable',
     'zh-CN': '技能目录读写不了，多半是没挂上',
+  },
+  [ResponseCode.SkillArchiveInvalid]: {
+    'en-US': 'The zip file is damaged, or contains unsafe paths or symbolic links',
+    'zh-CN': '压缩包坏了，或者里面有越界、不安全的路径或软链接',
+  },
+  [ResponseCode.SkillArchiveTooLarge]: {
+    'en-US': 'The skill package is too large once unpacked: at most 30 MiB in total, 500 files, and 10 MiB per file',
+    'zh-CN': '技能包解压后太大：总共不超过 30 MiB、最多 500 个文件、单个文件不超过 10 MiB',
+  },
+  [ResponseCode.SkillEntryMissing]: {
+    'en-US': 'SKILL.md was not found at the root of the package or inside its single top-level folder',
+    'zh-CN': '包的根目录或唯一的顶层文件夹里找不到 SKILL.md',
   },
 }

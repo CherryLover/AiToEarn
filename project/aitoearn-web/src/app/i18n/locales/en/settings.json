@@ -491,10 +491,24 @@
     "deleteSuccess": "Deleted",
     "upload": {
       "title": "Upload a skill",
-      "desc": "A single Markdown file, with front matter containing both name and description.",
+      "desc": "Zip the whole skill folder and upload it. If the skill is just a SKILL.md, you can upload that .md on its own.",
+      "treeLabel": "Inside the zip",
+      "tree": {
+        "folder": "Optional: a single top-level folder",
+        "entry": "Required: the entry point, with name and description in its front matter",
+        "references": "Optional: reference material",
+        "scripts": "Optional: scripts",
+        "more": "Optional: other files and folders"
+      },
+      "rules": {
+        "location": "SKILL.md must sit at the root of the zip, or inside its only top-level folder. More than one top-level folder is rejected.",
+        "name": "The skill name comes from name in SKILL.md — not from the zip, folder or file name.",
+        "limits": "Limits: zip up to 10 MB; unpacked, 30 MB total, 500 files and 10 MB per file; SKILL.md itself up to 64 KB."
+      },
+      "scriptsNote": "Scripts in scripts/ are stored as-is and the AI can read them, but the AI cannot run commands yet — these scripts will not be executed.",
       "pick": "Choose file",
       "uploading": "Uploading…",
-      "hint": "The name comes from the file's front matter, not the filename. 64 KB max."
+      "hint": ".zip or .md"
     },
     "custom": {
       "title": "Your uploads",
@@ -505,16 +519,24 @@
       "title": "Built-in skills",
       "desc": "Ship with the image. Read-only."
     },
+    "structure": {
+      "dir_one": "{{name}}/ {{count}} file",
+      "dir_other": "{{name}}/ {{count}} files",
+      "other_one": "{{count}} other file",
+      "other_other": "{{count}} other files",
+      "show": "Show file list",
+      "hide": "Hide file list"
+    },
     "overwrite": {
       "title": "A skill with this name exists",
-      "desc": "Continuing replaces the existing one. The old version cannot be recovered.",
+      "desc": "Continuing replaces the existing skill entirely with this upload. None of the old files can be recovered.",
       "cancel": "Never mind",
       "confirm": "Replace it"
     },
     "delete": {
       "action": "Delete",
       "title": "Delete this skill?",
-      "desc": "After deleting {{name}}, the AI will stop using it. The file goes too, and cannot be recovered.",
+      "desc": "After deleting {{name}}, the AI will stop using it. All of its files go too, and cannot be recovered.",
       "cancel": "Cancel",
       "confirm": "Delete",
       "deleting": "Deleting…"
@@ -522,13 +544,16 @@
     "error": {
       "nameInvalid": "Skill name must be lowercase letters, digits and hyphens, 3-40 characters",
       "nameReserved": "That name belongs to a built-in skill; pick another",
-      "frontmatterMissing": "The file needs front matter with both name and description",
-      "fileTooLarge": "Too large — 64 KB max per skill",
-      "fileInvalid": "Only a single Markdown file is accepted",
+      "frontmatterMissing": "SKILL.md needs front matter with both name and description",
+      "fileTooLarge": "Too large — zip up to 10 MB, SKILL.md up to 64 KB",
+      "fileInvalid": "Only a .zip skill package or a single .md file is accepted",
       "alreadyExists": "A skill with this name already exists",
       "notFound": "Skill not found",
       "builtinReadonly": "Built-in skills cannot be deleted",
       "storageUnavailable": "The skills directory is not writable — it is probably not mounted",
+      "archiveInvalid": "The zip cannot be opened, or contains unsafe entries such as paths escaping the folder or symlinks",
+      "archiveTooLarge": "Too large once unpacked — 30 MB total, 500 files, 10 MB per file",
+      "entryMissing": "No SKILL.md found — put it at the root of the zip, or inside its only top-level folder",
       "unknown": "That did not work. Try again."
     }
   }

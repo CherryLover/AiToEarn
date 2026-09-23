@@ -1,32 +1,33 @@
 /**
  * 自定义技能：列、传、删
  *
- * 存的是文件不是记录——技能的内容就是一份 Markdown，Agent 运行时按文件读。
- * 塞进数据库意味着每次跑之前要先捞出来写成文件，凭空多一层，
+ * 存的是文件不是记录——技能就是一个目录（入口 SKILL.md，外加 references / scripts 等），
+ * Agent 运行时按文件读。塞进数据库意味着每次跑之前要先捞出来写成文件，凭空多一层，
  * 还多一个「库里有、盘上没有」的失配状态。见 `docs/rebuild/contract-custom-skills.md`。
  */
 
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { AppException, ResponseCode } from '@yikart/common'
 import {
   BUILTIN_SKILL_NAMES,
   CUSTOM_SKILLS_DIR,
+  listCustomSkillNames,
   SKILL_FILE_NAME,
   SkillInitService,
 } from './skill-init.service'
+import { listFilesRecursive } from './skills-fs.util'
+import { MAX_LISTED_SKILL_FILES, removeStoredSkill, storeSkillUpload } from './skills-store.util'
 import {
   isBuiltinSkillName,
   isValidSkillName,
-  MAX_SKILL_FILE_BYTES,
-  parseSkillFile,
+  readSkillFrontmatter,
   SkillSummary,
 } from './skills.util'
 
 @Injectable()
 export class SkillsService {
-  private readonly logger = new Logger(SkillsService.name)
   private readonly builtinDir = path.join(__dirname, 'skills')
 
   constructor(private readonly skillInit: SkillInitService) {}
@@ -39,118 +40,92 @@ export class SkillsService {
 
   private listBuiltin(): SkillSummary[] {
     return BUILTIN_SKILL_NAMES.map((name) => {
-      const file = path.join(this.builtinDir, name, SKILL_FILE_NAME)
+      const dir = path.join(this.builtinDir, name)
       return {
         name,
-        description: this.readDescription(file),
+        description: this.readDescription(path.join(dir, SKILL_FILE_NAME)),
         builtin: true,
+        files: listFilesRecursive(dir, MAX_LISTED_SKILL_FILES),
       }
     })
   }
 
   private listCustom(): SkillSummary[] {
-    if (!fs.existsSync(CUSTOM_SKILLS_DIR))
-      return []
-
-    const result: SkillSummary[] = []
-    for (const name of fs.readdirSync(CUSTOM_SKILLS_DIR)) {
-      // 内置同名的不列：它在磁盘上可能还躺着，但同步时会被内置的盖住，列出来只会让人以为它生效了
-      if (isBuiltinSkillName(name))
-        continue
-
-      const file = path.join(CUSTOM_SKILLS_DIR, name, SKILL_FILE_NAME)
-      if (!fs.existsSync(file))
-        continue
-
-      result.push({
-        name,
-        description: this.readDescription(file),
-        builtin: false,
-        updatedAt: fs.statSync(file).mtime,
-      })
+    // 读不了目录就当没有：列表少几行，总好过整个接口挂掉（同步那边会打错误日志）
+    let names: string[]
+    try {
+      names = listCustomSkillNames(CUSTOM_SKILLS_DIR)
     }
-    return result
+    catch {
+      return []
+    }
+
+    // 内置同名的不列：它在磁盘上可能还躺着，但同步时会被内置的盖住，列出来只会让人以为它生效了
+    return names
+      .filter(name => !isBuiltinSkillName(name))
+      .map((name) => {
+        const dir = path.join(CUSTOM_SKILLS_DIR, name)
+        const file = path.join(dir, SKILL_FILE_NAME)
+        return {
+          name,
+          description: this.readDescription(file),
+          builtin: false,
+          updatedAt: this.readModifiedAt(file),
+          files: listFilesRecursive(dir, MAX_LISTED_SKILL_FILES),
+        }
+      })
   }
 
-  /** 读不出来就给空串：列表少一句说明，总好过整个接口挂掉 */
+  /**
+   * 读不出来就给空串：列表少一句说明，总好过整个接口挂掉。
+   * 只读不校验：内置技能的名字本来就过不了上传校验（和内置重名），拿 `parseSkillFile` 读会把它们的说明全读成空。
+   */
   private readDescription(file: string): string {
     try {
-      const parsed = parseSkillFile(fs.readFileSync(file, 'utf-8'))
-      return parsed.ok ? parsed.meta.description : ''
+      return readSkillFrontmatter(fs.readFileSync(file, 'utf-8'))?.description ?? ''
     }
     catch {
       return ''
     }
   }
 
-  /**
-   * 收一个技能。
-   *
-   * 落盘路径拿**校验过的 name** 重新拼，绝不用上传来的文件名——
-   * 这是挡路径穿越的那一道，别图省事改掉。
-   */
-  saveSkill(buffer: Buffer, originalName: string, overwrite: boolean): SkillSummary {
-    if (buffer.byteLength > MAX_SKILL_FILE_BYTES)
-      throw new AppException(ResponseCode.SkillFileTooLarge)
-
-    if (!originalName.toLowerCase().endsWith('.md'))
-      throw new AppException(ResponseCode.SkillFileInvalid)
-
-    const content = buffer.toString('utf-8')
-    const parsed = parseSkillFile(content)
-    if (!parsed.ok) {
-      if (parsed.reason === 'name_invalid')
-        throw new AppException(ResponseCode.SkillNameInvalid)
-      if (parsed.reason === 'name_reserved')
-        throw new AppException(ResponseCode.SkillNameReserved)
-      throw new AppException(ResponseCode.SkillFrontmatterMissing)
-    }
-
-    const { name, description } = parsed.meta
-    const dir = path.join(CUSTOM_SKILLS_DIR, name)
-    const file = path.join(dir, SKILL_FILE_NAME)
-
-    if (!overwrite && fs.existsSync(file))
-      throw new AppException(ResponseCode.SkillAlreadyExists)
-
+  private readModifiedAt(file: string): Date | undefined {
     try {
-      fs.mkdirSync(dir, { recursive: true })
-      fs.writeFileSync(file, content, 'utf-8')
+      return fs.statSync(file).mtime
     }
-    catch (error) {
-      this.logger.error(error as Error, `Failed to write skill ${name}`)
-      throw new AppException(ResponseCode.SkillStorageUnavailable)
+    catch {
+      return undefined
     }
-
-    // 立刻摊进 Agent 读的目录，不用重启，下一轮对话就能用
-    this.skillInit.syncSkills()
-
-    return { name, description, builtin: false, updatedAt: new Date() }
   }
 
-  deleteSkill(name: string): void {
+  /**
+   * 收一个技能：单个 `.md`，或者标准技能包 `.zip`（SKILL.md + references / scripts / assets …）。
+   * 校验和原子落盘见 `storeSkillUpload`；落完立刻同步进 Agent 读的目录，不用重启，下一轮对话就能用。
+   */
+  async saveSkill(buffer: Buffer, originalName: string, overwrite: boolean): Promise<SkillSummary> {
+    const stored = await storeSkillUpload(CUSTOM_SKILLS_DIR, { buffer, originalName }, overwrite)
+
+    this.skillInit.syncSkills()
+
+    return {
+      name: stored.name,
+      description: stored.description,
+      builtin: false,
+      updatedAt: new Date(),
+      files: stored.files,
+    }
+  }
+
+  /** 删用户目录里的那份；Agent 读的那份交给同步去清（不在用户目录里的一律删掉） */
+  async deleteSkill(name: string): Promise<void> {
     if (!isValidSkillName(name))
       throw new AppException(ResponseCode.SkillNameInvalid)
 
     if (isBuiltinSkillName(name))
       throw new AppException(ResponseCode.SkillBuiltinReadonly)
 
-    const dir = path.join(CUSTOM_SKILLS_DIR, name)
-    if (!fs.existsSync(dir))
+    if (!(await removeStoredSkill(CUSTOM_SKILLS_DIR, name)))
       throw new AppException(ResponseCode.SkillNotFound)
-
-    try {
-      fs.rmSync(dir, { recursive: true, force: true })
-      // Agent 读的那份也要撤掉，否则删了还能用
-      fs.rmSync(path.join(process.cwd(), '.claude-session', '.claude', 'skills', name), {
-        recursive: true,
-        force: true,
-      })
-    }
-    catch (error) {
-      this.logger.error(error as Error, `Failed to delete skill ${name}`)
-      throw new AppException(ResponseCode.SkillStorageUnavailable)
-    }
 
     this.skillInit.syncSkills()
   }

@@ -10,7 +10,7 @@
 
 import { BUILTIN_SKILL_NAMES } from './skill-init.service'
 
-/** 单个技能文件上限。技能文档不该比这更大，更大的多半是传错了文件 */
+/** SKILL.md 上限（单独传 .md、包里的 SKILL.md 都是这个口径）。技能文档不该比这更大，更大的多半是传错了文件 */
 export const MAX_SKILL_FILE_BYTES = 64 * 1024
 
 /** 目录名规则，和项目英文名 / 方向 slug 一个口径 */
@@ -53,18 +53,32 @@ function readFrontmatterField(block: string, key: string): string {
 }
 
 /**
- * 从技能文件正文里解析 frontmatter。
+ * 只把 frontmatter 里的 name / description 抠出来，**不做任何校验**；没有 frontmatter 返回 null。
+ * 列表展示用——内置技能的名字过不了上传校验（和内置重名），但它的 description 照样要显示。
+ */
+export function readSkillFrontmatter(content: string): SkillFrontmatter | null {
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
+  if (!match)
+    return null
+
+  return {
+    name: readFrontmatterField(match[1], 'name'),
+    description: readFrontmatterField(match[1], 'description'),
+  }
+}
+
+/**
+ * 从技能文件正文里解析 frontmatter，并按上传的口径校验。
  *
  * `description` 不是可有可无的：技能是**靠这句话被匹配到**的，
  * 空着等于传了一个永远不会触发的东西——那不是配置错误，是白传。
  */
 export function parseSkillFile(content: string): SkillParseResult {
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
-  if (!match)
+  const frontmatter = readSkillFrontmatter(content)
+  if (!frontmatter)
     return { ok: false, reason: 'frontmatter_missing' }
 
-  const name = readFrontmatterField(match[1], 'name')
-  const description = readFrontmatterField(match[1], 'description')
+  const { name, description } = frontmatter
   if (!name || !description)
     return { ok: false, reason: 'frontmatter_missing' }
 
@@ -86,4 +100,6 @@ export interface SkillSummary {
   builtin: boolean
   /** 自定义技能的最后修改时间；内置的没有 */
   updatedAt?: Date
+  /** 技能根目录下所有文件的相对路径（posix 分隔、排序、含 SKILL.md，最多 500 条） */
+  files: string[]
 }

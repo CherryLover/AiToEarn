@@ -15,7 +15,8 @@ export function getSkillListApi(silent = true) {
 
 /**
  * 上传一个自定义技能。
- * 只收单个 Markdown 文件，服务端按 frontmatter 里的 name 落盘，不看文件名。
+ * 主格式是 zip 技能包（SKILL.md + references/、scripts/ 等子目录），也收单个 Markdown。
+ * 服务端按 SKILL.md frontmatter 里的 name 落盘，不看压缩包名、文件夹名和文件名。
  */
 export function uploadSkillApi(params: UploadSkillParams, silent = true) {
   const formData = new FormData()

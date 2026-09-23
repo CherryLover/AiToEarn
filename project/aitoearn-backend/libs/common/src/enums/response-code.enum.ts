@@ -380,4 +380,7 @@ export enum ResponseCode {
   SkillNotFound = 20906, // 要删的技能不存在
   SkillBuiltinReadonly = 20907, // 内置技能只能看，不能删
   SkillStorageUnavailable = 20908, // 技能目录读写失败（多半是没挂上）
+  SkillArchiveInvalid = 20909, // 压缩包坏了，或者含越界 / 不安全的路径、软链
+  SkillArchiveTooLarge = 20910, // 解压后总量、文件数或单个文件超过上限
+  SkillEntryMissing = 20911, // 包根目录或唯一的顶层文件夹里找不到 SKILL.md（含多个顶层文件夹）
 }

@@ -9,9 +9,11 @@ import { Body, Controller, Delete, Get, Param, Post, UploadedFile, UseIntercepto
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiConsumes, ApiTags } from '@nestjs/swagger'
 import { ApiDoc, AppException, ResponseCode } from '@yikart/common'
-import { SkillsService } from './skills.service'
-import { MAX_SKILL_FILE_BYTES } from './skills.util'
+import { MAX_SKILL_ARCHIVE_BYTES } from './skills-archive.util'
+import { detectSkillUploadKind } from './skills-store.util'
+import { SkillUploadErrorInterceptor } from './skills-upload.interceptor'
 import { SkillUploadDto, SkillUploadDtoSchema } from './skills.dto'
+import { SkillsService } from './skills.service'
 import { SkillListVo, SkillVo } from './skills.vo'
 
 interface UploadedSkillFile {
@@ -27,7 +29,7 @@ export class SkillsController {
 
   @ApiDoc({
     summary: '列出全部 AI 技能',
-    description: '内置的和用户传的一起返回，各自标明来源。内置的只能看，自定义的能删。',
+    description: '内置的和用户传的一起返回，各自标明来源，并列出每个技能包里的文件。内置的只能看，自定义的能删。',
     response: SkillListVo,
   })
   @Get('/')
@@ -37,22 +39,31 @@ export class SkillsController {
 
   @ApiDoc({
     summary: '上传一个自定义技能',
-    description: '只收单个 Markdown 文件，按 frontmatter 里的 name 落盘。上传的技能对这个部署里所有人生效。',
+    description: '字段 file 收标准技能包 .zip（SKILL.md + references / scripts / assets 等，≤ 10 MiB）或单个 .md（≤ 64 KiB），'
+      + '按 SKILL.md frontmatter 里的 name 落盘。上传的技能对这个部署里所有人生效。',
     body: SkillUploadDtoSchema,
+    response: SkillVo,
   })
   @ApiConsumes('multipart/form-data')
   @Post('/')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_SKILL_FILE_BYTES } }))
-  uploadSkill(
+  @UseInterceptors(
+    SkillUploadErrorInterceptor,
+    // 上限按两种格式里大的那个（zip 10 MiB）给；.md 的 64 KiB 在服务层按扩展名再卡。扩展名不对的直接不收。
+    // +1：busboy 读到「正好等于」fileSize 就判超限，不加的话刚好 10 MiB 的包会被误拒
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_SKILL_ARCHIVE_BYTES + 1 },
+      fileFilter: (_req, file, callback) => callback(null, detectSkillUploadKind(file.originalname) !== null),
+    }),
+  )
+  async uploadSkill(
     @Body() dto: SkillUploadDto,
     @UploadedFile() file?: UploadedSkillFile,
-  ): SkillVo {
+  ): Promise<SkillVo> {
     if (!file?.buffer)
       throw new AppException(ResponseCode.SkillFileInvalid)
 
-    return SkillVo.create(
-      this.skillsService.saveSkill(file.buffer, file.originalname ?? '', dto.overwrite ?? false),
-    )
+    const skill = await this.skillsService.saveSkill(file.buffer, file.originalname ?? '', dto.overwrite ?? false)
+    return SkillVo.create(skill)
   }
 
   @ApiDoc({
@@ -60,7 +71,7 @@ export class SkillsController {
     description: '内置技能删不掉，服务端拒绝。',
   })
   @Delete('/:name')
-  deleteSkill(@Param('name') name: string): void {
-    this.skillsService.deleteSkill(name)
+  async deleteSkill(@Param('name') name: string): Promise<void> {
+    await this.skillsService.deleteSkill(name)
   }
 }

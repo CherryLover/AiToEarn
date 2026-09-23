@@ -479,10 +479,24 @@
     "deleteSuccess": "削除しました",
     "upload": {
       "title": "スキルをアップロード",
-      "desc": "Markdown ファイル 1 つ。先頭の front matter に name と description が必要です。",
+      "desc": "スキルのフォルダーごと zip にしてアップロードするのがおすすめです。SKILL.md だけのスキルなら、その .md を単体でアップロードしても構いません。",
+      "treeLabel": "zip の中身の構成",
+      "tree": {
+        "folder": "任意：最上位フォルダー（1 つだけ）",
+        "entry": "必須：入口。front matter に name と description を書く",
+        "references": "任意：参考資料",
+        "scripts": "任意：スクリプト",
+        "more": "任意：その他のファイルやフォルダー"
+      },
+      "rules": {
+        "location": "SKILL.md は zip の直下か、唯一の最上位フォルダーの中に置いてください。最上位にフォルダーが複数あると受け付けません。",
+        "name": "スキル名は SKILL.md の name を使います。zip 名・フォルダー名・ファイル名は見ません。",
+        "limits": "上限：zip は 10 MB まで。展開後は合計 30 MB・500 ファイル・1 ファイル 10 MB まで。SKILL.md 自体は 64 KB まで。"
+      },
+      "scriptsNote": "scripts/ のスクリプトはそのまま保存され、AI も内容を読めます。ただし AI は今のところコマンドを実行できないため、これらのスクリプトは動きません。",
       "pick": "ファイルを選ぶ",
       "uploading": "アップロード中…",
-      "hint": "名前はファイル名ではなく front matter の name を使います。1 ファイル 64 KB まで。"
+      "hint": ".zip または .md"
     },
     "custom": {
       "title": "アップロードしたもの",
@@ -493,16 +507,24 @@
       "title": "内蔵スキル",
       "desc": "イメージに同梱。閲覧のみです。"
     },
+    "structure": {
+      "dir_one": "{{name}}/ {{count}} 件",
+      "dir_other": "{{name}}/ {{count}} 件",
+      "other_one": "その他 {{count}} 件",
+      "other_other": "その他 {{count}} 件",
+      "show": "ファイル一覧を開く",
+      "hide": "ファイル一覧を閉じる"
+    },
     "overwrite": {
       "title": "同じ名前のスキルがあります",
-      "desc": "続けると既存のものを置き換えます。元には戻せません。",
+      "desc": "続けると既存のスキルを今回アップロードしたもので丸ごと置き換えます。元のファイルは戻せません。",
       "cancel": "やめる",
       "confirm": "置き換える"
     },
     "delete": {
       "action": "削除",
       "title": "このスキルを削除しますか？",
-      "desc": "{{name}} を削除すると AI は使わなくなります。ファイルも消え、元には戻せません。",
+      "desc": "{{name}} を削除すると AI は使わなくなります。ファイルもすべて消え、元には戻せません。",
       "cancel": "キャンセル",
       "confirm": "削除",
       "deleting": "削除中…"
@@ -510,13 +532,16 @@
     "error": {
       "nameInvalid": "スキル名は小文字・数字・ハイフンのみ、3〜40 文字です",
       "nameReserved": "その名前は内蔵スキルが使っています。別の名前にしてください",
-      "frontmatterMissing": "先頭の front matter に name と description の両方が必要です",
-      "fileTooLarge": "大きすぎます。1 スキル 64 KB までです",
-      "fileInvalid": "Markdown ファイル 1 つだけ受け付けます",
+      "frontmatterMissing": "SKILL.md の先頭の front matter に name と description の両方が必要です",
+      "fileTooLarge": "大きすぎます。zip は 10 MB、SKILL.md は 64 KB までです",
+      "fileInvalid": ".zip のスキルパッケージか、.md ファイル 1 つだけ受け付けます",
       "alreadyExists": "同じ名前のスキルがすでにあります",
       "notFound": "スキルが見つかりません",
       "builtinReadonly": "内蔵スキルは削除できません",
       "storageUnavailable": "スキル用ディレクトリに書き込めません。マウントされていない可能性があります",
+      "archiveInvalid": "zip を開けないか、フォルダー外を指すパスやシンボリックリンクなど安全でない内容が含まれています",
+      "archiveTooLarge": "展開後のサイズが上限を超えています。合計 30 MB・500 ファイル・1 ファイル 10 MB までです",
+      "entryMissing": "SKILL.md が見つかりません。zip の直下か、唯一の最上位フォルダーの中に置いてください",
       "unknown": "うまくいきませんでした。もう一度お試しください。"
     }
   }

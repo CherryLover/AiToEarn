@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isBuiltinSkillName, isValidSkillName, parseSkillFile } from './skills.util'
+import { isBuiltinSkillName, isValidSkillName, parseSkillFile, readSkillFrontmatter } from './skills.util'
 
 function skillFile(front: string, body = '\n# 正文\n'): string {
   return `---\n${front}\n---${body}`
@@ -92,7 +92,7 @@ describe('parseSkillFile 解析 frontmatter', () => {
       .toEqual({ ok: false, reason: 'name_reserved' })
   })
 
-  it('CRLF 换行也认', () => {
+  it('换行是 CRLF 也认', () => {
     const result = parseSkillFile('---\r\nname: my-skill\r\ndescription: 干这个用的\r\n---\r\n正文')
     expect(result.ok && result.meta.name).toBe('my-skill')
   })
@@ -100,5 +100,20 @@ describe('parseSkillFile 解析 frontmatter', () => {
   it('name 里塞路径穿越，按名字不合规拒掉', () => {
     expect(parseSkillFile(skillFile('name: ../../etc/passwd\ndescription: x')))
       .toEqual({ ok: false, reason: 'name_invalid' })
+  })
+})
+
+describe('readSkillFrontmatter 只读不校验', () => {
+  it('内置技能的名字也照样读出来（列表要显示它的 description）', () => {
+    expect(readSkillFrontmatter(skillFile('name: drafting-post\ndescription: 写草稿')))
+      .toEqual({ name: 'drafting-post', description: '写草稿' })
+  })
+
+  it('没有 frontmatter 返回 null', () => {
+    expect(readSkillFrontmatter('# 普通文档')).toBeNull()
+  })
+
+  it('缺的字段给空串', () => {
+    expect(readSkillFrontmatter(skillFile('name: x'))).toEqual({ name: 'x', description: '' })
   })
 })

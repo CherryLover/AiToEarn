@@ -8,17 +8,18 @@
  * 2. **技能是写给 AI 看的指令。** 传一个技能等于往 AI 的执行上下文里塞一段话，
  *    这不是普通的文件上传。文案上要让人意识到这一点，不要做成一个轻飘飘的「拖进来就行」。
  *
- * 校验在服务端，这里只做两件本地就能判的事：后缀和大小。
- * 提前挡住能省一次往返，但**不能只靠前端**——服务端那边一样要判。
+ * 主格式是 zip 技能包（SKILL.md + references/、scripts/ 等），也收单个 .md。
+ * 校验在服务端，这里只做两件本地就能判的事：扩展名和大小（见 `validateSkillFile`）。
+ * 提前挡住能省一次往返，但**不能只靠前端**——服务端那边一样要判，解压后的限制也只有它能判。
  */
 
 'use client'
 
 import type { Skill } from '@/api/skills/skill.types'
-import { FileText, Loader2, RefreshCw, Trash2, TriangleAlert, Upload } from 'lucide-react'
+import { Loader2, RefreshCw, TriangleAlert, Upload } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { deleteSkillApi, getSkillListApi, uploadSkillApi } from '@/api/skills/skill.api'
-import { MAX_SKILL_FILE_BYTES, SKILL_ERROR_CODE } from '@/api/skills/skill.constants'
+import { SKILL_ERROR_CODE } from '@/api/skills/skill.constants'
 import { useTransClient } from '@/app/i18n/client'
 import {
   AlertDialog,
@@ -30,38 +31,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/utils/className'
 import { toast } from '@/utils/ui/toast'
 import { SettingsCard, SettingsSection } from '../SettingsSection'
-
-/** 把服务端的业务码翻成 settings 命名空间下的文案键 */
-function getSkillErrorKey(code?: string | number | null): string {
-  switch (Number(code)) {
-    case SKILL_ERROR_CODE.NameInvalid:
-      return 'skills.error.nameInvalid'
-    case SKILL_ERROR_CODE.NameReserved:
-      return 'skills.error.nameReserved'
-    case SKILL_ERROR_CODE.FrontmatterMissing:
-      return 'skills.error.frontmatterMissing'
-    case SKILL_ERROR_CODE.FileTooLarge:
-      return 'skills.error.fileTooLarge'
-    case SKILL_ERROR_CODE.FileInvalid:
-      return 'skills.error.fileInvalid'
-    case SKILL_ERROR_CODE.AlreadyExists:
-      return 'skills.error.alreadyExists'
-    case SKILL_ERROR_CODE.NotFound:
-      return 'skills.error.notFound'
-    case SKILL_ERROR_CODE.BuiltinReadonly:
-      return 'skills.error.builtinReadonly'
-    case SKILL_ERROR_CODE.StorageUnavailable:
-      return 'skills.error.storageUnavailable'
-    default:
-      return 'skills.error.unknown'
-  }
-}
+import { SkillRow } from './SkillRow'
+import { getSkillErrorKey, SKILL_UPLOAD_ACCEPT, validateSkillFile } from './skills.utils'
+import { SkillUploadGuide } from './SkillUploadGuide'
 
 export function SkillsSection() {
   const { t } = useTransClient('settings')
@@ -136,13 +112,10 @@ export function SkillsSection() {
     if (!file)
       return
 
-    // 后缀和大小本地就能判，先挡一道省一次往返；服务端那边一样会判
-    if (!file.name.toLowerCase().endsWith('.md')) {
-      toast.error(t('skills.error.fileInvalid'))
-      return
-    }
-    if (file.size > MAX_SKILL_FILE_BYTES) {
-      toast.error(t('skills.error.fileTooLarge'))
+    // 扩展名和大小本地就能判，先挡一道省一次往返；服务端那边一样会判
+    const localError = validateSkillFile(file)
+    if (localError) {
+      toast.error(t(localError))
       return
     }
 
@@ -185,10 +158,12 @@ export function SkillsSection() {
       </div>
 
       <SettingsCard title={t('skills.upload.title')} desc={t('skills.upload.desc')}>
+        <SkillUploadGuide />
         <input
           ref={inputRef}
           type="file"
-          accept=".md,text/markdown"
+          accept={SKILL_UPLOAD_ACCEPT}
+          aria-label={t('skills.upload.pick')}
           className="hidden"
           onChange={(event) => {
             handlePick(event.target.files?.[0])
@@ -196,7 +171,7 @@ export function SkillsSection() {
             event.target.value = ''
           }}
         />
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="mt-5 flex flex-wrap items-center gap-2">
           <Button disabled={isUploading} onClick={() => inputRef.current?.click()}>
             {isUploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
             {isUploading ? t('skills.upload.uploading') : t('skills.upload.pick')}
@@ -225,7 +200,7 @@ export function SkillsSection() {
         ) : custom.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('skills.custom.empty')}</p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-2" aria-label={t('skills.custom.title')}>
             {custom.map(skill => (
               <SkillRow
                 key={skill.name}
@@ -241,7 +216,7 @@ export function SkillsSection() {
         {isLoading ? (
           <Skeleton className="h-24 w-full rounded-lg" />
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-2" aria-label={t('skills.builtin.title')}>
             {builtin.map(skill => <SkillRow key={skill.name} skill={skill} />)}
           </ul>
         )}
@@ -299,41 +274,5 @@ export function SkillsSection() {
         </AlertDialogContent>
       </AlertDialog>
     </SettingsSection>
-  )
-}
-
-function SkillRow({ skill, onDelete }: { skill: Skill, onDelete?: () => void }) {
-  const { t } = useTransClient('settings')
-
-  return (
-    <li className={cn(
-      'flex items-start gap-3 rounded-lg border border-border px-3 py-2.5',
-      skill.builtin && 'bg-muted/30',
-    )}
-    >
-      <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-sm text-foreground">{skill.name}</span>
-          {skill.builtin && (
-            <Badge variant="outline" className="text-[11px]">{t('skills.builtinTag')}</Badge>
-          )}
-        </div>
-        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-          {skill.description || t('skills.noDescription')}
-        </p>
-      </div>
-      {onDelete && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="shrink-0 text-destructive hover:text-destructive"
-          onClick={onDelete}
-        >
-          <Trash2 className="size-3.5" />
-          {t('skills.delete.action')}
-        </Button>
-      )}
-    </li>
   )
 }
